@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anda Sedang Offline - [Nama Aplikasi/Situs Anda]</title>
+    
+    <style>
+        /* CSS yang Digabungkan: Modern, Profesional, dan Mendukung Dark Mode */
+        :root {
+            --primary-color: #007bff; /* Biru cerah yang profesional */
+            --primary-dark: #0056b3;
+            --secondary-color: #6c757d; /* Abu-abu netral */
+            --background-color: #f8f9fa; /* Latar belakang sangat terang */
+            --card-background: #ffffff; /* Latar belakang konten */
+            --text-color: #343a40; /* Teks gelap */
+            --border-color: #e9ecef;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --success-color: #28a745;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Penyesuaian untuk Dark Mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-color: #1e1e1e;
+                --card-background: #2d2d30;
+                --text-color: #ffffff;
+                --border-color: #3a3a3a;
+                --primary-color: #4dc2ff; 
+                --primary-dark: #2a9dda;
+                --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.6;
+            user-select: none;
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-background);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animasi latar belakang bergerak */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            animation: shimmer 3s infinite;
+            z-index: 1;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .status-icon {
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Ikon SVG Inlined dengan animasi */
+        .status-icon svg {
+            width: 80px;
+            height: 80px;
+            color: var(--primary-color);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 0;
+            color: var(--text-color);
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .message {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Indikator status koneksi */
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .connection-status::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #dc3545;
+            margin-right: 8px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        /* Tombol Interaktif */
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: width 0.3s, height 0.3s, top 0.3s, left 0.3s;
+            transform: translate(-50%, -50%);
+        }
+
+        .btn:active::after {
+            width: 100px;
+            height: 100px;
+        }
+
+        .btn.primary {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+        }
+
+        .btn.primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn.primary:active {
+            transform: translateY(0);
+        }
+
+        .btn.secondary {
+            background-color: transparent;
+            color: var(--secondary-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn.secondary:hover {
+            background-color: var(--border-color);
+            transform: translateY(-1px);
+        }
+
+        .btn.secondary:active {
+            transform: translateY(0);
+        }
+
+        /* Indikator loading untuk tombol reload */
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .btn.loading .btn-text {
+            visibility: hidden;
+        }
+
+        .btn.loading::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Info Lanjut (Toggle/Saklar) */
+        .advanced-info {
+            text-align: left;
+            padding: 0;
+            background-color: var(--background-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+        }
+
+        .advanced-info.expanded {
+            max-height: 500px;
+            padding: 20px;
+        }
+
+        .advanced-info h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .advanced-info ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .advanced-info li {
+            margin-bottom: 12px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .advanced-info li::before {
+            content: '→';
+            color: var(--primary-color);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            transition: transform 0.3s;
+        }
+
+        .advanced-info li:hover::before {
+            transform: translateX(3px);
+        }
+
+        footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Responsif Sederhana */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 20px; border-radius: 8px; }
+            h2 { font-size: 1.5rem; }
+            .btn { padding: 10px 20px; }
+            .actions { gap: 10px; }
+        }
+
+        /* Efek untuk koneksi kembali */
+        .connection-restored {
+            animation: connectionRestored 2s ease;
+        }
+
+        @keyframes connectionRestored {
+            0% { 
+                background-color: var(--card-background);
+                transform: scale(1);
+            }
+            25% { 
+                background-color: rgba(40, 167, 69, 0.1);
+                transform: scale(1.02);
+            }
+            100% { 
+                background-color: var(--card-background);
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <header>
+            <h1 class="logo">ELSA</h1>
+        </header>
+
+        <main class="content">
+            <div class="connection-status">Tidak terhubung ke internet</div>
+            
+            <div class="status-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-cloud-off">
+                    <path d="M22.61 17.96A5 5 0 0 0 18 10h-1.26a8 8 0 0 0-7.05-6.1A8 8 0 0 0 3 13.98M16 16l-3-3l-3 3M13 13v7"/>
+                </svg>
+            </div>
+            
+            <h2>Anda Sedang Offline</h2>
+            <p class="message">
+                Maaf, koneksi internet Anda terputus dan data aplikasi terbaru <strong>tidak tersedia</strong> di cache.
+                Silakan coba muat ulang halaman atau periksa koneksi internet Anda.
+            </p>
+
+            <div class="actions">
+                <button id="reloadButton" class="btn primary">
+                    <span class="btn-text">Coba Muat Ulang</span>
+                    <span>🔄</span>
+                </button>
+                <button id="infoToggle" class="btn secondary">
+                    <span class="btn-text">Informasi Lanjut</span>
+                    <span id="toggleIcon">+</span>
+                </button>
+            </div>
+            
+            <div id="advancedInfo" class="advanced-info">
+                <h3>Tips Memecahkan Masalah:</h3>
+                <ul>
+                    <li><strong>Periksa Koneksi:</strong> Pastikan Wi-Fi atau data seluler Anda aktif.</li>
+                    <li><strong>Mode Pesawat:</strong> Coba aktifkan dan nonaktifkan Mode Pesawat.</li>
+                    <li><strong>Muat Ulang Paksa:</strong> Coba tekan <kbd>Ctrl + Shift + R</kbd> atau <kbd>Cmd + Shift + R</kbd>.</li>
+                    <li><strong>Ulangi Nanti:</strong> Jika masalah berlanjut, mungkin ada masalah server. Silakan coba lagi beberapa saat.</li>
+                </ul>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; <span id="currentYear"></span> ELSA shadow. All Rights Reversed.</p>
+        </footer>
+    </div>
+    
+    <script>
+        // JavaScript Interaktif
+        document.addEventListener('DOMContentLoaded', function() {
+            const reloadButton = document.getElementById('reloadButton');
+            const infoToggle = document.getElementById('infoToggle');
+            const advancedInfo = document.getElementById('advancedInfo');
+            const currentYearSpan = document.getElementById('currentYear');
+            const toggleIcon = document.getElementById('toggleIcon');
+            const container = document.getElementById('container');
+
+            // 1. Set Tahun Saat Ini di Footer
+            currentYearSpan.textContent = new Date().getFullYear();
+
+            // 2. Tombol Muat Ulang dengan Indikator Loading
+            reloadButton.addEventListener('click', function() {
+                // Tampilkan indikator loading
+                reloadButton.classList.add('loading');
+                
+                // Simulasi proses loading sebelum reload
+                setTimeout(() => {
+                    // Muat ulang tanpa cache (berpotensi melewati cache Service Worker)
+                    window.location.reload(true);
+                }, 1500);
+            });
+
+            // 3. Tombol Toggle/Saklar Info Lanjut dengan animasi smooth
+            infoToggle.addEventListener('click', function() {
+                const isExpanded = advancedInfo.classList.contains('expanded');
+                
+                if (isExpanded) {
+                    advancedInfo.classList.remove('expanded');
+                    toggleIcon.textContent = '+';
+                    infoToggle.querySelector('.btn-text').textContent = 'Informasi Lanjut';
+                } else {
+                    advancedInfo.classList.add('expanded');
+                    toggleIcon.textContent = '−';
+                    infoToggle.querySelector('.btn-text').textContent = 'Sembunyikan Info';
+                }
+            });
+
+            // 4. Deteksi perubahan status koneksi
+            function updateOnlineStatus() {
+                if (navigator.onLine) {
+                    // Koneksi kembali
+                    container.classList.add('connection-restored');
+                    setTimeout(() => {
+                        container.classList.remove('connection-restored');
+                    }, 2000);
+                }
+            }
+
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
+        });
+    </script>
+</body>
+</html>
