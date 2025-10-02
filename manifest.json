@@ -1,0 +1,30 @@
+{
+  "name": "ELSA",
+  "short_name": "ELSA",
+  "description": "Education Learning Smart App",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "transparent",
+  "theme_color": "#2F3BA2",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any "
+    },
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any "
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any "
+    }
+  ]
+}
