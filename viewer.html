@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Viewer - ELSA</title>
+    <style>
+        /* ... existing styles ... */
+
+        /* NEW: Security and UX enhancements */
+        .security-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .security-alert {
+            background: #2f2f2f;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            margin: 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #007bff;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .touch-area {
+            padding: 20px;
+            margin: -20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Security Overlay -->
+    <div id="security-overlay" class="security-overlay">
+        <div class="security-alert">
+            <h3>⚠️ Akses Ditolak</h3>
+            <p>File PDF tidak valid atau tidak diizinkan.</p>
+            <button onclick="window.history.back()" class="nav-btn">Kembali</button>
+        </div>
+    </div>
+
+    <header id="top-bar">
+        <a href="index.html" class="touch-area">←</a>
+        <span id="file-name"></span>
+    </header>
+
+    <div id="viewer-container">
+        <div class="loading" id="loading">Memuat PDF...</div>
+        <div class="progress-bar" id="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <canvas id="pdf-render"></canvas>
+    </div>
+
+    <div id="controls">
+        <!-- ... existing controls ... -->
+        <button id="cancel-loading" class="nav-btn" style="display: none;">Batal</button>
+    </div>
+
+    <script src="pdfjs/pdf.js"></script>
+    <script>
+        // ==================== SECURITY ENHANCEMENTS ====================
+        
+        // Validasi URL parameter dengan whitelist
+        function validatePDFPath(filePath) {
+            const allowedPaths = [
+                'buku/kelas-10/',
+                'buku/kelas-11/', 
+                'buku/kelas-12/',
+                'uploaded/'
+            ];
+            
+            // Cegah path traversal
+            if (filePath.includes('../') || filePath.includes('..\\')) {
+                return false;
+            }
+            
+            // Cek ekstensi file
+            if (!filePath.toLowerCase().endsWith('.pdf')) {
+                return false;
+            }
+            
+            // Whitelist validation
+            return allowedPaths.some(path => filePath.startsWith(path));
+        }
+
+        function showSecurityAlert() {
+            document.getElementById('security-overlay').style.display = 'flex';
+        }
+
+        // ==================== MEMORY MANAGEMENT ====================
+        
+        let currentBlobUrl = null;
+        
+        function cleanupBlobUrl() {
+            if (currentBlobUrl) {
+                URL.revokeObjectURL(currentBlobUrl);
+                currentBlobUrl = null;
+            }
+        }
+
+        // ==================== LOADING MANAGEMENT ====================
+        
+        let loadingController = null;
+        
+        function setupProgressTracking(loadingTask) {
+            loadingTask.onProgress = function(progress) {
+                const percent = (progress.loaded / progress.total) * 100;
+                document.getElementById('progress-fill').style.width = percent + '%';
+            };
+        }
+
+        function showCancelButton() {
+            document.getElementById('cancel-loading').style.display = 'block';
+        }
+
+        function hideCancelButton() {
+            document.getElementById('cancel-loading').style.display = 'none';
+        }
+
+        // ==================== ENHANCED PDF LOADING ====================
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const fileParam = urlParams.get("file");
+        
+        // Security validation
+        if (!fileParam || !validatePDFPath(fileParam)) {
+            showSecurityAlert();
+            throw new Error('Invalid PDF path');
+        }
+        
+        const pdfPath = decodeURIComponent(fileParam);
+        const fileName = pdfPath.split("/").pop().replace(/%20/g, " ");
+
+        let pdfDoc = null,
+            pageNum = 1,
+            pageIsRendering = false,
+            pageNumIsPending = null,
+            offset = 0,
+            isCancelled = false;
+            
+        const canvas = document.getElementById("pdf-render"),
+            ctx = canvas.getContext("2d"),
+            pageInfo = document.getElementById("page-info"),
+            pageInput = document.getElementById("page-input"),
+            viewerContainer = document.getElementById("viewer-container"),
+            loading = document.getElementById("loading"),
+            fileNameDisplay = document.getElementById("file-name"),
+            downloadBtn = document.getElementById("download-pdf"),
+            progressBar = document.getElementById("progress-bar"),
+            cancelBtn = document.getElementById("cancel-loading");
+
+        // Enhanced file name display dengan escaping
+        fileNameDisplay.textContent = fileName.replace(/[<>]/g, '');
+        
+        // ==================== ENHANCED RENDERING ====================
+        
+        const updatePageInfo = num => {
+            if (!pdfDoc) return;
+            
+            const displayPageNum = num - offset;
+            pageInfo.textContent = (displayPageNum <= 0) ? 
+                `Halaman ${1} dari ${pdfDoc.numPages - offset}` : 
+                `Halaman ${displayPageNum} dari ${pdfDoc.numPages - offset}`;
+            
+            document.getElementById("prev").classList.toggle('disabled', pageNum <= 1);
+            document.getElementById("next").classList.toggle('disabled', pageNum >= pdfDoc.numPages);
+        };
+
+        const renderPage = num => {
+            if (isCancelled) return;
+            
+            pageIsRendering = true;
+            loading.style.display = 'block';
+            canvas.style.display = 'none';
+            
+            pdfDoc.getPage(num).then(page => {
+                if (isCancelled) return;
+                
+                const viewport = page.getViewport({ scale: 1 });
+                const containerWidth = viewerContainer.clientWidth - 40;
+                let scale = containerWidth / viewport.width;
+                scale = Math.max(0.5, Math.min(scale, 3));
+                
+                const scaledViewport = page.getViewport({ scale });
+                const outputScale = window.devicePixelRatio || 1;
+                
+                // Optimize canvas size
+                const maxCanvasSize = 4096; // Browser limit
+                canvas.width = Math.min(Math.floor(scaledViewport.width * outputScale), maxCanvasSize);
+                canvas.height = Math.min(Math.floor(scaledViewport.height * outputScale), maxCanvasSize);
+                canvas.style.width = Math.floor(scaledViewport.width) + "px";
+                canvas.style.height = Math.floor(scaledViewport.height) + "px";
+                
+                const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
+                
+                const renderCtx = {
+                    canvasContext: ctx,
+                    viewport: scaledViewport,
+                    transform: transform
+                };
+                
+                page.render(renderCtx).promise.then(() => {
+                    pageIsRendering = false;
+                    loading.style.display = 'none';
+                    canvas.style.display = 'block';
+                    
+                    if (pageNumIsPending !== null) {
+                        renderPage(pageNumIsPending);
+                        pageNumIsPending = null;
+                    }
+                });
+                
+                updatePageInfo(num);
+            }).catch(err => {
+                console.error("Error rendering page:", err);
+                loading.textContent = "Error memuat halaman: " + err.message;
+                pageIsRendering = false;
+            });
+        };
+
+        const queueRenderPage = num => {
+            if (pageIsRendering) {
+                pageNumIsPending = num;
+            } else {
+                renderPage(num);
+            }
+        };
+
+        // ==================== ENHANCED EVENT HANDLERS ====================
+        
+        // Debounced navigation untuk prevent spam clicks
+        let lastClickTime = 0;
+        const clickDebounceTime = 300;
+
+        document.getElementById("prev").addEventListener("click", () => {
+            const now = Date.now();
+            if (now - lastClickTime < clickDebounceTime) return;
+            lastClickTime = now;
+            
+            if (pageNum > 1 && !pageIsRendering) {
+                pageNum--;
+                queueRenderPage(pageNum);
+            }
+        });
+        
+        document.getElementById("next").addEventListener("click", () => {
+            const now = Date.now();
+            if (now - lastClickTime < clickDebounceTime) return;
+            lastClickTime = now;
+            
+            if (pageNum < pdfDoc.numPages && !pageIsRendering) {
+                pageNum++;
+                queueRenderPage(pageNum);
+            }
+        });
+
+        // Cancel loading handler
+        cancelBtn.addEventListener("click", () => {
+            isCancelled = true;
+            if (loadingController) {
+                loadingController.abort();
+            }
+            loading.textContent = "Dibatalkan";
+            hideCancelButton();
+            setTimeout(() => {
+                window.history.back();
+            }, 1000);
+        });
+
+        // ==================== ENHANCED PDF LOADING ====================
+        
+        async function loadPDF() {
+            cleanupBlobUrl(); // Cleanup previous blob URLs
+            isCancelled = false;
+            
+            loading.style.display = 'block';
+            progressBar.style.display = 'block';
+            loading.textContent = "Memuat PDF...";
+            showCancelButton();
+
+            // Security check
+            if (!validatePDFPath(pdfPath)) {
+                showSecurityAlert();
+                return;
+            }
+
+            // ... existing loading logic dengan enhancements ...
+            
+            try {
+                const isOnline = navigator.onLine;
+                const saved = await getPDFfromDB(fileName);
+                
+                if (saved) {
+                    console.log("📂 Memuat dari penyimpanan lokal:", fileName);
+                    currentBlobUrl = URL.createObjectURL(saved);
+                    await loadPDFFromBlob(currentBlobUrl);
+                    updateDownloadButton(true);
+                    return;
+                }
+
+                // ... rest of loading logic dengan progress tracking ...
+                
+            } catch (error) {
+                if (!isCancelled) {
+                    console.error("PDF loading error:", error);
+                    loading.textContent = "Gagal memuat PDF";
+                }
+            } finally {
+                hideCancelButton();
+                progressBar.style.display = 'none';
+            }
+        }
+
+        // Enhanced network loading dengan abort controller
+        async function loadPDFFromNetwork() {
+            loadingController = new AbortController();
+            
+            try {
+                const pdfLoadingTask = pdfjsLib.getDocument({ 
+                    url: pdfPath,
+                    signal: loadingController.signal
+                });
+                
+                setupProgressTracking(pdfLoadingTask);
+                
+                const pdf = await pdfLoadingTask.promise;
+                if (isCancelled) return;
+                
+                pdfDoc = pdf;
+                loading.style.display = 'none';
+                renderPage(pageNum);
+                
+                // Auto-cache dengan size check
+                const fileSize = await getPDFFileSize(pdfPath);
+                if (fileSize < 5 * 1024 * 1024 && fileSize > 0) {
+                    cachePDFAutomatically(pdfPath);
+                }
+                
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    console.log('PDF loading cancelled');
+                } else {
+                    console.error("Error loading PDF from network:", err);
+                    loading.textContent = "Gagal memuat PDF: " + err.message;
+                    updateDownloadButton(false);
+                }
+            }
+        }
+
+        // ==================== CLEANUP ON EXIT ====================
+        
+        window.addEventListener('beforeunload', cleanupBlobUrl);
+        window.addEventListener('pagehide', cleanupBlobUrl);
+
+        // ... rest of the functions dengan similar enhancements ...
+
+        // Start the application
+        loadConfig();
+    </script>
+</body>
+</html>
