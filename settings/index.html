@@ -93,11 +93,6 @@
             border-radius: 4px;
         }
         
-        .header-back a:focus {
-            outline: 2px solid #007bff;
-            outline-offset: 2px;
-        }
-        
         .header-back h1 {
             font-size: 1.5rem;
             color: #e0e0e0;
@@ -254,6 +249,22 @@
             opacity: 0.7;
             pointer-events: none;
         }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #777;
+            font-size: 0.8rem;
+        }
+
+        .icon-svg {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            color: currentColor; /* Agar bisa mengikuti warna text/icon */
+        }
     </style>
 </head>
 <body>
@@ -261,7 +272,7 @@
     
     <div class="main-container">
         <header class="header-back">
-            <a href="../index.html" aria-label="Kembali ke halaman utama">←</a>
+            <a href="../index.html" aria-label="Kembali ke halaman utama">                <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></a>
             <h1>Pengaturan Aplikasi</h1>
         </header>
 
@@ -286,7 +297,7 @@
         <span aria-hidden="true"></span>
     </summary>
     <div class="details-content" aria-hidden="true">
-        <p><strong>Versi Aplikasi:</strong> 2.4.0</p>
+        <p><strong>Versi Aplikasi:</strong> 2.5</p>
         <p><strong>Versi Service Worker:</strong> <span id="sw-version">Loading...</span></p>
         <p><strong>PDF Cache:</strong> <span id="pdf-cache-status">Loading...</span></p>
         <p><strong>Pengembang:</strong> Shadow</p>
@@ -308,6 +319,9 @@
                 </div>
             </details>
         </main>
+        <footer>
+            <p>© 2025 ELSA Shadow. All Rights Reversed.</p>
+        </footer>
     </div>
     
     <script>
