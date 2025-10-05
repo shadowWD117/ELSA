@@ -29,13 +29,13 @@
       "name": "Kalkulator",
       "short_name": "Calc",
       "description": "Buka alat kalkulator",
-      "url": "/alat/kalkulator/"
+      "url": "/alat/kalkulator/index.html"
     },
     {
       "name": "Profil",
       "short_name": "Profile",
       "description": "Buka halaman profil",
-      "url": "/profile/"
+      "url": "/profile/index.html"
     }
   ],
   "icons": [
