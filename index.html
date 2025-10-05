@@ -1,1529 +1,609 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-language="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELSA: Education Learning Smart App</title>
+    <title>Pengaturan - ELSA</title>
     <meta name="theme-color" content="#1a1a1a">
-    <meta name="description" content="Aplikasi PWA sederhana untuk membaca PDF dan alat belajar">
+    <meta name="description" content="Pengaturan aplikasi ELSA - Kelola cache, lihat info versi, dan dapatkan bantuan">
+    <meta name="keywords" content="ELSA, pengaturan, cache, PWA, belajar">
+    <meta property="og:title" content="Pengaturan ELSA">
+    <meta property="og:description" content="Kelola pengaturan aplikasi ELSA">
     <link rel="manifest" href="manifest.json">
     <style>
-        /* RESET & BASE */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-/* GANTI padding body yang sebelumnya */
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    line-height: 1.6;
-    color: #e0e0e0;
-    background-color: #1a1a1a;
-    padding: 20px;
-    max-width: 100%;
-    overflow-x: hidden;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    /* HAPUS padding-bottom dari sini */
-}
-
-/* BUAT wrapper untuk konten utama */
-#main-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    justify-content: flex-start;
-    /* TAMBAHKAN padding bottom di sini */
-    padding-bottom: 80px; /* Pindahkan ke sini */
-}
-
-        /* HEADER */
-        .app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px 20px 20px;
-            margin: -20px -20px 20px -20px;
-        }
-        .app-header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .app-logo img {
-            height: 28px;
-            width: auto;
-            vertical-align: middle;
-        }
-        .app-title {
-            display: flex;
-            flex-direction: column;
-            line-height: 1;
-        }
-        .app-title h1 {
-            font-size: 1.2rem;
-            margin: 0;
-            color: #e0e0e0;
-        }
-        .app-title p {
-            font-size: 0.8rem;
-            color: #b0b0b0;
-        }
-        .header-icons {
-            display: flex;
-            gap: 15px;
-        }
-        .header-icons a {
-            color: #e0e0e0;
-            font-size: 1.3rem;
-            text-decoration: none;
-        }
-
-        /* NAVBAR */
-/* PERBAIKI mobile-navbar */
-.mobile-navbar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: #2f2f2f;
-    display: flex;
-    justify-content: space-around;
-    padding: 10px 0;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
-    z-index: 1000;
-    /* TAMBAHKAN ini untuk stability */
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-}
-
-/* BATASI overflow horizontal di bagian alat */
-#alat-section {
-    overflow-x: hidden; /* Mencegah horizontal scroll */
-    width: 100%;
-}
-
-.alat-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-top: 20px;
-    padding: 0 10px;
-    /* PASTIKAN tidak ada overflow */
-    box-sizing: border-box;
-    max-width: 100%;
-}
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #b0b0b0;
-            text-decoration: none;
-            font-size: 0.8rem;
-            padding: 5px 10px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        .nav-item.active {
-            color: #007bff;
-            background-color: rgba(0, 123, 255, 0.1);
-        }
-        .nav-icon {
-            font-size: 1.2rem;
-            margin-bottom: 3px;
-        }
-
-        /* CONTENT SECTIONS */
-        .content-section {
-            display: none;
-        }
-        .content-section.active {
-            display: block;
-        }
-
-        /* NEW ADDITIONS: MOTO, GREETING, AND SLIDER */
-        .app-moto {
-            text-align: center;
-            font-style: italic;
-            font-size: 0.9rem;
-            color: #b0b0b0;
-            margin-bottom: 25px;
-        }
-
-        #greetingName {
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #007bff;
-            margin-bottom: 15px;
-            animation: hal 5s ease-in-out infinite;
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
         }
         
-        @keyframes hal {
-            0%{
-                color: #007bff;
-                transform: scale(1);
-            }
-            50%{
-                color: red;
-                transform: scale(0.95);
-            }
-            100%{
-                color: #007bff;
-                transform: scale(1);
-            }
-        }
-
-        .slider-section {
-            margin-bottom: 25px;
-        }
-
-.slider-container {
-    overflow: hidden;
-    position: relative;
-    white-space: nowrap;
-    /* Tambahkan margin konsisten */
-    margin: 0 10px;
-}
-
-/* Untuk slider di bagian alat khususnya */
-#alat-section .slider-container {
-    margin: 0 10px;
-}
-
-        .slider-wrapper {
-            display: inline-flex;
-            animation: slide-right 20s linear infinite;
-            gap: 5px;
-        }
-
-        .slider-wrapper:hover:active {
-            animation-play-state: paused;
-        }
-
-        @keyframes slide-right {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-        }
-
-        /* Existing card styles, adjusted for slider */
-        .card-row-slider {
-            display: inline-flex;
-            gap: 5px;
-        }
-        
-        .card-item {
-            background: #2f2f2f;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            text-align: center;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            min-width: 160px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Existing Styles... */
-        .section-title {
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
             color: #e0e0e0;
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-align: left;
-            text-transform: uppercase;
-        }
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-/* PERBAIKAN UNTUK CARD-ROW (DAFTAR BUKU) */
-.card-row {
-    display: flex;
-    overflow-x: auto;
-    gap: 15px;
-    padding-bottom: 10px;
-    margin-bottom: 25px;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    justify-content: flex-start;
-    padding-left: 10px;
-    padding-right: 10px;
-    /* PERBAIKAN: Batasi lebar maksimal dan gunakan box-sizing */
-    max-width: 100%;
-    box-sizing: border-box;
-}
-
-/* PERBAIKAN UNTUK CARD ITEM DI CARD-ROW */
-.card-row .card-item {
-    background: #2f2f2f;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    text-align: center;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    /* PERBAIKAN: Atur ukuran yang tepat untuk card-row */
-    min-width: 140px; /* Diperkecil dari 160px */
-    max-width: 140px; /* Tambahkan max-width */
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    /* Pastikan box-sizing konsisten */
-    box-sizing: border-box;
-}
-
-/* PERBAIKAN UNTUK CARD ITEM DI ALAT-GRID (agar konsisten) */
-.alat-grid .card-item {
-    min-width: auto; /* Reset untuk grid */
-    max-width: none; /* Reset untuk grid */
-}
-
-/* PERBAIKAN TAMBAHAN: Atur ukuran font agar proporsional */
-.card-row .card-item h3 {
-    margin-bottom: 5px;
-    color: #007bff;
-    font-size: 1rem; /* Sedikit diperkecil */
-    line-height: 1.2;
-}
-
-.card-row .card-item p {
-    color: #b0b0b0;
-    font-size: 0.8rem; /* Sedikit diperkecil */
-    line-height: 1.2;
-}
-
-.card-row .card-item .icon-wrapper {
-    font-size: 2rem; /* Diperkecil dari 2.5rem */
-    color: #007bff;
-    margin-bottom: 8px;
-}
-
-.card-row::-webkit-scrollbar {
-    display: none;
-}
-
-/* Untuk konten yang sedikit, agar tetap rata tengah */
-.card-row:after {
-    content: '';
-    min-width: 10px;
-}
-
-/* PERBAIKAN UNTUK LAYAR SANGAT KECIL */
-@media (max-width: 360px) {
-    .card-row .card-item {
-        min-width: 120px; /* Lebih kecil untuk layar sangat kecil */
-        max-width: 120px;
-        padding: 12px;
-    }
-    
-    .card-row .card-item h3 {
-        font-size: 0.9rem;
-    }
-    
-    .card-row .card-item p {
-        font-size: 0.75rem;
-    }
-    
-    .card-row .card-item .icon-wrapper {
-        font-size: 1.8rem;
-    }
-}
-
-
-        .card-item:active {
-            transform: scale(0.98);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .card-item h3 {
-            margin-bottom: 5px;
-            color: #007bff;
-            font-size: 1.1rem;
-        }
-        .card-item p {
-            color: #b0b0b0;
-            font-size: 0.85rem;
-        }
-        .card-item .icon-wrapper {
-            font-size: 2.5rem;
-            color: #007bff;
-            margin-bottom: 10px;
-        }
-        .icon-wrapper .icon-book::before { content: "📚"; }
-        .icon-wrapper .icon-calculator::before { content: "🧮"; }
-        .icon-wrapper .icon-speed::before { content: "⏱️"; }
-        .icon-wrapper .icon-weight::before { content: "⚖️"; }
-        .icon-wrapper .icon-pu::before { content: "⚛️️"; }
-        .icon-wrapper .icon-ruler::before { content: "📏"; }
-        .icon-wrapper .icon-chem::before { content: "🧪"; }
-        .icon-wrapper .icon-math::before { content: "📊"; }
-        .icon-wrapper .icon-bio::before { content: "🧬"; }
-        .upload-section {
-            background: #2f2f2f;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            margin-bottom: 25px;
-            text-align: left;
-        }
-        .upload-section h2 {
-            margin-bottom: 10px;
-            color: #e0e0e0;
-            font-size: 1.3rem;
-        }
-        .upload-section p {
-            color: #b0b0b0;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-        }
-        .custom-file-input {
-            display: flex;
-            align-items: center;
-            border: 1px solid #444;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            background-color: #3a3a3a;
-        }
-        .custom-file-input label {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px 0 0 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-size: 0.95rem;
-            white-space: nowrap;
-        }
-        .custom-file-input label:hover {
-            background-color: #0056b3;
-        }
-        .custom-file-input #selectedFileName {
-            flex-grow: 1;
-            padding: 10px 15px;
-            color: #b0b0b0;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            font-size: 0.95rem;
-        }
-        input[type="file"] {
-            display: none;
-        }
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            text-align: center;
-            transition: background 0.2s;
-            text-decoration: none;
-        }
-        .btn:active {
-            background: #0056b3;
-        }
-#installButton {
-    position: fixed;
-    bottom: 90px; /* Diubah dari 70px ke 90px untuk menyesuaikan navbar baru */
-    right: 20px;
-    width: auto;
-    padding: 10px 15px;
-    display: none;
-    z-index: 100;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    background-color: #28a745;
-}
-        #installButton:active {
-            background-color: #218838;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-content {
-            background: #2f2f2f;
-            color: #e0e0e0;
-            padding: 25px;
-            border-radius: 12px;
-            max-width: 90%;
-            width: 400px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-        .modal-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .modal-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: background-color 0.2s;
-        }
-        .modal-btn.primary {
-            background: #007bff;
-            color: white;
-        }
-        .modal-btn.primary:active {
-            background: #0056b3;
-        }
-        .modal-btn.secondary {
-            background: #4a4a4a;
-            color: #e0e0e0;
-        }
-        .modal-btn.secondary:active {
-            background: #6a6a6a;
-        }
-
-        /* ALAT GRID */
-.alat-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-top: 20px;
-    /* Tambahkan padding untuk konsistensi */
-    padding: 0 10px;
-}
-
-@media (min-width: 768px) {
-    body { 
-        padding: 30px; 
-        max-width: 800px; 
-        margin: 0 auto; 
-        padding-bottom: 80px; /* Konsisten di media query juga */
-    }
-    .card-grid { 
-        grid-template-columns: repeat(3, 1fr); 
-    }
-    .alat-grid { 
-        grid-template-columns: repeat(3, 1fr); 
-        padding: 0; /* Di desktop, padding bisa dihilangkan */
-    }
-    
-    /* Perbaikan card-row di desktop */
-    .card-row {
-        justify-content: center;
-        padding-left: 0;
-        padding-right: 0;
-    }
-}
-        #main-content {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            height: 100vh;
-            justify-content: flex-start;
-        }
-        #pdf-viewer {
-            display: none;
-            flex-direction: column;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
             background-color: #1a1a1a;
-            z-index: 200;
+            padding: 20px;
+            max-width: 100%;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            transition: background-color 0.3s, color 0.3s;
         }
-        #top-bar {
+
+        /* Light mode support */
+        @media (prefers-color-scheme: light) {
+            body {
+                background-color: #ffffff;
+                color: #333333;
+            }
+            
+            .main-container details {
+                background-color: #f5f5f5;
+                color: #333333;
+            }
+            
+            .main-container summary {
+                color: #333333;
+            }
+            
+            .main-container summary:hover,
+            .main-container details[open] summary {
+                background-color: #e9e9e9;
+            }
+            
+            .details-content {
+                color: #555555;
+                border-top-color: #ddd;
+            }
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: #000;
+            color: white;
+            padding: 8px;
+            z-index: 100;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        .main-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header-back {
             display: flex;
             align-items: center;
-            padding: 15px 20px;
-            background-color: #2f2f2f;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 10;
+            margin-bottom: 30px;
         }
-        #top-bar .back-btn {
+        
+        .header-back a {
             color: #007bff;
             font-size: 1.5rem;
             margin-right: 15px;
             text-decoration: none;
-            line-height: 1;
-        }
-        #top-bar #file-name-display {
-            font-size: 1.1rem;
-            font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        #viewer-container {
-            flex: 1;
-            overflow: auto;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 20px;
-            -webkit-overflow-scrolling: touch;
-        }
-        #pdf-render {
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            padding: 5px;
             border-radius: 4px;
         }
-        .loading {
-            color: #b0b0b0;
-            font-size: 1.1rem;
-            text-align: center;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        #controls {
-            position: sticky;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #2f2f2f;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 15px 10px;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
-            z-index: 10;
-        }
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        button {
-            padding: 12px 18px;
-            border: none;
-            background-color: #4a4a4a;
+        
+        .header-back h1 {
+            font-size: 1.5rem;
             color: #e0e0e0;
+        }
+
+        /* Styling for details/dropdowns */
+        details {
+            background-color: #2f2f2f;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        
+        details:hover {
+            transform: translateY(-2px);
+        }
+        
+        summary {
+            list-style: none; /* Hide default arrow */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            font-weight: bold;
             cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 1.1rem;
+            color: #e0e0e0;
+        }
+        
+        summary:hover {
+            background-color: #3a3a3a;
+        }
+        
+        details[open] summary {
+            background-color: #3a3a3a;
+        }
+        
+        summary:focus {
+            outline: 2px solid #007bff;
+            outline-offset: 2px;
+        }
+        
+        summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            transition: transform 0.2s;
+        }
+        
+        details[open] summary::after {
+            content: '-';
+            transform: rotate(180deg);
+        }
+        
+        .details-content {
+            padding: 15px 20px 20px;
+            border-top: 1px solid #444;
+            color: #b0b0b0;
+            line-height: 1.8;
+            font-size: 0.95rem;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .details-content p {
+            margin-bottom: 10px;
+        }
+        
+        .details-content a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .details-content a:hover {
+            text-decoration: underline;
+        }
+        
+        button {
+            background: #dc3545;
+            color: white;
+            padding: 10px 15px;
+            border: none;
             border-radius: 8px;
-            font-size: 1rem;
+            cursor: pointer;
+            font-size: 0.95rem;
             transition: background-color 0.2s, transform 0.1s;
         }
+        
+        button:hover {
+            background: #c82333;
+        }
+        
         button:active {
-            background-color: #007bff;
-            transform: scale(0.95);
+            transform: scale(0.98);
         }
-        .nav-btn {
-            background-color: #007bff;
-            color: white;
-            font-weight: bold;
-            padding: 12px 16px;
+        
+        button:focus {
+            outline: 2px solid #007bff;
+            outline-offset: 2px;
         }
-        .nav-btn:active {
-            background-color: #0056b3;
-        }
-        .nav-btn.disabled {
-            background-color: #555;
-            color: #aaa;
+        
+        button:disabled {
+            background: #6c757d;
             cursor: not-allowed;
-        }
-        #page-info {
-            cursor: pointer;
-            background-color: #4a4a4a;
-            padding: 12px 15px;
-            border-radius: 8px;
-            min-width: 100px;
-            text-align: center;
-            font-size: 0.9rem;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        #page-info:hover {
-            background-color: #555;
-        }
-        #page-input {
-            display: none;
-            width: 70px;
-            text-align: center;
-            padding: 10px;
-            background-color: #4a4a4a;
-            border: 1px solid #666;
-            border-radius: 8px;
-            color: #e0e0e0;
+            transform: none;
         }
         
-        #update-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4CAF50;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 10000;
-            display: none;
-            font-family: Arial, sans-serif;
+        /* Responsive design */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            summary {
+                padding: 15px;
+                font-size: 1rem;
+            }
+            
+            .details-content {
+                padding: 10px 15px 15px;
+            }
+            
+            button {
+                padding: 8px 12px;
+                width: 100%;
+            }
         }
-        #update-notification button {
-            background: white;
-            color: #4CAF50;
-            border: none;
-            padding: 8px 16px;
+        
+        .cache-item {
+            margin-bottom: 15px;
+        }
+        
+        .cache-url {
+            font-family: monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            color: #9fd1ff;
             margin-left: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        #update-notification button:hover {
-            background: #f0f0f0;
         }
         
-/* PERBAIKAN KHUSUS untuk bagian Buku */
-#buku-section {
-    padding-bottom: 20px; /* Extra space untuk buku */
-}
-
-#buku-section .card-row {
-    display: flex;
-    overflow-x: auto;
-    gap: 15px;
-    padding-bottom: 10px;
-    margin-bottom: 25px;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    justify-content: flex-start;
-    padding-left: 10px;
-    padding-right: 10px;
-    /* TAMBAHKAN ini untuk mencegah overflow issues */
-    max-width: 100%;
-    box-sizing: border-box;
-}
-
-/* PERBAIKAN KHUSUS untuk bagian Alat */
-#alat-section {
-    padding-bottom: 20px; /* Extra space untuk alat */
-}
-
-#alat-section .slider-container {
-    overflow: hidden;
-    position: relative;
-    white-space: nowrap;
-    margin: 0 10px;
-    /* TAMBAHKAN ini untuk stability */
-    transform: translateZ(0);
-}
+        .cache-more {
+            color: #666;
+            font-style: italic;
+            margin-left: 10px;
+        }
         
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #777;
+            font-size: 0.8rem;
+        }
+
+        .icon-svg {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            color: currentColor; /* Agar bisa mengikuti warna text/icon */
+        }
     </style>
 </head>
 <body>
-    <div id="main-content">
-        <header class="app-header">
-            <div class="app-header-left">
-                <span class="app-logo">
-                    <img src="icons/icon-192x192.png" alt="Logo ELSA">
-                </span>
-                <div class="app-title">
-                    <h1>ELSA</h1>
-                    <p>Education Learning Smart App</p>
-                </div>
-            </div>
-            <div class="header-icons">
-                <a href="profile/index.html" aria-label="Profil"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-user"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></a>
-                <a href="settings/index.html" aria-label="Pengaturan"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 6 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 .33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82-.33V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.82.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0 .33 1.82H21a2 2 0 0 1 2 2z"></path></svg></a>
-            </div>
+    <a href="#main-content" class="skip-link">Langsung ke konten utama</a>
+    
+    <div class="main-container">
+        <header class="header-back">
+            <a href="../index.html" aria-label="Kembali ke halaman utama">                <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></a>
+            <h1>Pengaturan Aplikasi</h1>
         </header>
-        
-        <main>
-            <!-- HOME SECTION -->
-            <div id="home-section" class="content-section active">
-                <p class="app-moto">"Aplikasi belajar yang membawamu selangkah lebih dekat ke masa depan"</p>
 
-                <h2 id="greetingName">Halo!</h2>
+        <main id="main-content">
+            <details role="group">
+                <summary aria-expanded="false" role="button" tabindex="0">
+                    Manajemen Penyimpanan
+                    <span aria-hidden="true"></span>
+                </summary>
+                <div class="details-content" aria-hidden="true">
+                    <p>Hapus data yang tersimpan untuk membebaskan ruang pada perangkat Anda. Ini termasuk file yang di-cache, riwayat bacaan, dan pengaturan lokal.</p>
+                    <button id="clearCacheBtn" style="margin-top: 10px;">Hapus Cache</button>
+                    <h3 style="margin-top:15px;">Daftar Cache:</h3>
+                    <ul id="cache-list" style="list-style-type: none; padding-left: 0; margin-top:10px;"></ul>
+                </div>
+            </details>
 
-                <h2 class="section-title">Alat Praktis</h2>
-                <div class="slider-section">
-                    <div class="slider-container">
-                        <div class="slider-wrapper">
-                            <div class="card-row-slider">
-                                <a href="alat/kalkulator/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
-                                    <h3>Kalkulator</h3>
-                                    <p>multi</p>
-                                </a>
-                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>kecepatan</p>
-                                </a>
-                                <a href="alat/konversi/berat/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>berat</p>
-                                </a>
-                                <a href="alat/konversi/jarak/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>jarak</p>
-                                </a>
-                                <a href="alat/periodik/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
-                                    <h3>periodik</h3>
-                                    <p>unsur</p>
-                                </a>
-                            </div>
-                            <div class="card-row-slider">
-                                <a href="alat/kalkulator/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
-                                    <h3>Kalkulator</h3>
-                                    <p>multi</p>
-                                </a>
-                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>kecepatan</p>
-                                </a>
-                                <a href="alat/konversi/berat/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>berat</p>
-                                </a>
-                                <a href="alat/konversi/jarak/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>jarak</p>
-                                </a>
-                                <a href="alat/periodik/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
-                                    <h3>periodik</h3>
-                                    <p>unsur</p>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr />
-                
-                <section class="upload-section">
-                    <h2>PDF Reader</h2>
-                    <p>Baca PDF Anda Sendiri</p>
-                    <div class="custom-file-input">
-                        <label for="pdfUpload">Pilih File</label>
-                        <span id="selectedFileName">Tidak ada file yang dipilih</span>
-                        <input type="file" id="pdfUpload" accept=".pdf">
-                    </div>
-                    <button class="btn" onclick="bacaPDFUpload()">Buka PDF</button>
-                </section>
-            </div>
-            
-            <!-- BUKU SECTION -->
-            <div id="buku-section" class="content-section">
-                <h2 class="section-title">Kelas 10</h2>
-                <section class="card-row">
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/buku1.pdf')">
-                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                        <h3>Fisika</h3>
-                        <p>Kelas 10</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-math"></span></div>
-                        <h3>Matematika</h3>
-                        <p>Kelas 10</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                        <h3>Biologi</h3>
-                        <p>Kelas 10</p>
-                    </div>
-                </section>
-                
-                <h2 class="section-title">Kelas 11 IPA</h2>
-                <section class="card-row">
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                        <h3>Fisika</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-math"></span></div>
-                        <h3>Matematika</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                        <h3>Biologi</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                </section>
-                
-                <h2 class="section-title">Kelas 11 IPS</h2>
-                <section class="card-row">
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                        <h3>Fisika</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-math"></span></div>
-                        <h3>Matematika</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                        <h3>Biologi</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                </section>
-                
-                <h2 class="section-title">Kelas 12 IPA</h2>
-                <section class="card-row">
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                        <h3>Fisika</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-math"></span></div>
-                        <h3>Matematika</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                        <h3>Biologi</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                </section>
-                
-                <h2 class="section-title">Kelas 12 IPS</h2>
-                <section class="card-row">
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                        <h3>Fisika</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-math"></span></div>
-                        <h3>Matematika</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                        <h3>Biologi</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                </section>
-            </div>
-            
-            <!-- ALAT SECTION -->
-            <div id="alat-section" class="content-section">
-                <h2 class="section-title">Alat Praktis</h2>
-                <div class="slider-section">
-                    <div class="slider-container">
-                        <div class="slider-wrapper">
-                            <div class="card-row-slider">
-                                <a href="alat/kalkulator/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
-                                    <h3>Kalkulator</h3>
-                                    <p>multi</p>
-                                </a>
-                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>kecepatan</p>
-                                </a>
-                                <a href="alat/konversi/berat/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>berat</p>
-                                </a>
-                                <a href="alat/konversi/jarak/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>jarak</p>
-                                </a>
-                                <a href="alat/periodik/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
-                                    <h3>periodik</h3>
-                                    <p>unsur</p>
-                                </a>
-                            </div>
-                            <div class="card-row-slider">
-                                <a href="alat/kalkulator/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
-                                    <h3>Kalkulator</h3>
-                                    <p>multi</p>
-                                </a>
-                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>kecepatan</p>
-                                </a>
-                                <a href="alat/konversi/berat/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>berat</p>
-                                </a>
-                                <a href="alat/konversi/jarak/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>jarak</p>
-                                </a>
-                                <a href="alat/periodik/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
-                                    <h3>periodik</h3>
-                                    <p>unsur</p>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <h2 class="section-title">Semua Alat</h2>
-                <div class="alat-grid">
-                    <a href="alat/kalkulator/index.html" class="card-item">
-                        <div class="icon-wrapper"><span class="icon-calculator"></span></div>
-                        <h3>Kalkulator</h3>
-                        <p>multi</p>
-                    </a>
-                    <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                        <div class="icon-wrapper"><span class="icon-speed"></span></div>
-                        <h3>Konversi</h3>
-                        <p>kecepatan</p>
-                    </a>
-                    <a href="alat/konversi/berat/index.html" class="card-item">
-                        <div class="icon-wrapper"><span class="icon-weight"></span></div>
-                        <h3>Konversi</h3>
-                        <p>berat</p>
-                    </a>
-                    <a href="alat/konversi/jarak/index.html" class="card-item">
-                        <div class="icon-wrapper"><span class="icon-ruler"></span></div>
-                        <h3>Konversi</h3>
-                        <p>jarak</p>
-                    </a>
-                    <a href="alat/periodik/index.html" class="card-item">
-                        <div class="icon-wrapper"><span class="icon-pu"></span></div>
-                        <h3>periodik</h3>
-                        <p>unsur</p>
-                    </a>
-                </div>
-            </div>
+<!-- UPDATE versi info -->
+<details role="group">
+    <summary aria-expanded="false" role="button" tabindex="0">
+        Tentang ELSA
+        <span aria-hidden="true"></span>
+    </summary>
+    <div class="details-content" aria-hidden="true">
+        <p><strong>Versi Aplikasi:</strong> 2.5</p>
+        <p><strong>Versi Service Worker:</strong> <span id="sw-version">Loading...</span></p>
+        <p><strong>PDF Cache:</strong> <span id="pdf-cache-status">Loading...</span></p>
+        <p><strong>Pengembang:</strong> Shadow</p>
+        <p>
+            ELSA adalah aplikasi PWA untuk membantu Anda belajar. Aplikasi ini dirancang untuk bekerja secara offline dan memberikan pengalaman belajar yang cepat dan efisien.
+        </p>
+    </div>
+</details>
 
+            <details role="group">
+                <summary aria-expanded="false" role="button" tabindex="0">
+                    Bantuan
+                    <span aria-hidden="true"></span>
+                </summary>
+                <div class="details-content" aria-hidden="true">
+                    <p>
+                        Jika Anda memiliki pertanyaan atau butuh bantuan, silakan kunjungi halaman <a href="#" aria-label="Bantuan dan FAQ">Bantuan & FAQ</a> kami.
+                    </p>
+                </div>
+            </details>
         </main>
-        
-        <!-- MOBILE NAVBAR -->
-        <nav class="mobile-navbar">
-            <a href="#" class="nav-item active" data-target="home-section">
-                <span class="nav-icon">🏠</span>
-                <span>Home</span>
-            </a>
-            <a href="#" class="nav-item" data-target="buku-section">
-                <span class="nav-icon">📚</span>
-                <span>Buku</span>
-            </a>
-            <a href="#" class="nav-item" data-target="alat-section">
-                <span class="nav-icon">🧰</span>
-                <span>Alat</span>
-            </a>
-        </nav>
-        
-        <button id="installButton" class="btn">Install Aplikasi</button>
-        
-        <div id="installModal" class="modal">
-            <div class="modal-content">
-                <h2>Install Aplikasi</h2>
-                <p>Install aplikasi PDF Reader untuk pengalaman yang lebih baik dan akses offline.</p>
-                <div class="modal-buttons">
-                    <button class="modal-btn primary" onclick="installApp()">Install</button>
-                    <button class="modal-btn secondary" onclick="sembunyikanModal()">Nanti</button>
-                </div>
-            </div>
-        </div>
-        
+        <footer>
+            <p>© 2025 ELSA Shadow. All Rights Reversed.</p>
+        </footer>
     </div>
     
-    <div id="pdf-viewer">
-        <header id="top-bar">
-            <button class="back-btn" onclick="sembunyikanPDFViewer()">←</button>
-            <span id="file-name-display"></span>
-        </header>
-
-        <div id="viewer-container">
-            <div class="loading" id="loading">Memuat PDF...</div>
-            <canvas id="pdf-render"></canvas>
-        </div>
-
-        <div id="controls">
-            <div class="control-group">
-                <button id="prev" class="nav-btn">
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                </button>
-            </div>
-            <div class="control-group">
-                <span id="page-info">Halaman 1</span>
-                <input type="number" id="page-input" min="1">
-            </div>
-            <div class="control-group">
-                <button id="next" class="nav-btn">
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <script src="pdfjs/pdf.js"></script>
     <script>
-        // NAVIGATION FUNCTIONALITY
-        document.addEventListener('DOMContentLoaded', function() {
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            navItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Remove active class from all nav items
-                    navItems.forEach(nav => nav.classList.remove('active'));
-                    
-                    // Add active class to clicked nav item
-                    this.classList.add('active');
-                    
-                    // Hide all content sections
-                    const contentSections = document.querySelectorAll('.content-section');
-                    contentSections.forEach(section => section.classList.remove('active'));
-                    
-                    // Show the target content section
-                    const targetId = this.getAttribute('data-target');
-                    document.getElementById(targetId).classList.add('active');
-                });
-            });
-        });
-
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs/pdf.worker.js';
-
-        let pdfDoc = null,
-            pageNum = 1,
-            pageIsRendering = false,
-            pageNumIsPending = null;
-
-        const mainContent = document.getElementById('main-content');
-        const pdfViewer = document.getElementById('pdf-viewer');
-        const canvas = document.getElementById("pdf-render");
-        const ctx = canvas.getContext("2d");
-        const pageInfo = document.getElementById("page-info");
-        const pageInput = document.getElementById("page-input");
-        const viewerContainer = document.getElementById("viewer-container");
-        const loading = document.getElementById("loading");
-        const fileNameDisplay = document.getElementById("file-name-display");
-        
-        function tampilkanPDFViewer() {
-            mainContent.style.display = 'none';
-            pdfViewer.style.display = 'flex';
-        }
-
-        function sembunyikanPDFViewer() {
-            mainContent.style.display = 'block';
-            pdfViewer.style.display = 'none';
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            pdfDoc = null;
-            pageNum = 1;
-        }
-
-        const updatePageInfo = num => {
-            if (!pdfDoc) return;
-            pageInfo.textContent = `Halaman ${num} dari ${pdfDoc.numPages}`;
-            document.getElementById("prev").classList.toggle('disabled', pageNum <= 1);
-            document.getElementById("next").classList.toggle('disabled', pageNum >= pdfDoc.numPages);
+        // Internationalization ready
+        const translations = {
+            id: {
+                loading: "Memuat...",
+                clearCache: "Hapus Cache",
+                clearing: "Menghapus...",
+                confirmClear: "Yakin ingin menghapus semua cache?",
+                cacheCleared: "Semua cache berhasil dihapus.",
+                cacheError: "Gagal menghapus cache. Silakan coba lagi.",
+                emptyCache: "(Kosong)",
+                andMore: "dan {count} file lainnya"
+            },
+            en: {
+                loading: "Loading...",
+                clearCache: "Clear Cache",
+                clearing: "Clearing...",
+                confirmClear: "Are you sure you want to clear all cache?",
+                cacheCleared: "All cache cleared successfully.",
+                cacheError: "Failed to clear cache. Please try again.",
+                emptyCache: "(Empty)",
+                andMore: "and {count} more files"
+            }
         };
 
-        const renderPage = num => {
-            pageIsRendering = true;
-            loading.style.display = 'block';
-            canvas.style.display = 'none';
-            
-            pdfDoc.getPage(num).then(page => {
-                let viewport = page.getViewport({ scale: 1.0 });
-                let scale = (viewerContainer.clientWidth - 40) / viewport.width;
-                scale = Math.max(0.5, Math.min(scale, 3.0));
-                
-                const scaledViewport = page.getViewport({ scale });
-                const outputScale = window.devicePixelRatio || 1;
-                
-                canvas.width = Math.floor(scaledViewport.width * outputScale);
-                canvas.height = Math.floor(scaledViewport.height * outputScale);
-                canvas.style.width = Math.floor(scaledViewport.width) + "px";
-                canvas.style.height = Math.floor(scaledViewport.height) + "px";
-                
-                const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
-                
-                const renderCtx = {
-                    canvasContext: ctx,
-                    viewport: scaledViewport,
-                    transform: transform
+        // Get current language from html tag or default to Indonesian
+        const currentLang = document.documentElement.getAttribute('lang') || 'id';
+        const t = translations[currentLang];
+
+        // Debounce function untuk menghindari multiple clicks
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
                 };
-                
-                page.render(renderCtx).promise.then(() => {
-                    pageIsRendering = false;
-                    loading.style.display = 'none';
-                    canvas.style.display = 'block';
-                    
-                    if (pageNumIsPending !== null) {
-                        renderPage(pageNumIsPending);
-                        pageNumIsPending = null;
-                    }
-                });
-                
-                updatePageInfo(num);
-            }).catch(err => {
-                console.error("Error rendering page:", err);
-                loading.textContent = "Error memuat halaman: " + err.message;
-            });
-        };
-
-        const queueRenderPage = num => {
-            if (pageIsRendering) {
-                pageNumIsPending = num;
-            } else {
-                renderPage(num);
-            }
-        };
-
-        function loadPDF(source) {
-            loading.textContent = "Memuat PDF...";
-            tampilkanPDFViewer();
-            
-            let loadingTask;
-            if (typeof source === 'string') {
-                loadingTask = pdfjsLib.getDocument({ url: source });
-            } else {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(event.target.result) });
-                    loadingTask.promise.then(pdf => {
-                        pdfDoc = pdf;
-                        renderPage(pageNum);
-                    }).catch(err => {
-                        console.error("Error loading PDF from file:", err);
-                        loading.textContent = "Gagal memuat PDF: " + err.message;
-                    });
-                };
-                reader.readAsArrayBuffer(source);
-                return;
-            }
-
-            loadingTask.promise.then(pdf => {
-                pdfDoc = pdf;
-                renderPage(pageNum);
-            }).catch(err => {
-                console.error("Error loading PDF from URL:", err);
-                loading.textContent = "Gagal memuat PDF: " + err.message;
-            });
-        }
-        
-        document.getElementById("prev").addEventListener("click", () => {
-            if (pageNum > 1 && !pageIsRendering) {
-                pageNum--;
-                queueRenderPage(pageNum);
-            }
-        });
-        
-        document.getElementById("next").addEventListener("click", () => {
-            if (pageNum < pdfDoc.numPages && !pageIsRendering) {
-                pageNum++;
-                queueRenderPage(pageNum);
-            }
-        });
-
-        pageInfo.addEventListener("click", () => {
-            pageInfo.style.display = "none";
-            pageInput.style.display = "inline-block";
-            pageInput.value = pageNum;
-            pageInput.focus();
-        });
-
-        pageInput.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                let val = parseInt(pageInput.value, 10);
-                if (isNaN(val) || val < 1 || val > pdfDoc.numPages) {
-                    alert(`Masukkan halaman 1-${pdfDoc.numPages}`);
-                } else {
-                    pageNum = val;
-                    queueRenderPage(pageNum);
-                }
-                pageInput.style.display = "none";
-                pageInfo.style.display = "inline-block";
-            }
-        });
-        
-        function bukaPDF(path) {
-            fileNameDisplay.textContent = path.split("/").pop().replace(/%20/g, " ");
-            loadPDF(path);
-        }
-        
-        function bacaPDFUpload() {
-            const fileInput = document.getElementById('pdfUpload');
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                fileNameDisplay.textContent = file.name;
-                loadPDF(file);
-            } else {
-                alert('Silakan pilih file PDF terlebih dahulu.');
-            }
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
 
-        document.getElementById('pdfUpload').addEventListener('change', function() {
-            const fileNameSpan = document.getElementById('selectedFileName');
-            if (this.files.length > 0) {
-                fileNameSpan.textContent = this.files[0].name;
-            } else {
-                fileNameSpan.textContent = 'Tidak ada file yang dipilih';
+        // Safe query selector dengan error handling
+        function safeQuerySelector(selector) {
+            const el = document.querySelector(selector);
+            if (!el) {
+                console.warn(`Element ${selector} not found`);
+                return null;
             }
-        });
+            return el;
+        }
 
-        function tampilkanModal() { document.getElementById('installModal').style.display = 'flex'; }
-        function sembunyikanModal() { document.getElementById('installModal').style.display = 'none'; }
-        
-        let deferredPrompt;
-        const installButton = document.getElementById('installButton');
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installButton.style.display = 'block';
-            installButton.addEventListener('click', () => {
-                installButton.style.display = 'none';
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') { console.log('Pengguna menerima instalasi'); }
-                    deferredPrompt = null;
-                });
-            });
-            setTimeout(tampilkanModal, 2000);
-        });
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            const greetingElement = document.getElementById('greetingName');
-            const userName = localStorage.getItem('userName');
-
-            if (userName && userName.trim() !== '' && userName !== 'Nama Pengguna') {
-                greetingElement.textContent = 'Halo, ' + userName + '!';
-            } else {
-                greetingElement.textContent = 'Halo!';
-            }
-        });
+        // Load cache list dengan pagination dan error handling
+// GANTI fungsi loadCacheList() dengan ini:
+async function loadCacheList() {
+    const cacheListEl = safeQuerySelector('#cache-list');
+    if (!cacheListEl) return;
     
-        function installApp() {
-            if (deferredPrompt) {
-                installButton.style.display = 'none';
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('Pengguna menerima instalasi');
-                    }
-                    deferredPrompt = null;
-                });
-            }
-            sembunyikanModal();
+    cacheListEl.innerHTML = `<li>${t.loading}</li>`;
+
+    try {
+        const cacheNames = await caches.keys();
+        if (cacheNames.length === 0) {
+            cacheListEl.innerHTML = `<li>${t.emptyCache}</li>`;
+            return;
         }
 
-        // 🔄 SIMPLE & ROBUST SERVICE WORKER REGISTRATION
-        function initializeServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                console.log('🚀 Initializing Service Worker...');
-                
-                // Simple registration tanpa unregister kompleks
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('✅ Service Worker registered successfully');
-                        
-                        // Check if controlling the page
-                        if (navigator.serviceWorker.controller) {
-                            console.log('🎯 Service Worker is controlling the page');
-                        }
-                        
-                        // Check for updates
-                        registration.update();
-                        
-                        // Listen for updates
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            console.log('🔄 New Service Worker found, state:', newWorker.state);
-                            
-                            newWorker.addEventListener('statechange', () => {
-                                console.log('🔄 Service Worker state changed to:', newWorker.state);
-                                
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('✅ New content available!');
-                                    showUpdateNotification();
-                                }
-                            });
-                        });
-                        
-                        // Periodic update check
-                        setInterval(() => {
-                            registration.update();
-                        }, 60 * 60 * 1000); // 1 jam
-                        
-                    })
-                    .catch(error => {
-                        console.error('❌ Service Worker registration failed:', error);
-                        console.log('💡 Pastikan file sw.js ada di folder root');
-                    });
-                
-                // Listen for controller change
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    console.log('🔄 Controller changed!');
-                    showUpdateNotification();
-                });
-                
-            } else {
-                console.log('❌ Service Worker not supported');
+        cacheListEl.innerHTML = "";
+        
+        // Urutkan cache berdasarkan tipe
+        const currentCaches = cacheNames.filter(name => 
+            name.includes('pdf-reader-pwa') || name.includes('pdf-cache')
+        );
+        
+        const otherCaches = cacheNames.filter(name => 
+            !name.includes('pdf-reader-pwa') && !name.includes('pdf-cache')
+        );
+
+        // Tampilkan cache aplikasi
+        if (currentCaches.length > 0) {
+            const appHeader = document.createElement('li');
+            appHeader.innerHTML = `<h4 style="margin: 15px 0 10px 0; color: #007bff;">Cache Aplikasi</h4>`;
+            cacheListEl.appendChild(appHeader);
+            
+            for (const name of currentCaches) {
+                await displayCacheItem(name, cacheListEl);
             }
         }
 
-        // 🎯 Tampilkan notifikasi update
-// 🎯 Tampilkan notifikasi update — versi yang mengirim SKIP_WAITING ke waiting worker
-function showUpdateNotification() {
-    const notification = document.getElementById('update-notification');
-    if (!notification) return;
-
-    notification.innerHTML = '🔄 Update tersedia! <button id="updateRefreshBtn">Perbarui</button>';
-    notification.style.display = 'block';
-
-    const btn = document.getElementById('updateRefreshBtn');
-    btn.addEventListener('click', async () => {
-        // Jika ada serviceWorker waiting, kirim pesan SKIP_WAITING
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-            const registration = await navigator.serviceWorker.getRegistration();
-            if (registration && registration.waiting) {
-                // Kirim pesan ke waiting worker supaya segera aktif
-                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-
-                // Setelah skipWaiting dipanggil, browser akan trigger controllerchange
-                // dan event listener 'controllerchange' di initializeServiceWorker akan jalan.
-                // Kita bisa tunjukkan loading singkat atau menunggu controllerchange sebelum reload.
-                return;
+        // Tampilkan cache lain (old versions, dll)
+        if (otherCaches.length > 0) {
+            const otherHeader = document.createElement('li');
+            otherHeader.innerHTML = `<h4 style="margin: 15px 0 10px 0; color: #dc3545;">Cache Lama</h4>`;
+            cacheListEl.appendChild(otherHeader);
+            
+            for (const name of otherCaches.slice(0, 5)) { // Limit display
+                await displayCacheItem(name, cacheListEl);
+            }
+            
+            if (otherCaches.length > 5) {
+                const moreItem = document.createElement('li');
+                moreItem.innerHTML = `<span class="cache-more">${t.andMore.replace('{count}', otherCaches.length - 5)} cache lama</span>`;
+                cacheListEl.appendChild(moreItem);
             }
         }
-        // Fallback: reload kalau tidak ada waiting worker
-        window.location.reload();
-    });
-
-    // auto-hide setelah 10s
-    setTimeout(() => {
-        notification.style.display = 'none';
-    }, 10000);
+        
+    } catch (err) {
+        console.error('Cache loading error:', err);
+        cacheListEl.innerHTML = `<li>Error memuat daftar cache</li>`;
+    }
 }
 
-        // Start initialization
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeServiceWorker);
+// Fungsi helper untuk menampilkan cache item
+async function displayCacheItem(cacheName, parentEl) {
+    try {
+        const cache = await caches.open(cacheName);
+        const requests = await cache.keys();
+        
+        const li = document.createElement('li');
+        li.className = 'cache-item';
+        
+        // Tentukan jenis cache
+        let cacheType = 'Aplikasi';
+        let cacheColor = '#007bff';
+        
+        if (cacheName.includes('pdf-cache')) {
+            cacheType = 'PDF Cache';
+            cacheColor = '#28a745';
+        } else if (cacheName.includes('pdf-reader-pwa')) {
+            cacheType = 'App Cache';
+            cacheColor = '#007bff';
         } else {
-            initializeServiceWorker();
+            cacheType = 'Cache Lama';
+            cacheColor = '#dc3545';
         }
-
-// Pastikan navbar tetap visible saat scroll
-let lastScrollTop = 0;
-const navbar = document.querySelector('.mobile-navbar');
-
-window.addEventListener('scroll', function() {
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
-    if (scrollTop > lastScrollTop) {
-        // Scroll down - navbar tetap visible
-        navbar.style.transform = 'translateY(0)';
-    } else {
-        // Scroll up - navbar tetap visible  
-        navbar.style.transform = 'translateY(0)';
-    }
-    lastScrollTop = scrollTop;
-}, { passive: true });
-
-// PERBAIKAN: Pastikan navbar selalu visible dan konten tidak tertutup
-document.addEventListener('DOMContentLoaded', function() {
-    const navbar = document.querySelector('.mobile-navbar');
-    const sections = document.querySelectorAll('.content-section');
-    
-    // Force navbar tetap di bottom
-    function ensureNavbarPosition() {
-        navbar.style.bottom = '0';
-        navbar.style.transform = 'translateY(0)';
-    }
-    
-    // Check dan adjust konten agar tidak tertutup
-    function checkContentPadding() {
-        sections.forEach(section => {
-            const rect = section.getBoundingClientRect();
-            const navbarHeight = navbar.offsetHeight;
+        
+        li.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong style="color: ${cacheColor}">${cacheName}</strong>
+                    <span style="font-size: 0.8rem; color: #666; margin-left: 10px;">${cacheType}</span>
+                </div>
+                <span style="background: ${cacheColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">
+                    ${requests.length} file
+                </span>
+            </div>
+        `;
+        
+        // Tampilkan detail untuk cache aplikasi
+        if (requests.length > 0 && (cacheName.includes('pdf-reader-pwa') || cacheName.includes('pdf-cache'))) {
+            const subList = document.createElement('ul');
+            subList.style.marginLeft = "20px";
+            subList.style.listStyleType = "none";
+            subList.style.marginTop = "8px";
             
-            // Jika konten terlalu dekat dengan navbar, tambah padding
-            if (window.innerHeight - rect.bottom < navbarHeight + 10) {
-                section.style.paddingBottom = (navbarHeight + 20) + 'px';
+            requests.slice(0, 3).forEach(req => {
+                const item = document.createElement('li');
+                const url = new URL(req.url);
+                const fileName = url.pathname.split('/').pop() || url.pathname;
+                item.innerHTML = `<span class="cache-url" title="${req.url}">${fileName}</span>`;
+                subList.appendChild(item);
+            });
+            
+            if (requests.length > 3) {
+                const moreItem = document.createElement('li');
+                moreItem.innerHTML = `<span class="cache-more">${t.andMore.replace('{count}', requests.length - 3)}</span>`;
+                subList.appendChild(moreItem);
             }
-        });
-    }
-    
-    // Panggil fungsi
-    ensureNavbarPosition();
-    checkContentPadding();
-    
-    // Juga panggil saat resize dan scroll
-    window.addEventListener('resize', checkContentPadding);
-    window.addEventListener('scroll', checkContentPadding);
-});
-
-// PERBAIKAN: Handle resize untuk menyesuaikan ukuran card
-function adjustCardSizes() {
-    const cardItems = document.querySelectorAll('.card-row .card-item');
-    const containerWidth = document.querySelector('.card-row').offsetWidth;
-    
-    cardItems.forEach(card => {
-        // Reset ke ukuran default
-        card.style.minWidth = '';
-        card.style.maxWidth = '';
-    });
-    
-    // Jika masih overflow, sesuaikan ukuran
-    const totalWidth = Array.from(cardItems).reduce((total, card) => {
-        return total + card.offsetWidth + 15; // 15 adalah gap
-    }, 0);
-    
-    if (totalWidth > containerWidth) {
-        // Sesuaikan ukuran card secara proporsional
-        const scaleFactor = containerWidth / totalWidth * 0.9; // 90% dari container
-        cardItems.forEach(card => {
-            const currentWidth = card.offsetWidth;
-            const newWidth = Math.max(100, currentWidth * scaleFactor); // Minimal 100px
-            card.style.minWidth = newWidth + 'px';
-            card.style.maxWidth = newWidth + 'px';
-        });
+            
+            li.appendChild(subList);
+        }
+        
+        parentEl.appendChild(li);
+    } catch (error) {
+        console.error(`Error loading cache ${cacheName}:`, error);
     }
 }
 
-// Panggil saat load dan resize
-document.addEventListener('DOMContentLoaded', function() {
-    adjustCardSizes();
-    window.addEventListener('resize', adjustCardSizes);
+// Tambahkan fungsi untuk monitor SW status
+async function updateSWStatus() {
+    try {
+        // Cek versi SW
+        if ('serviceWorker' in navigator) {
+            const registration = await navigator.serviceWorker.ready;
+            document.getElementById('sw-version').textContent = 'Aktif';
+        } else {
+            document.getElementById('sw-version').textContent = 'Tidak Aktif';
+        }
+        
+        // Cek PDF cache status
+        const pdfCache = await caches.open('pdf-cache-v2.4').catch(() => null);
+        if (pdfCache) {
+            const pdfKeys = await pdfCache.keys();
+            document.getElementById('pdf-cache-status').textContent = 
+                `${pdfKeys.length} PDF tersimpan`;
+        } else {
+            document.getElementById('pdf-cache-status').textContent = 'Tidak Ada';
+        }
+    } catch (error) {
+        console.error('Error checking SW status:', error);
+        document.getElementById('sw-version').textContent = 'Error';
+        document.getElementById('pdf-cache-status').textContent = 'Error';
+    }
+}
+
+// Panggil di DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    loadCacheList();
+    updateSWStatus(); // ← Tambahkan ini
     
-    // Juga panggil saat berpindah tab
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-        item.addEventListener('click', function() {
-            setTimeout(adjustCardSizes, 100); // Beri delay sedikit
-        });
-    });
+    // ... kode lainnya
 });
 
+        // Tombol hapus cache dengan konfirmasi dan loading state
+        const clearCacheBtn = safeQuerySelector('#clearCacheBtn');
+        if (clearCacheBtn) {
+            const debouncedClearCache = debounce(async () => {
+                if (!confirm(t.confirmClear)) return;
+                
+                const originalText = clearCacheBtn.textContent;
+                clearCacheBtn.textContent = t.clearing;
+                clearCacheBtn.disabled = true;
+                document.body.classList.add('loading');
+                
+                try {
+                    const cacheNames = await caches.keys();
+                    const deletePromises = cacheNames.map(name => caches.delete(name));
+                    await Promise.all(deletePromises);
+                    
+                    alert(t.cacheCleared);
+                    await loadCacheList();
+                } catch (error) {
+                    console.error('Error clearing cache:', error);
+                    alert(t.cacheError);
+                } finally {
+                    clearCacheBtn.textContent = originalText;
+                    clearCacheBtn.disabled = false;
+                    document.body.classList.remove('loading');
+                }
+            }, 300);
+            
+            clearCacheBtn.addEventListener('click', debouncedClearCache);
+        }
+
+        // Auto-collapse other details when one opens
+        document.querySelectorAll('details').forEach(detail => {
+            detail.addEventListener('toggle', function() {
+                if (this.open) {
+                    const isExpanded = this.open ? 'true' : 'false';
+                    this.querySelector('summary').setAttribute('aria-expanded', isExpanded);
+                    this.querySelector('.details-content').setAttribute('aria-hidden', !isExpanded);
+                    
+                    document.querySelectorAll('details').forEach(other => {
+                        if (other !== this) {
+                            other.open = false;
+                            other.querySelector('summary').setAttribute('aria-expanded', 'false');
+                            other.querySelector('.details-content').setAttribute('aria-hidden', 'true');
+                        }
+                    });
+                }
+            });
+        });
+
+        // Global error handling
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e);
+            // Bisa ditambahkan reporting ke analytics service
+        });
+
+        // Load cache list saat halaman dibuka
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCacheList();
+            
+            // Inisialisasi atribut a11y
+            document.querySelectorAll('details').forEach(detail => {
+                const isOpen = detail.open;
+                detail.querySelector('summary').setAttribute('aria-expanded', isOpen);
+                detail.querySelector('.details-content').setAttribute('aria-hidden', !isOpen);
+            });
+        });
     </script>
 </body>
 </html>
