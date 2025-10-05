@@ -3,7 +3,7 @@
    Sinkron dengan manifest + update flow (SKIP_WAITING)
    ============================ */
 
-const APP_VERSION = 'v3.0';
+const APP_VERSION = 'v3.1';
 const CACHE_NAME = `pdf-reader-pwa-${APP_VERSION}`;
 const STATIC_CACHE = `static-${APP_VERSION}`;
 const PDF_CACHE = `pdf-cache-${APP_VERSION}`;
