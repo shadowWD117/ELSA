@@ -10,17 +10,29 @@
     <style>
         /* RESET & BASE */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-            line-height: 1.6;
-            color: #e0e0e0;
-            background-color: #1a1a1a;
-            padding: 20px;
-            max-width: 100%;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
+/* GANTI padding body yang sebelumnya */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    line-height: 1.6;
+    color: #e0e0e0;
+    background-color: #1a1a1a;
+    padding: 20px;
+    max-width: 100%;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    /* HAPUS padding-bottom dari sini */
+}
+
+/* BUAT wrapper untuk konten utama */
+#main-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: flex-start;
+    /* TAMBAHKAN padding bottom di sini */
+    padding-bottom: 80px; /* Pindahkan ke sini */
+}
 
         /* HEADER */
         .app-header {
@@ -64,6 +76,68 @@
             text-decoration: none;
         }
 
+        /* NAVBAR */
+/* PERBAIKI mobile-navbar */
+.mobile-navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #2f2f2f;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    z-index: 1000;
+    /* TAMBAHKAN ini untuk stability */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* BATASI overflow horizontal di bagian alat */
+#alat-section {
+    overflow-x: hidden; /* Mencegah horizontal scroll */
+    width: 100%;
+}
+
+.alat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+    padding: 0 10px;
+    /* PASTIKAN tidak ada overflow */
+    box-sizing: border-box;
+    max-width: 100%;
+}
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #b0b0b0;
+            text-decoration: none;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .nav-item.active {
+            color: #007bff;
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+        .nav-icon {
+            font-size: 1.2rem;
+            margin-bottom: 3px;
+        }
+
+        /* CONTENT SECTIONS */
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+
         /* NEW ADDITIONS: MOTO, GREETING, AND SLIDER */
         .app-moto {
             text-align: center;
@@ -81,7 +155,6 @@
             margin-bottom: 15px;
             animation: hal 5s ease-in-out infinite;
         }
-        
         
         @keyframes hal {
             0%{
@@ -102,18 +175,26 @@
             margin-bottom: 25px;
         }
 
-        .slider-container {
-            overflow: hidden;
-            position: relative;
-            white-space: nowrap;
-        }
+.slider-container {
+    overflow: hidden;
+    position: relative;
+    white-space: nowrap;
+    /* Tambahkan margin konsisten */
+    margin: 0 10px;
+}
+
+/* Untuk slider di bagian alat khususnya */
+#alat-section .slider-container {
+    margin: 0 10px;
+}
 
         .slider-wrapper {
-            display: inline-block;
+            display: inline-flex;
             animation: slide-right 20s linear infinite;
+            gap: 5px;
         }
 
-        .slider-wrapper:hover {
+        .slider-wrapper:hover:active {
             animation-play-state: paused;
         }
 
@@ -125,7 +206,7 @@
         /* Existing card styles, adjusted for slider */
         .card-row-slider {
             display: inline-flex;
-            gap: 15px;
+            gap: 5px;
         }
         
         .card-item {
@@ -144,9 +225,8 @@
             align-items: center;
             justify-content: center;
         }
-        /* End of new additions */
 
-        /* Existing Styles... (Sama seperti sebelumnya, kecuali section-title) */
+        /* Existing Styles... */
         .section-title {
             color: #e0e0e0;
             font-size: 1.3rem;
@@ -161,18 +241,103 @@
             gap: 15px;
             margin-bottom: 25px;
         }
-        .card-row {
-            display: flex;
-            overflow-x: auto;
-            gap: 15px;
-            padding-bottom: 10px;
-            margin-bottom: 25px;
-            -ms-overflow-style: none; /* For IE and Edge */
-            scrollbar-width: none; /* For Firefox */
-        }
-        .card-row::-webkit-scrollbar {
-            display: none; /* For Chrome, Safari, and Opera */
-        }
+/* PERBAIKAN UNTUK CARD-ROW (DAFTAR BUKU) */
+.card-row {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    justify-content: flex-start;
+    padding-left: 10px;
+    padding-right: 10px;
+    /* PERBAIKAN: Batasi lebar maksimal dan gunakan box-sizing */
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* PERBAIKAN UNTUK CARD ITEM DI CARD-ROW */
+.card-row .card-item {
+    background: #2f2f2f;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    /* PERBAIKAN: Atur ukuran yang tepat untuk card-row */
+    min-width: 140px; /* Diperkecil dari 160px */
+    max-width: 140px; /* Tambahkan max-width */
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Pastikan box-sizing konsisten */
+    box-sizing: border-box;
+}
+
+/* PERBAIKAN UNTUK CARD ITEM DI ALAT-GRID (agar konsisten) */
+.alat-grid .card-item {
+    min-width: auto; /* Reset untuk grid */
+    max-width: none; /* Reset untuk grid */
+}
+
+/* PERBAIKAN TAMBAHAN: Atur ukuran font agar proporsional */
+.card-row .card-item h3 {
+    margin-bottom: 5px;
+    color: #007bff;
+    font-size: 1rem; /* Sedikit diperkecil */
+    line-height: 1.2;
+}
+
+.card-row .card-item p {
+    color: #b0b0b0;
+    font-size: 0.8rem; /* Sedikit diperkecil */
+    line-height: 1.2;
+}
+
+.card-row .card-item .icon-wrapper {
+    font-size: 2rem; /* Diperkecil dari 2.5rem */
+    color: #007bff;
+    margin-bottom: 8px;
+}
+
+.card-row::-webkit-scrollbar {
+    display: none;
+}
+
+/* Untuk konten yang sedikit, agar tetap rata tengah */
+.card-row:after {
+    content: '';
+    min-width: 10px;
+}
+
+/* PERBAIKAN UNTUK LAYAR SANGAT KECIL */
+@media (max-width: 360px) {
+    .card-row .card-item {
+        min-width: 120px; /* Lebih kecil untuk layar sangat kecil */
+        max-width: 120px;
+        padding: 12px;
+    }
+    
+    .card-row .card-item h3 {
+        font-size: 0.9rem;
+    }
+    
+    .card-row .card-item p {
+        font-size: 0.75rem;
+    }
+    
+    .card-row .card-item .icon-wrapper {
+        font-size: 1.8rem;
+    }
+}
+
+
         .card-item:active {
             transform: scale(0.98);
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -268,17 +433,17 @@
         .btn:active {
             background: #0056b3;
         }
-        #installButton {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: auto;
-            padding: 10px 15px;
-            display: none;
-            z-index: 100;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-            background-color: #28a745;
-        }
+#installButton {
+    position: fixed;
+    bottom: 90px; /* Diubah dari 70px ke 90px untuk menyesuaikan navbar baru */
+    right: 20px;
+    width: auto;
+    padding: 10px 15px;
+    display: none;
+    z-index: 100;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    background-color: #28a745;
+}
         #installButton:active {
             background-color: #218838;
         }
@@ -332,18 +497,39 @@
         .modal-btn.secondary:active {
             background: #6a6a6a;
         }
-        footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
-            color: #777;
-            font-size: 0.8rem;
-        }
-        @media (min-width: 768px) {
-            body { padding: 30px; max-width: 800px; margin: 0 auto; }
-            .card-grid { grid-template-columns: repeat(3, 1fr); }
-        }
+
+        /* ALAT GRID */
+.alat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+    /* Tambahkan padding untuk konsistensi */
+    padding: 0 10px;
+}
+
+@media (min-width: 768px) {
+    body { 
+        padding: 30px; 
+        max-width: 800px; 
+        margin: 0 auto; 
+        padding-bottom: 80px; /* Konsisten di media query juga */
+    }
+    .card-grid { 
+        grid-template-columns: repeat(3, 1fr); 
+    }
+    .alat-grid { 
+        grid-template-columns: repeat(3, 1fr); 
+        padding: 0; /* Di desktop, padding bisa dihilangkan */
+    }
+    
+    /* Perbaikan card-row di desktop */
+    .card-row {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
         #main-content {
             display: flex;
             flex-direction: column;
@@ -504,6 +690,41 @@
             background: #f0f0f0;
         }
         
+/* PERBAIKAN KHUSUS untuk bagian Buku */
+#buku-section {
+    padding-bottom: 20px; /* Extra space untuk buku */
+}
+
+#buku-section .card-row {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    justify-content: flex-start;
+    padding-left: 10px;
+    padding-right: 10px;
+    /* TAMBAHKAN ini untuk mencegah overflow issues */
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* PERBAIKAN KHUSUS untuk bagian Alat */
+#alat-section {
+    padding-bottom: 20px; /* Extra space untuk alat */
+}
+
+#alat-section .slider-container {
+    overflow: hidden;
+    position: relative;
+    white-space: nowrap;
+    margin: 0 10px;
+    /* TAMBAHKAN ini untuk stability */
+    transform: translateZ(0);
+}
+        
     </style>
 </head>
 <body>
@@ -525,246 +746,297 @@
         </header>
         
         <main>
-            <p class="app-moto">"Aplikasi belajar yang membawamu selangkah lebih dekat ke masa depan"</p>
+            <!-- HOME SECTION -->
+            <div id="home-section" class="content-section active">
+                <p class="app-moto">"Aplikasi belajar yang membawamu selangkah lebih dekat ke masa depan"</p>
 
-<h2 id="greetingName">Halo!</h2>
+                <h2 id="greetingName">Halo!</h2>
 
-            <h2 class="section-title">Alat Praktis</h2>
-            <div class="slider-section">
-                <div class="slider-container">
-                    <div class="slider-wrapper">
-                        <div class="card-row-slider">
-                            <a href="alat/kalkulator/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-calculator"></span></div>
-                                <h3>Kalkulator</h3>
-                                <p>multi</p>
-                            </a>
-                            <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-speed"></span></div>
-                                <h3>Konversi</h3>
-                                <p>kecepatan</p>
-                            </a>
-                            <a href="alat/konversi/berat/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-weight"></span></div>
-                                <h3>Konversi</h3>
-                                <p>berat</p>
-                            </a>
-                            <a href="alat/konversi/jarak/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-ruler"></span></div>
-                                <h3>Konversi</h3>
-                                <p>jarak</p>
-                            </a>
-                            <a href="alat/periodik/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-pu"></span></div>
-                                <h3>periodik</h3>
-                                <p>unsur</p>
-                            </a>
-                        </div>
-                        <div class="card-row-slider">
-                            <a href="alat/kalkulator/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-calculator"></span></div>
-                                <h3>Kalkulator</h3>
-                                <p>multi</p>
-                            </a>
-                            <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-speed"></span></div>
-                                <h3>Konversi</h3>
-                                <p>kecepatan</p>
-                            </a>
-                            <a href="alat/konversi/berat/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-weight"></span></div>
-                                <h3>Konversi</h3>
-                                <p>berat</p>
-                            </a>
-                            <a href="alat/konversi/jarak/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-ruler"></span></div>
-                                <h3>Konversi</h3>
-                                <p>jarak</p>
-                            </a>
-                            <a href="alat/periodik/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-pu"></span></div>
-                                <h3>periodik</h3>
-                                <p>unsur</p>
-                            </a>
+                <h2 class="section-title">Alat Praktis</h2>
+                <div class="slider-section">
+                    <div class="slider-container">
+                        <div class="slider-wrapper">
+                            <div class="card-row-slider">
+                                <a href="alat/kalkulator/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
+                                    <h3>Kalkulator</h3>
+                                    <p>multi</p>
+                                </a>
+                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>kecepatan</p>
+                                </a>
+                                <a href="alat/konversi/berat/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>berat</p>
+                                </a>
+                                <a href="alat/konversi/jarak/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>jarak</p>
+                                </a>
+                                <a href="alat/periodik/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
+                                    <h3>periodik</h3>
+                                    <p>unsur</p>
+                                </a>
+                            </div>
+                            <div class="card-row-slider">
+                                <a href="alat/kalkulator/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
+                                    <h3>Kalkulator</h3>
+                                    <p>multi</p>
+                                </a>
+                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>kecepatan</p>
+                                </a>
+                                <a href="alat/konversi/berat/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>berat</p>
+                                </a>
+                                <a href="alat/konversi/jarak/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>jarak</p>
+                                </a>
+                                <a href="alat/periodik/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
+                                    <h3>periodik</h3>
+                                    <p>unsur</p>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
+                
+                <hr />
+                
+                <section class="upload-section">
+                    <h2>PDF Reader</h2>
+                    <p>Baca PDF Anda Sendiri</p>
+                    <div class="custom-file-input">
+                        <label for="pdfUpload">Pilih File</label>
+                        <span id="selectedFileName">Tidak ada file yang dipilih</span>
+                        <input type="file" id="pdfUpload" accept=".pdf">
+                    </div>
+                    <button class="btn" onclick="bacaPDFUpload()">Buka PDF</button>
+                </section>
             </div>
             
-            <hr />
+            <!-- BUKU SECTION -->
+            <div id="buku-section" class="content-section">
+                <h2 class="section-title">Kelas 10</h2>
+                <section class="card-row">
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/buku1.pdf')">
+                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
+                        <h3>Fisika</h3>
+                        <p>Kelas 10</p>
+                    </div>
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
+                        <div class="icon-wrapper"><span class="icon-math"></span></div>
+                        <h3>Matematika</h3>
+                        <p>Kelas 10</p>
+                    </div>
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
+                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
+                        <h3>Biologi</h3>
+                        <p>Kelas 10</p>
+                    </div>
+                </section>
+                
+                <h2 class="section-title">Kelas 11 IPA</h2>
+                <section class="card-row">
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
+                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
+                        <h3>Fisika</h3>
+                        <p>Kelas 11</p>
+                    </div>
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
+                        <div class="icon-wrapper"><span class="icon-math"></span></div>
+                        <h3>Matematika</h3>
+                        <p>Kelas 11</p>
+                    </div>
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
+                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
+                        <h3>Biologi</h3>
+                        <p>Kelas 11</p>
+                    </div>
+                </section>
+                
+                <h2 class="section-title">Kelas 11 IPS</h2>
+                <section class="card-row">
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
+                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
+                        <h3>Fisika</h3>
+                        <p>Kelas 11</p>
+                    </div>
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
+                        <div class="icon-wrapper"><span class="icon-math"></span></div>
+                        <h3>Matematika</h3>
+                        <p>Kelas 11</p>
+                    </div>
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
+                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
+                        <h3>Biologi</h3>
+                        <p>Kelas 11</p>
+                    </div>
+                </section>
+                
+                <h2 class="section-title">Kelas 12 IPA</h2>
+                <section class="card-row">
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
+                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
+                        <h3>Fisika</h3>
+                        <p>Kelas 12</p>
+                    </div>
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
+                        <div class="icon-wrapper"><span class="icon-math"></span></div>
+                        <h3>Matematika</h3>
+                        <p>Kelas 12</p>
+                    </div>
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
+                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
+                        <h3>Biologi</h3>
+                        <p>Kelas 12</p>
+                    </div>
+                </section>
+                
+                <h2 class="section-title">Kelas 12 IPS</h2>
+                <section class="card-row">
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
+                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
+                        <h3>Fisika</h3>
+                        <p>Kelas 12</p>
+                    </div>
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
+                        <div class="icon-wrapper"><span class="icon-math"></span></div>
+                        <h3>Matematika</h3>
+                        <p>Kelas 12</p>
+                    </div>
+                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
+                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
+                        <h3>Biologi</h3>
+                        <p>Kelas 12</p>
+                    </div>
+                </section>
+            </div>
             
-            <h2 class="section-title">Kelas 10</h2>
-            <section class="card-row">
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/buku1.pdf')">
-                    <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                    <h3>Fisika</h3>
-                    <p>Kelas 10</p>
-                </div>
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                    <div class="icon-wrapper"><span class="icon-math"></span></div>
-                    <h3>Matematika</h3>
-                    <p>Kelas 10</p>
-                </div>
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                    <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                    <h3>Biologi</h3>
-                    <p>Kelas 10</p>
-                </div>
-            </section>
-            
-            <h2 class="section-title">Kelas 11 IPA</h2>
-            <section class="card-row">
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                    <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                    <h3>Fisika</h3>
-                    <p>Kelas 11</p>
-                </div>
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                    <div class="icon-wrapper"><span class="icon-math"></span></div>
-                    <h3>Matematika</h3>
-                    <p>Kelas 11</p>
-                </div>
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                    <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                    <h3>Biologi</h3>
-                    <p>Kelas 11</p>
-                </div>
-            </section>
-            
-            <h2 class="section-title">Kelas 11 IPS</h2>
-            <section class="card-row">
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                    <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                    <h3>Fisika</h3>
-                    <p>Kelas 11</p>
-                </div>
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                    <div class="icon-wrapper"><span class="icon-math"></span></div>
-                    <h3>Matematika</h3>
-                    <p>Kelas 11</p>
-                </div>
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                    <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                    <h3>Biologi</h3>
-                    <p>Kelas 11</p>
-                </div>
-            </section>
-            
-            <h2 class="section-title">Kelas 12 IPA</h2>
-            <section class="card-row">
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                    <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                    <h3>Fisika</h3>
-                    <p>Kelas 12</p>
-                </div>
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                    <div class="icon-wrapper"><span class="icon-math"></span></div>
-                    <h3>Matematika</h3>
-                    <p>Kelas 12</p>
-                </div>
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                    <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                    <h3>Biologi</h3>
-                    <p>Kelas 12</p>
-                </div>
-            </section>
-            
-            <h2 class="section-title">Kelas 12 IPS</h2>
-            <section class="card-row">
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                    <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                    <h3>Fisika</h3>
-                    <p>Kelas 12</p>
-                </div>
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                    <div class="icon-wrapper"><span class="icon-math"></span></div>
-                    <h3>Matematika</h3>
-                    <p>Kelas 12</p>
-                </div>
-                <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                    <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                    <h3>Biologi</h3>
-                    <p>Kelas 12</p>
-                </div>
-            </section>
-            
-            <hr />
-            
-            <h2 id="section-title">Alat Praktis</h2>
-            <div class="slider-section">
-                <div class="slider-container">
-                    <div class="slider-wrapper">
-                        <div class="card-row-slider">
-                            <a href="alat/kalkulator/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-calculator"></span></div>
-                                <h3>Kalkulator</h3>
-                                <p>multi</p>
-                            </a>
-                            <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-speed"></span></div>
-                                <h3>Konversi</h3>
-                                <p>kecepatan</p>
-                            </a>
-                            <a href="alat/konversi/berat/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-weight"></span></div>
-                                <h3>Konversi</h3>
-                                <p>berat</p>
-                            </a>
-                            <a href="alat/konversi/jarak/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-ruler"></span></div>
-                                <h3>Konversi</h3>
-                                <p>jarak</p>
-                            </a>
-                            <a href="alat/periodik/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-pu"></span></div>
-                                <h3>periodik</h3>
-                                <p>unsur</p>
-                            </a>
-                        </div>
-                        <div class="card-row-slider">
-                            <a href="alat/kalkulator/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-calculator"></span></div>
-                                <h3>Kalkulator</h3>
-                                <p>multi</p>
-                            </a>
-                            <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-speed"></span></div>
-                                <h3>Konversi</h3>
-                                <p>kecepatan</p>
-                            </a>
-                            <a href="alat/konversi/berat/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-weight"></span></div>
-                                <h3>Konversi</h3>
-                                <p>berat</p>
-                            </a>
-                            <a href="alat/konversi/jarak/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-ruler"></span></div>
-                                <h3>Konversi</h3>
-                                <p>jarak</p>
-                            </a>
-                            <a href="alat/periodik/index.html" class="card-item">
-                                <div class="icon-wrapper"><span class="icon-pu"></span></div>
-                                <h3>periodik</h3>
-                                <p>unsur</p>
-                            </a>
+            <!-- ALAT SECTION -->
+            <div id="alat-section" class="content-section">
+                <h2 class="section-title">Alat Praktis</h2>
+                <div class="slider-section">
+                    <div class="slider-container">
+                        <div class="slider-wrapper">
+                            <div class="card-row-slider">
+                                <a href="alat/kalkulator/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
+                                    <h3>Kalkulator</h3>
+                                    <p>multi</p>
+                                </a>
+                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>kecepatan</p>
+                                </a>
+                                <a href="alat/konversi/berat/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>berat</p>
+                                </a>
+                                <a href="alat/konversi/jarak/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>jarak</p>
+                                </a>
+                                <a href="alat/periodik/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
+                                    <h3>periodik</h3>
+                                    <p>unsur</p>
+                                </a>
+                            </div>
+                            <div class="card-row-slider">
+                                <a href="alat/kalkulator/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
+                                    <h3>Kalkulator</h3>
+                                    <p>multi</p>
+                                </a>
+                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>kecepatan</p>
+                                </a>
+                                <a href="alat/konversi/berat/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>berat</p>
+                                </a>
+                                <a href="alat/konversi/jarak/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
+                                    <h3>Konversi</h3>
+                                    <p>jarak</p>
+                                </a>
+                                <a href="alat/periodik/index.html" class="card-item">
+                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
+                                    <h3>periodik</h3>
+                                    <p>unsur</p>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <section class="upload-section">
-                <h2>PDF Reader</h2>
-                <p>Baca PDF Anda Sendiri</p>
-                <div class="custom-file-input">
-                    <label for="pdfUpload">Pilih File</label>
-                    <span id="selectedFileName">Tidak ada file yang dipilih</span>
-                    <input type="file" id="pdfUpload" accept=".pdf">
+                
+                <h2 class="section-title">Semua Alat</h2>
+                <div class="alat-grid">
+                    <a href="alat/kalkulator/index.html" class="card-item">
+                        <div class="icon-wrapper"><span class="icon-calculator"></span></div>
+                        <h3>Kalkulator</h3>
+                        <p>multi</p>
+                    </a>
+                    <a href="alat/konversi/kecepatan/index.html" class="card-item">
+                        <div class="icon-wrapper"><span class="icon-speed"></span></div>
+                        <h3>Konversi</h3>
+                        <p>kecepatan</p>
+                    </a>
+                    <a href="alat/konversi/berat/index.html" class="card-item">
+                        <div class="icon-wrapper"><span class="icon-weight"></span></div>
+                        <h3>Konversi</h3>
+                        <p>berat</p>
+                    </a>
+                    <a href="alat/konversi/jarak/index.html" class="card-item">
+                        <div class="icon-wrapper"><span class="icon-ruler"></span></div>
+                        <h3>Konversi</h3>
+                        <p>jarak</p>
+                    </a>
+                    <a href="alat/periodik/index.html" class="card-item">
+                        <div class="icon-wrapper"><span class="icon-pu"></span></div>
+                        <h3>periodik</h3>
+                        <p>unsur</p>
+                    </a>
                 </div>
-                <button class="btn" onclick="bacaPDFUpload()">Buka PDF</button>
-            </section>
-            
+            </div>
 
         </main>
+        
+        <!-- MOBILE NAVBAR -->
+        <nav class="mobile-navbar">
+            <a href="#" class="nav-item active" data-target="home-section">
+                <span class="nav-icon">🏠</span>
+                <span>Home</span>
+            </a>
+            <a href="#" class="nav-item" data-target="buku-section">
+                <span class="nav-icon">📚</span>
+                <span>Buku</span>
+            </a>
+            <a href="#" class="nav-item" data-target="alat-section">
+                <span class="nav-icon">🧰</span>
+                <span>Alat</span>
+            </a>
+        </nav>
         
         <button id="installButton" class="btn">Install Aplikasi</button>
         
@@ -779,9 +1051,6 @@
             </div>
         </div>
         
-        <footer>
-            <p>© 2025 ELSA Shadow. All Rights Reversed.</p>
-        </footer>
     </div>
     
     <div id="pdf-viewer">
@@ -815,6 +1084,31 @@
     
     <script src="pdfjs/pdf.js"></script>
     <script>
+        // NAVIGATION FUNCTIONALITY
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all nav items
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    
+                    // Add active class to clicked nav item
+                    this.classList.add('active');
+                    
+                    // Hide all content sections
+                    const contentSections = document.querySelectorAll('.content-section');
+                    contentSections.forEach(section => section.classList.remove('active'));
+                    
+                    // Show the target content section
+                    const targetId = this.getAttribute('data-target');
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+        });
+
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs/pdf.worker.js';
 
         let pdfDoc = null,
@@ -1006,123 +1300,230 @@
             e.preventDefault();
             deferredPrompt = e;
             installButton.style.display = 'block';
-            // Hapus atau comment event listener ini karena sudah ada fungsi installApp()
             installButton.addEventListener('click', () => {
                 installButton.style.display = 'none';
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
                     if (choiceResult.outcome === 'accepted') { console.log('Pengguna menerima instalasi'); }
-           deferredPrompt = null;
-       });
-   });
+                    deferredPrompt = null;
+                });
+            });
             setTimeout(tampilkanModal, 2000);
         });
         
-    document.addEventListener('DOMContentLoaded', () => {
-        const greetingElement = document.getElementById('greetingName');
-        const userName = localStorage.getItem('userName');
+        document.addEventListener('DOMContentLoaded', () => {
+            const greetingElement = document.getElementById('greetingName');
+            const userName = localStorage.getItem('userName');
 
-        // Periksa apakah data 'userName' ada dan tidak kosong
-        if (userName && userName.trim() !== '' && userName !== 'Nama Pengguna') {
-            // Jika nama terisi, tampilkan sapaan dengan nama
-            greetingElement.textContent = 'Halo, ' + userName + '!';
-        } else {
-            // Jika nama kosong, default, atau tidak ada, sembunyikan atau tampilkan sapaan standar
-            // Contoh 1: Sembunyikan elemen sapaan
-            // greetingElement.style.display = 'none';
-            // Contoh 2: Tampilkan sapaan standar
-            greetingElement.textContent = 'Halo!';
-        }
-    });
-    
-    function installApp() {
-    if (deferredPrompt) {
-        installButton.style.display = 'none';
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('Pengguna menerima instalasi');
+            if (userName && userName.trim() !== '' && userName !== 'Nama Pengguna') {
+                greetingElement.textContent = 'Halo, ' + userName + '!';
+            } else {
+                greetingElement.textContent = 'Halo!';
             }
-            deferredPrompt = null;
         });
-    }
-    sembunyikanModal();
-}
+    
+        function installApp() {
+            if (deferredPrompt) {
+                installButton.style.display = 'none';
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Pengguna menerima instalasi');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+            sembunyikanModal();
+        }
 
-// 🔄 SIMPLE & ROBUST SERVICE WORKER REGISTRATION
-function initializeServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        console.log('🚀 Initializing Service Worker...');
-        
-        // Simple registration tanpa unregister kompleks
-        navigator.serviceWorker.register('./sw.js')
-            .then(registration => {
-                console.log('✅ Service Worker registered successfully');
+        // 🔄 SIMPLE & ROBUST SERVICE WORKER REGISTRATION
+        function initializeServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                console.log('🚀 Initializing Service Worker...');
                 
-                // Check if controlling the page
-                if (navigator.serviceWorker.controller) {
-                    console.log('🎯 Service Worker is controlling the page');
-                }
-                
-                // Check for updates
-                registration.update();
-                
-                // Listen for updates
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    console.log('🔄 New Service Worker found, state:', newWorker.state);
-                    
-                    newWorker.addEventListener('statechange', () => {
-                        console.log('🔄 Service Worker state changed to:', newWorker.state);
+                // Simple registration tanpa unregister kompleks
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registered successfully');
                         
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('✅ New content available!');
-                            showUpdateNotification();
+                        // Check if controlling the page
+                        if (navigator.serviceWorker.controller) {
+                            console.log('🎯 Service Worker is controlling the page');
                         }
+                        
+                        // Check for updates
+                        registration.update();
+                        
+                        // Listen for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            console.log('🔄 New Service Worker found, state:', newWorker.state);
+                            
+                            newWorker.addEventListener('statechange', () => {
+                                console.log('🔄 Service Worker state changed to:', newWorker.state);
+                                
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('✅ New content available!');
+                                    showUpdateNotification();
+                                }
+                            });
+                        });
+                        
+                        // Periodic update check
+                        setInterval(() => {
+                            registration.update();
+                        }, 60 * 60 * 1000); // 1 jam
+                        
+                    })
+                    .catch(error => {
+                        console.error('❌ Service Worker registration failed:', error);
+                        console.log('💡 Pastikan file sw.js ada di folder root');
                     });
+                
+                // Listen for controller change
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    console.log('🔄 Controller changed!');
+                    showUpdateNotification();
                 });
                 
-                // Periodic update check
-                setInterval(() => {
-                    registration.update();
-                }, 60 * 60 * 1000); // 1 jam
-                
-            })
-            .catch(error => {
-                console.error('❌ Service Worker registration failed:', error);
-                console.log('💡 Pastikan file sw.js ada di folder root');
-            });
-        
-        // Listen for controller change
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            console.log('🔄 Controller changed!');
-            showUpdateNotification();
-        });
-        
-    } else {
-        console.log('❌ Service Worker not supported');
-    }
-}
+            } else {
+                console.log('❌ Service Worker not supported');
+            }
+        }
 
-// 🎯 Tampilkan notifikasi update
+        // 🎯 Tampilkan notifikasi update
+// 🎯 Tampilkan notifikasi update — versi yang mengirim SKIP_WAITING ke waiting worker
 function showUpdateNotification() {
     const notification = document.getElementById('update-notification');
-    if (notification) {
-        notification.innerHTML = '🔄 Update tersedia! <button onclick="window.location.reload()">Refresh</button>';
-        notification.style.display = 'block';
-        
-        setTimeout(() => {
-            notification.style.display = 'none';
-        }, 10000);
+    if (!notification) return;
+
+    notification.innerHTML = '🔄 Update tersedia! <button id="updateRefreshBtn">Perbarui</button>';
+    notification.style.display = 'block';
+
+    const btn = document.getElementById('updateRefreshBtn');
+    btn.addEventListener('click', async () => {
+        // Jika ada serviceWorker waiting, kirim pesan SKIP_WAITING
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (registration && registration.waiting) {
+                // Kirim pesan ke waiting worker supaya segera aktif
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+
+                // Setelah skipWaiting dipanggil, browser akan trigger controllerchange
+                // dan event listener 'controllerchange' di initializeServiceWorker akan jalan.
+                // Kita bisa tunjukkan loading singkat atau menunggu controllerchange sebelum reload.
+                return;
+            }
+        }
+        // Fallback: reload kalau tidak ada waiting worker
+        window.location.reload();
+    });
+
+    // auto-hide setelah 10s
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 10000);
+}
+
+        // Start initialization
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeServiceWorker);
+        } else {
+            initializeServiceWorker();
+        }
+
+// Pastikan navbar tetap visible saat scroll
+let lastScrollTop = 0;
+const navbar = document.querySelector('.mobile-navbar');
+
+window.addEventListener('scroll', function() {
+    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    if (scrollTop > lastScrollTop) {
+        // Scroll down - navbar tetap visible
+        navbar.style.transform = 'translateY(0)';
+    } else {
+        // Scroll up - navbar tetap visible  
+        navbar.style.transform = 'translateY(0)';
+    }
+    lastScrollTop = scrollTop;
+}, { passive: true });
+
+// PERBAIKAN: Pastikan navbar selalu visible dan konten tidak tertutup
+document.addEventListener('DOMContentLoaded', function() {
+    const navbar = document.querySelector('.mobile-navbar');
+    const sections = document.querySelectorAll('.content-section');
+    
+    // Force navbar tetap di bottom
+    function ensureNavbarPosition() {
+        navbar.style.bottom = '0';
+        navbar.style.transform = 'translateY(0)';
+    }
+    
+    // Check dan adjust konten agar tidak tertutup
+    function checkContentPadding() {
+        sections.forEach(section => {
+            const rect = section.getBoundingClientRect();
+            const navbarHeight = navbar.offsetHeight;
+            
+            // Jika konten terlalu dekat dengan navbar, tambah padding
+            if (window.innerHeight - rect.bottom < navbarHeight + 10) {
+                section.style.paddingBottom = (navbarHeight + 20) + 'px';
+            }
+        });
+    }
+    
+    // Panggil fungsi
+    ensureNavbarPosition();
+    checkContentPadding();
+    
+    // Juga panggil saat resize dan scroll
+    window.addEventListener('resize', checkContentPadding);
+    window.addEventListener('scroll', checkContentPadding);
+});
+
+// PERBAIKAN: Handle resize untuk menyesuaikan ukuran card
+function adjustCardSizes() {
+    const cardItems = document.querySelectorAll('.card-row .card-item');
+    const containerWidth = document.querySelector('.card-row').offsetWidth;
+    
+    cardItems.forEach(card => {
+        // Reset ke ukuran default
+        card.style.minWidth = '';
+        card.style.maxWidth = '';
+    });
+    
+    // Jika masih overflow, sesuaikan ukuran
+    const totalWidth = Array.from(cardItems).reduce((total, card) => {
+        return total + card.offsetWidth + 15; // 15 adalah gap
+    }, 0);
+    
+    if (totalWidth > containerWidth) {
+        // Sesuaikan ukuran card secara proporsional
+        const scaleFactor = containerWidth / totalWidth * 0.9; // 90% dari container
+        cardItems.forEach(card => {
+            const currentWidth = card.offsetWidth;
+            const newWidth = Math.max(100, currentWidth * scaleFactor); // Minimal 100px
+            card.style.minWidth = newWidth + 'px';
+            card.style.maxWidth = newWidth + 'px';
+        });
     }
 }
 
-// Start initialization
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeServiceWorker);
-} else {
-    initializeServiceWorker();
-}
+// Panggil saat load dan resize
+document.addEventListener('DOMContentLoaded', function() {
+    adjustCardSizes();
+    window.addEventListener('resize', adjustCardSizes);
+    
+    // Juga panggil saat berpindah tab
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            setTimeout(adjustCardSizes, 100); // Beri delay sedikit
+        });
+    });
+});
+
     </script>
 </body>
 </html>
