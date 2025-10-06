@@ -2630,6 +2630,19 @@ async function updateCacheStatus() {
 window.offlineManager = offlineManager;
 window.testOfflineFunctionality = testOfflineFunctionality;
 
+// Coba register SW offline version
+async function registerOfflineSW() {
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('./sw-offline.js');
+      console.log('✅ Offline SW registered');
+    } catch (error) {
+      console.log('❌ Offline SW failed, using existing SW');
+    }
+  }
+}
+registerOfflineSW();
+
     </script>
 </body>
 </html>
