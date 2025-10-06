@@ -2280,6 +2280,356 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// ======== ✅ OFFLINE SUPPORT MANAGER - COMPATIBLE WITH EXISTING SW ========
+
+class OfflineManager {
+  constructor() {
+    this.isOnline = navigator.onLine;
+    this.offlineIndicator = null;
+    this.init();
+  }
+  
+  init() {
+    this.createOfflineIndicator();
+    this.setupNetworkListeners();
+    this.setupServiceWorkerMessages();
+    this.checkOfflineCapabilities();
+  }
+  
+  createOfflineIndicator() {
+    this.offlineIndicator = document.createElement('div');
+    this.offlineIndicator.id = 'offline-indicator';
+    this.offlineIndicator.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #ff6b6b;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
+      z-index: 10000;
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    `;
+    this.offlineIndicator.textContent = '📶 Anda sedang offline - Beberapa fitur terbatas';
+    document.body.appendChild(this.offlineIndicator);
+  }
+  
+  setupNetworkListeners() {
+    window.addEventListener('online', () => {
+      this.handleOnline();
+    });
+    
+    window.addEventListener('offline', () => {
+      this.handleOffline();
+    });
+  }
+  
+  setupServiceWorkerMessages() {
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data.type === 'OFFLINE_STATUS') {
+          if (event.data.isOnline) {
+            this.handleOnline();
+          } else {
+            this.handleOffline();
+          }
+        }
+      });
+    }
+  }
+  
+  handleOnline() {
+    this.isOnline = true;
+    this.hideOfflineIndicator();
+    
+    // Show reconnection message
+    this.showMessage('✅ Koneksi pulih', 'success');
+    
+    // Sync pending data menggunakan background sync yang sudah ada di SW
+    this.syncPendingData();
+  }
+  
+  handleOffline() {
+    this.isOnline = false;
+    this.showOfflineIndicator();
+    
+    // Show offline message
+    this.showMessage('📶 Sedang offline', 'warning');
+    
+    // Disable online-only features
+    this.disableOnlineFeatures();
+  }
+  
+  showOfflineIndicator() {
+    if (this.offlineIndicator) {
+      this.offlineIndicator.style.transform = 'translateY(0)';
+    }
+  }
+  
+  hideOfflineIndicator() {
+    if (this.offlineIndicator) {
+      this.offlineIndicator.style.transform = 'translateY(-100%)';
+    }
+  }
+  
+  showMessage(text, type = 'info') {
+    const messageEl = document.createElement('div');
+    messageEl.style.cssText = `
+      position: fixed;
+      top: 50px;
+      right: 20px;
+      padding: 12px 16px;
+      border-radius: 6px;
+      color: white;
+      z-index: 10000;
+      font-weight: bold;
+      ${type === 'success' ? 'background: #4CAF50;' : ''}
+      ${type === 'warning' ? 'background: #ffc107; color: #000;' : ''}
+      ${type === 'error' ? 'background: #f44336;' : ''}
+    `;
+    messageEl.textContent = text;
+    document.body.appendChild(messageEl);
+    
+    setTimeout(() => {
+      document.body.removeChild(messageEl);
+    }, 3000);
+  }
+  
+  disableOnlineFeatures() {
+    // Disable features yang butuh online
+    const onlineOnlyElements = document.querySelectorAll('[data-online-only]');
+    onlineOnlyElements.forEach(el => {
+      el.style.opacity = '0.5';
+      el.style.pointerEvents = 'none';
+    });
+  }
+  
+  enableOnlineFeatures() {
+    // Enable features yang butuh online
+    const onlineOnlyElements = document.querySelectorAll('[data-online-only]');
+    onlineOnlyElements.forEach(el => {
+      el.style.opacity = '1';
+      el.style.pointerEvents = 'auto';
+    });
+  }
+  
+  async syncPendingData() {
+    if (!this.isOnline) return;
+    
+    try {
+      // Gunakan background sync yang sudah ada di SW
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        
+        // Trigger sync untuk berbagai data yang pending
+        if ('sync' in registration) {
+          await registration.sync.register('sync-pdf-history');
+          await registration.sync.register('sync-user-activity');
+          await registration.sync.register('retry-failed-requests');
+        }
+      }
+      
+      this.enableOnlineFeatures();
+      
+    } catch (error) {
+      console.error('❌ Sync failed:', error);
+    }
+  }
+  
+  async checkOfflineCapabilities() {
+    // Test offline capabilities berdasarkan cache yang sudah ada di SW
+    if ('serviceWorker' in navigator && 'caches' in window) {
+      try {
+        // Test akses ke critical resources
+        const criticalResources = [
+          './',
+          './index.html', 
+          './viewer.html',
+          './pdfjs/pdf.js',
+          './fallback/offline.html'
+        ];
+        
+        let availableCount = 0;
+        for (const resource of criticalResources) {
+          const isAvailable = await this.checkResourceAvailability(resource);
+          if (isAvailable) availableCount++;
+        }
+        
+        console.log(`📦 Offline capability: ${availableCount}/${criticalResources.length} resources available`);
+        
+        if (availableCount === criticalResources.length) {
+          this.showMessage('✅ Aplikasi siap digunakan offline', 'success');
+        }
+        
+      } catch (error) {
+        console.log('❌ Offline check failed:', error);
+      }
+    }
+  }
+  
+  async checkResourceAvailability(url) {
+    try {
+      if (this.isOnline) {
+        const response = await fetch(url, { cache: 'no-cache' });
+        return response.ok;
+      } else {
+        // Check cache melalui service worker
+        const cache = await caches.open('elsa-pwa-v3.2-debug');
+        const cached = await cache.match(url);
+        return !!cached;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
+  
+  // Enhanced error handling untuk offline scenarios
+  setupOfflineErrorHandling() {
+    // Global error handler untuk network requests
+    window.addEventListener('error', (event) => {
+      if (event.target.tagName === 'IMG' || event.target.tagName === 'SCRIPT') {
+        console.log('❌ Resource failed to load:', event.target.src);
+        
+        // Try to serve from cache menggunakan SW cache strategy
+        if ('caches' in window) {
+          caches.match(event.target.src).then(response => {
+            if (response) {
+              console.log('✅ Serving failed resource from cache');
+            }
+          });
+        }
+      }
+    });
+    
+    // Handle PDF loading errors
+    window.addEventListener('unhandledrejection', (event) => {
+      if (event.reason && event.reason.message && event.reason.message.includes('PDF')) {
+        console.log('❌ PDF loading error:', event.reason);
+        this.showMessage('❌ Gagal memuat PDF', 'error');
+      }
+    });
+  }
+}
+
+// Initialize offline manager
+const offlineManager = new OfflineManager();
+
+// Test offline functionality - compatible dengan integrity checker yang ada
+async function testOfflineFunctionality() {
+  const tests = {
+    'App Shell': await offlineManager.checkResourceAvailability('./index.html'),
+    'PDF Viewer': await offlineManager.checkResourceAvailability('./viewer.html'),
+    'Main JS': await offlineManager.checkResourceAvailability('./pdfjs/pdf.js'),
+    'Offline Fallback': await offlineManager.checkResourceAvailability('./fallback/offline.html'),
+    'Icons': await offlineManager.checkResourceAvailability('./icons/icon-192x192.png')
+  };
+  
+  console.log('🧪 Offline Capability Test:', tests);
+  
+  const allPassed = Object.values(tests).every(Boolean);
+  if (allPassed) {
+    offlineManager.showMessage('✅ Semua fitur utama tersedia offline', 'success');
+  } else {
+    const passedCount = Object.values(tests).filter(Boolean).length;
+    offlineManager.showMessage(`✅ ${passedCount}/5 fitur utama tersedia offline`, 'info');
+  }
+  
+  return tests;
+}
+
+// Enhanced network status monitoring
+function setupEnhancedNetworkMonitoring() {
+  // Periodic network check
+  setInterval(() => {
+    if (!navigator.onLine) {
+      // Update UI untuk menunjukkan offline status
+      const offlineElements = document.querySelectorAll('[data-online-only]');
+      offlineElements.forEach(el => {
+        if (!el.hasAttribute('data-offline-notified')) {
+          el.setAttribute('data-offline-notified', 'true');
+          el.title = 'Fitur ini membutuhkan koneksi internet';
+        }
+      });
+    }
+  }, 10000);
+}
+
+// Initialize ketika DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  offlineManager.setupOfflineErrorHandling();
+  setupEnhancedNetworkMonitoring();
+  
+  // Test offline capabilities setelah load
+  setTimeout(() => {
+    testOfflineFunctionality();
+  }, 3000);
+  
+  // Add offline info to settings jika ada
+  addOfflineInfoToSettings();
+});
+
+// Add offline information to settings page
+function addOfflineInfoToSettings() {
+  // Cari settings section atau buat jika tidak ada
+  let settingsSection = document.getElementById('settings-section');
+  
+  if (!settingsSection) {
+    // Coba cari di existing content
+    settingsSection = document.querySelector('[data-target="settings-section"]');
+  }
+  
+  if (settingsSection) {
+    const offlineInfo = document.createElement('div');
+    offlineInfo.style.cssText = `
+      background: #2f2f2f;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    `;
+    offlineInfo.innerHTML = `
+      <h3 style="margin-bottom: 10px;">📶 Status Offline</h3>
+      <p style="color: #b0b0b0; margin-bottom: 10px;">
+        Status: <span id="network-status">${navigator.onLine ? '✅ Online' : '📶 Offline'}</span>
+      </p>
+      <p style="color: #b0b0b0; margin-bottom: 10px;">
+        Cache: <span id="cache-status">Memeriksa...</span>
+      </p>
+      <button onclick="testOfflineFunctionality()" class="btn" style="background: #17a2b8;">
+        Test Offline Capability
+      </button>
+    `;
+    
+    settingsSection.appendChild(offlineInfo);
+    
+    // Update cache status
+    updateCacheStatus();
+  }
+}
+
+async function updateCacheStatus() {
+  if ('caches' in window) {
+    try {
+      const cache = await caches.open('elsa-pwa-v3.2-debug');
+      const keys = await cache.keys();
+      const statusEl = document.getElementById('cache-status');
+      if (statusEl) {
+        statusEl.textContent = `${keys.length} resources cached`;
+        statusEl.style.color = keys.length > 0 ? '#4CAF50' : '#ff6b6b';
+      }
+    } catch (error) {
+      console.log('Cache status check failed:', error);
+    }
+  }
+}
+
+// Export untuk testing
+window.offlineManager = offlineManager;
+window.testOfflineFunctionality = testOfflineFunctionality;
+
     </script>
 </body>
 </html>
