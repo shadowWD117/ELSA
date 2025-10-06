@@ -1409,6 +1409,102 @@ if (document.readyState === 'loading') {
     initializeServiceWorker();
 }
 
+// ======== ✅ PERIODIC SYNC PERMISSION REQUEST ========
+
+async function setupPeriodicSync() {
+  // Check if Periodic Background Sync is supported
+  if ('periodicSync' in registration) {
+    try {
+      // Check current permission status
+      const status = await navigator.permissions.query({
+        name: 'periodic-background-sync'
+      });
+      
+      console.log('📋 Periodic Sync permission status:', status.state);
+      
+      if (status.state === 'granted') {
+        // Permission already granted - register sync
+        await registerPeriodicSync();
+      } else if (status.state === 'prompt') {
+        // Show custom UI to request permission
+        showSyncPermissionRequest();
+      }
+      
+    } catch (error) {
+      console.log('⚠️ Periodic Sync not supported:', error);
+    }
+  } else {
+    console.log('❌ Periodic Background Sync not supported');
+  }
+}
+
+// Register periodic sync
+async function registerPeriodicSync() {
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    
+    // Try to register periodic sync
+    if ('periodicSync' in registration) {
+      await registration.periodicSync.register('content-update', {
+        minInterval: 24 * 60 * 60 * 1000, // 24 hours minimum
+      });
+      console.log('✅ Periodic Sync registered successfully');
+    }
+  } catch (error) {
+    console.log('❌ Periodic Sync registration failed:', error);
+    
+    // Fallback to manual background sync
+    setupManualBackgroundSync();
+  }
+}
+
+// Manual background sync fallback
+function setupManualBackgroundSync() {
+  console.log('🔄 Setting up manual background sync fallback');
+  
+  // Sync when app becomes visible
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      triggerManualSync();
+    }
+  });
+  
+  // Sync on network status change
+  window.addEventListener('online', triggerManualSync);
+}
+
+// Trigger manual sync
+function triggerManualSync() {
+  if (navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({
+      type: 'MANUAL_SYNC_REQUEST'
+    });
+  }
+}
+
+// Show permission request UI
+function showSyncPermissionRequest() {
+  // You can create a subtle UI element to explain and request permission
+  console.log('👆 Periodic Sync permission available - consider adding UI to request it');
+  
+  // Example: Add a small indicator in settings
+  // This would be implemented based on your UI design
+}
+
+// Initialize when service worker is ready
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.ready.then(registration => {
+    setupPeriodicSync();
+  });
+}
+
+// Add message handler for manual sync
+navigator.serviceWorker.addEventListener('message', event => {
+  if (event.data.type === 'MANUAL_SYNC_RESULT') {
+    console.log('🔄 Manual sync completed:', event.data.result);
+  }
+});
+
 // ======== ✅ TAMBAHKAN DI SINI ========
 // Handle messages dari Service Worker
 navigator.serviceWorker.addEventListener('message', event => {

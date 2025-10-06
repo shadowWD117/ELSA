@@ -406,6 +406,7 @@ function getFileNameFromUrl(url) {
 }
 
 // Messaging
+// Di messaging section yang sudah ada, tambahkan:
 self.addEventListener('message', event => {
   const data = event.data;
   console.log('📨 SW: Received message:', data);
@@ -415,6 +416,19 @@ self.addEventListener('message', event => {
   if (data.type === 'SKIP_WAITING') {
     console.log('🔔 SW: Received SKIP_WAITING message — calling skipWaiting()');
     self.skipWaiting();
+  }
+  
+  // ✅ ADD THIS: Handle manual sync requests
+  if (data.type === 'MANUAL_SYNC_REQUEST') {
+    console.log('🔄 SW: Manual sync requested');
+    event.waitUntil(
+      performBackgroundSync().then(result => {
+        event.ports[0].postMessage({
+          type: 'MANUAL_SYNC_RESULT',
+          result: result
+        });
+      })
+    );
   }
 });
 
@@ -431,3 +445,152 @@ async function periodicCleanup() {
 setInterval(periodicCleanup, 24 * 60 * 60 * 1000);
 
 console.log('🚀 SW: Service Worker loaded successfully');
+
+// ======== ✅ PERIODIC SYNC IMPLEMENTATION ========
+
+// Periodic Sync Event Handler
+self.addEventListener('periodicsync', event => {
+  console.log('🔄 Periodic Sync triggered:', event.tag);
+  
+  if (event.tag === 'content-update') {
+    event.waitUntil(
+      performBackgroundSync()
+    );
+  }
+});
+
+// Background Sync Task
+async function performBackgroundSync() {
+  try {
+    console.log('🔄 Starting background sync...');
+    
+    // 1. Check for content updates
+    const updates = await checkForContentUpdates();
+    
+    // 2. Update cache if needed
+    if (updates.length > 0) {
+      console.log('🔄 Background updates found:', updates);
+      await updateCachedContent(updates);
+      
+      // 3. Notify user about new content
+      await showBackgroundNotification(updates);
+    } else {
+      console.log('✅ No updates in background sync');
+    }
+    
+  } catch (error) {
+    console.error('❌ Background sync failed:', error);
+  }
+}
+
+// Check for content updates
+async function checkForContentUpdates() {
+  const updates = [];
+  
+  try {
+    // Check critical files for updates
+    const criticalFiles = [
+      './index.html',
+      './manifest.json'
+    ];
+    
+    for (const file of criticalFiles) {
+      const isUpdated = await checkSingleFileUpdate(file);
+      if (isUpdated) {
+        updates.push(file);
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error checking content updates:', error);
+  }
+  
+  return updates;
+}
+
+// Check single file update
+async function checkSingleFileUpdate(url) {
+  try {
+    const networkResponse = await fetch(url, { cache: 'no-store' });
+    if (!networkResponse.ok) return false;
+    
+    const networkContent = await networkResponse.text();
+    const cachedResponse = await caches.match(url);
+    
+    if (!cachedResponse) return true;
+    
+    const cachedContent = await cachedResponse.text();
+    return networkContent !== cachedContent;
+    
+  } catch (error) {
+    return false;
+  }
+}
+
+// Update cached content
+async function updateCachedContent(updates) {
+  try {
+    const cache = await caches.open(STATIC_CACHE);
+    
+    for (const url of updates) {
+      const response = await fetch(url);
+      if (response.ok) {
+        await cache.put(url, response);
+        console.log('✅ Updated cache for:', url);
+      }
+    }
+  } catch (error) {
+    console.error('Error updating cache:', error);
+  }
+}
+
+// Show background notification
+async function showBackgroundNotification(updates) {
+  // Only show notification if app is not in foreground
+  const clients = await self.clients.matchAll();
+  const isAppInForeground = clients.some(client => client.visibilityState === 'visible');
+  
+  if (!isAppInForeground && updates.length > 0) {
+    self.registration.showNotification('ELSA Update', {
+      body: `${
+        updates.length === 1 
+          ? 'New content available' 
+          : `${updates.length} new updates available`
+      }`,
+      icon: './icons/icon-192x192.png',
+      badge: './icons/icon-96x96.png',
+      tag: 'content-update',
+      actions: [
+        {
+          action: 'open',
+          title: 'View'
+        },
+        {
+          action: 'dismiss', 
+          title: 'Dismiss'
+        }
+      ]
+    });
+  }
+}
+
+// Handle notification clicks
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  
+  if (event.action === 'open') {
+    event.waitUntil(
+      clients.matchAll({ type: 'window' }).then(windowClients => {
+        // Focus existing window or open new one
+        for (const client of windowClients) {
+          if (client.url.includes(self.location.origin) && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        if (clients.openWindow) {
+          return clients.openWindow('./');
+        }
+      })
+    );
+  }
+});
