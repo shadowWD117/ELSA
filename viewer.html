@@ -371,6 +371,95 @@
                 }
             }
         }
+        
+        // ==================== BACKGROUND SYNC INTEGRATION ====================
+
+// Update PDF progress untuk background sync
+function updatePDFProgress(pdfName, pageNum, totalPages) {
+  const progress = {
+    id: pdfName,
+    page: pageNum,
+    total: totalPages,
+    progress: Math.round((pageNum / totalPages) * 100),
+    timestamp: Date.now()
+  };
+  
+  console.log('📊 PDF Progress:', progress);
+  
+  // Simpan progress ke localStorage
+  let existingProgress = JSON.parse(localStorage.getItem('pdfProgress') || '[]');
+  
+  // Update atau tambah progress
+  const existingIndex = existingProgress.findIndex(p => p.id === pdfName);
+  if (existingIndex !== -1) {
+    existingProgress[existingIndex] = progress;
+  } else {
+    existingProgress.push(progress);
+  }
+  
+  localStorage.setItem('pdfProgress', JSON.stringify(existingProgress));
+  
+  // Trigger background sync jika service worker ready
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(registration => {
+      // Kirim message ke service worker
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'PDF_PROGRESS_UPDATE',
+          progress: progress
+        });
+      }
+      
+      // Register background sync
+      if ('sync' in registration) {
+        registration.sync.register('pdf-metadata-sync')
+          .then(() => console.log('✅ PDF progress sync scheduled'))
+          .catch(err => console.log('❌ PDF progress sync failed:', err));
+      }
+    });
+  }
+}
+
+// Enhanced event handlers dengan progress tracking
+document.getElementById("prev").addEventListener("click", () => {
+  const now = Date.now();
+  if (now - lastClickTime < clickDebounceTime) return;
+  lastClickTime = now;
+  
+  if (pageNum > 1 && !pageIsRendering) {
+    pageNum--;
+    queueRenderPage(pageNum);
+    
+    // ✅ SYNC PROGRESS
+    if (pdfDoc && fileNameDisplay.textContent) {
+      updatePDFProgress(
+        fileNameDisplay.textContent,
+        pageNum, 
+        pdfDoc.numPages
+      );
+    }
+  }
+});
+
+document.getElementById("next").addEventListener("click", () => {
+  const now = Date.now();
+  if (now - lastClickTime < clickDebounceTime) return;
+  lastClickTime = now;
+  
+  if (pageNum < pdfDoc.numPages && !pageIsRendering) {
+    pageNum++;
+    queueRenderPage(pageNum);
+    
+    // ✅ SYNC PROGRESS
+    if (pdfDoc && fileNameDisplay.textContent) {
+      updatePDFProgress(
+        fileNameDisplay.textContent,
+        pageNum, 
+        pdfDoc.numPages
+      );
+    }
+  }
+});
 
         // ==================== CLEANUP ON EXIT ====================
         

@@ -1505,6 +1505,196 @@ navigator.serviceWorker.addEventListener('message', event => {
   }
 });
 
+// ======== ✅ BACKGROUND SYNC FUNCTIONS ========
+
+// Register background sync
+// ======== ✅ BACKGROUND SYNC FUNCTIONS - FIXED ========
+
+// Register background sync - FIXED VERSION
+async function registerBackgroundSync(tag = 'content-sync') {
+  if (!navigator.serviceWorker) {
+    console.log('❌ Service Worker not supported');
+    return false;
+  }
+  
+  try {
+    // ✅ FIX: Dapatkan registration dengan benar
+    const registration = await navigator.serviceWorker.ready;
+    
+    // Check if Background Sync is supported
+    if ('sync' in registration) {
+      await registration.sync.register(tag);
+      console.log(`✅ Background Sync registered: ${tag}`);
+      return true;
+    } else {
+      console.log('❌ Background Sync not supported');
+      return false;
+    }
+    
+  } catch (error) {
+    console.error('❌ Background Sync registration failed:', error);
+    return false;
+  }
+}
+
+// Periodic Sync - FIXED VERSION  
+async function setupPeriodicSync() {
+  try {
+    // ✅ FIX: Dapatkan registration dengan benar
+    const registration = await navigator.serviceWorker.ready;
+    
+    // Check if Periodic Background Sync is supported
+    if ('periodicSync' in registration) {
+      const status = await navigator.permissions.query({
+        name: 'periodic-background-sync'
+      });
+      
+      console.log('📋 Periodic Sync permission status:', status.state);
+      
+      if (status.state === 'granted') {
+        await registerPeriodicSync();
+      }
+    }
+  } catch (error) {
+    console.log('⚠️ Periodic Sync not supported:', error);
+  }
+}
+
+// Register periodic sync - FIXED VERSION
+async function registerPeriodicSync() {
+  try {
+    // ✅ FIX: Dapatkan registration dengan benar
+    const registration = await navigator.serviceWorker.ready;
+    
+    if ('periodicSync' in registration) {
+      await registration.periodicSync.register('content-update', {
+        minInterval: 24 * 60 * 60 * 1000, // 24 hours
+      });
+      console.log('✅ Periodic Sync registered successfully');
+    }
+  } catch (error) {
+    console.log('❌ Periodic Sync registration failed:', error);
+  }
+}
+
+// Demo functions to trigger background sync
+function demoBackgroundSync() {
+  console.log('🚀 Triggering demo background sync...');
+  
+  // Simulate some user action that requires sync
+  const userAction = {
+    type: 'content-update',
+    timestamp: Date.now(),
+    data: 'User performed some action'
+  };
+  
+  // Store the action for later sync
+  storeActionForSync(userAction);
+  
+  // Register background sync
+  registerBackgroundSync('content-sync').then(success => {
+    if (success) {
+      showSyncStatus('Sync scheduled - will complete when online');
+    } else {
+      showSyncStatus('Sync failed - please check connection');
+    }
+  });
+}
+
+function syncUserData() {
+  console.log('👤 Syncing user data...');
+  
+  // Store user data changes
+  const userData = {
+    lastSync: Date.now(),
+    profile: localStorage.getItem('userName') || 'Guest'
+  };
+  
+  localStorage.setItem('pendingUserData', JSON.stringify(userData));
+  
+  registerBackgroundSync('user-data-sync').then(success => {
+    if (success) {
+      showSyncStatus('User data sync scheduled');
+    }
+  });
+}
+
+function syncPDFProgress(pdfData) {
+  console.log('📚 Syncing PDF progress...');
+  
+  // Store PDF progress
+  const progress = {
+    pdfId: pdfData.id,
+    page: pdfData.page,
+    timestamp: Date.now()
+  };
+  
+  let existingProgress = JSON.parse(localStorage.getItem('pdfProgress') || '[]');
+  existingProgress.push(progress);
+  localStorage.setItem('pdfProgress', JSON.stringify(existingProgress));
+  
+  registerBackgroundSync('pdf-metadata-sync').then(success => {
+    if (success) {
+      showSyncStatus('Reading progress saved');
+    }
+  });
+}
+
+// Helper functions
+function storeActionForSync(action) {
+  const pendingActions = JSON.parse(localStorage.getItem('pendingActions') || '[]');
+  pendingActions.push(action);
+  localStorage.setItem('pendingActions', JSON.stringify(pendingActions));
+}
+
+function showSyncStatus(message) {
+  // Create or update sync status UI
+  let statusEl = document.getElementById('sync-status');
+  
+  if (!statusEl) {
+    statusEl = document.createElement('div');
+    statusEl.id = 'sync-status';
+    statusEl.style.cssText = `
+      position: fixed;
+      bottom: 120px;
+      right: 20px;
+      background: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      z-index: 1000;
+      font-size: 0.9rem;
+      max-width: 200px;
+    `;
+    document.body.appendChild(statusEl);
+  }
+  
+  statusEl.textContent = message;
+  statusEl.style.display = 'block';
+  
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    statusEl.style.display = 'none';
+  }, 3000);
+}
+
+// Initialize background sync when online
+window.addEventListener('online', () => {
+  console.log('🌐 Online - checking for pending sync...');
+  
+  // Check if we have pending actions that need sync
+  const pendingActions = JSON.parse(localStorage.getItem('pendingActions') || '[]');
+  if (pendingActions.length > 0) {
+    registerBackgroundSync('content-sync');
+  }
+});
+
+// Add sync UI to your app (optional)
+function addSyncUI() {
+  // You can add sync buttons to your settings page
+  console.log('🔄 Sync UI available - add to settings page');
+}
+
 // ======== ✅ TAMBAHKAN DI SINI ========
 // Handle messages dari Service Worker
 navigator.serviceWorker.addEventListener('message', event => {
