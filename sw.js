@@ -997,3 +997,148 @@ async function removeFailedRequest(requestId) {
   const updatedRequests = requests.filter(req => req.id !== requestId);
   localStorage.setItem('failedRequests', JSON.stringify(updatedRequests));
 }
+
+// ======== ✅ PUSH NOTIFICATIONS IMPLEMENTATION ========
+
+// Push Event Handler - Terima push notifications
+self.addEventListener('push', event => {
+  console.log('📨 Push notification received:', event);
+  
+  // Parse push data
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (error) {
+    console.log('❌ Error parsing push data:', error);
+    data = {
+      title: 'ELSA Update',
+      body: 'New content available',
+      icon: './icons/icon-192x192.png'
+    };
+  }
+  
+  console.log('📊 Push data:', data);
+  
+  // Tampilkan notification
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'ELSA', {
+      body: data.body || 'You have new updates',
+      icon: data.icon || './icons/icon-192x192.png',
+      badge: './icons/icon-96x96.png',
+      image: data.image,
+      data: data,
+      actions: data.actions || [
+        {
+          action: 'open-app',
+          title: 'Buka Aplikasi',
+          icon: './icons/icon-96x96.png'
+        },
+        {
+          action: 'dismiss',
+          title: 'Tutup',
+          icon: './icons/icon-96x96.png'
+        }
+      ],
+      tag: data.tag || 'elsa-update',
+      requireInteraction: data.requireInteraction || false,
+      vibrate: [200, 100, 200] // Vibrate pattern
+    })
+  );
+});
+
+// Notification Click Handler
+self.addEventListener('notificationclick', event => {
+  console.log('👆 Notification clicked:', event.notification.data);
+  
+  event.notification.close();
+  
+  const notificationData = event.notification.data || {};
+  const action = event.action;
+  
+  // Handle different actions
+  if (action === 'open-app' || action === '') {
+    // Default action - open app
+    event.waitUntil(
+      clients.matchAll({ 
+        type: 'window', 
+        includeUncontrolled: true 
+      }).then(clientList => {
+        // Cari window yang sudah terbuka
+        for (const client of clientList) {
+          if (client.url.includes(self.location.origin) && 'focus' in client) {
+            console.log('🎯 Focusing existing window:', client.url);
+            return client.focus();
+          }
+        }
+        
+        // Buka window baru jika tidak ada yang terbuka
+        if (clients.openWindow) {
+          console.log('🚀 Opening new window');
+          return clients.openWindow('./');
+        }
+      })
+    );
+  } else if (action === 'view-content' && notificationData.url) {
+    // Open specific content
+    event.waitUntil(
+      clients.openWindow(notificationData.url)
+    );
+  } else if (action === 'dismiss') {
+    // Do nothing - notification already closed
+    console.log('❌ Notification dismissed');
+  }
+  
+  // Send analytics atau track click
+  trackNotificationClick(notificationData, action);
+});
+
+// Notification Close Handler
+self.addEventListener('notificationclose', event => {
+  console.log('❌ Notification closed:', event.notification.data);
+  
+  // Track notification dismissal
+  trackNotificationDismissal(event.notification.data);
+});
+
+// Helper functions untuk analytics
+function trackNotificationClick(data, action) {
+  console.log('📊 Notification click tracked:', { data, action });
+  // Di real app, kirim ke analytics service
+}
+
+function trackNotificationDismissal(data) {
+  console.log('📊 Notification dismissal tracked:', data);
+  // Di real app, kirim ke analytics service
+}
+
+// Background sync untuk push notification status
+async function syncNotificationStatus() {
+  try {
+    const notifications = await getPendingNotificationStatus();
+    
+    if (notifications.length > 0) {
+      // Kirim status ke server
+      await sendNotificationStatusToServer(notifications);
+      await clearSyncedNotificationStatus(notifications);
+    }
+  } catch (error) {
+    console.error('❌ Notification status sync failed:', error);
+    throw error;
+  }
+}
+
+// Helper functions untuk notification status sync
+async function getPendingNotificationStatus() {
+  return JSON.parse(localStorage.getItem('pendingNotificationStatus') || '[]');
+}
+
+async function sendNotificationStatusToServer(status) {
+  console.log('🌐 Sending notification status to server:', status);
+  // Simulate API call
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return true;
+}
+
+async function clearSyncedNotificationStatus(status) {
+  localStorage.removeItem('pendingNotificationStatus');
+}
