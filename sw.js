@@ -228,7 +228,7 @@ self.addEventListener('install', event => {
         return Promise.all(promises);
       })
       .then(() => {
-        console.log('✅ SW: resources cached for app shell');
+        console.log('✅ [OFFLINE SUPPORT] App shell successfully cached for offline use');
         
         // ======== ✅ CHECK INTEGRITY SETELAH INSTALL ========
         console.log('⏰ SW: Setting install timeout for integrity check...');
@@ -298,6 +298,16 @@ self.addEventListener('fetch', event => {
       !request.url.startsWith(self.location.origin)) {
     return;
   }
+  
+    // ⭐ ADD THIS: Log specific cache strategies
+  if (request.mode === 'navigate') {
+    console.log('🏠 [CACHE] Navigation request - Network First + Cache Fallback');
+  }
+  
+  if (url.pathname.endsWith('.pdf')) {
+    console.log('📄 [CACHE] PDF request - Cache First + Network Update');
+  }
+
 
   // Tangani file PDF
   if (url.pathname.endsWith('.pdf')) {
