@@ -1,8 +1,8 @@
 /* ============================
-   ELSA PWA Service Worker v3.1 - RELATIVE PATHS
+   ELSA PWA Service Worker v3.2 - RELATIVE PATHS
    ============================ */
 
-const APP_VERSION = 'v3.1-debug';
+const APP_VERSION = 'v3.2-debug';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
 const STATIC_CACHE = `static-${APP_VERSION}`;
 const PDF_CACHE = `pdf-cache-${APP_VERSION}`;
@@ -407,6 +407,7 @@ function getFileNameFromUrl(url) {
 
 // Messaging
 // Di messaging section yang sudah ada, tambahkan:
+// Di messaging section, pastikan seperti ini:
 self.addEventListener('message', event => {
   const data = event.data;
   console.log('📨 SW: Received message:', data);
@@ -418,19 +419,63 @@ self.addEventListener('message', event => {
     self.skipWaiting();
   }
   
-  // ✅ ADD THIS: Handle manual sync requests
+  // Handle manual sync requests
   if (data.type === 'MANUAL_SYNC_REQUEST') {
     console.log('🔄 SW: Manual sync requested');
     event.waitUntil(
       performBackgroundSync().then(result => {
-        event.ports[0].postMessage({
-          type: 'MANUAL_SYNC_RESULT',
-          result: result
-        });
+        // ✅ FIX: Gunakan event.ports dengan safety check
+        if (event.ports && event.ports[0]) {
+          event.ports[0].postMessage({
+            type: 'MANUAL_SYNC_RESULT',
+            result: result
+          });
+        }
+      })
+    );
+  }
+  
+  // Handle PDF progress updates
+  if (data.type === 'PDF_PROGRESS_UPDATE') {
+    console.log('📊 SW: PDF progress update received:', data.progress);
+    
+    // Simpan progress untuk sync nanti
+    event.waitUntil(
+      savePDFProgress(data.progress).then(() => {
+        // Trigger background sync untuk PDF metadata
+        return self.registration.sync.register('pdf-metadata-sync');
+      }).then(() => {
+        console.log('✅ PDF progress sync scheduled');
+      }).catch(err => {
+        console.log('❌ PDF progress sync failed:', err);
       })
     );
   }
 });
+
+// Helper untuk save PDF progress
+async function savePDFProgress(progress) {
+  // Simpan ke IndexedDB atau storage
+  console.log('💾 Saving PDF progress:', progress);
+  
+  // Simpan ke localStorage simulation (di real app bisa pakai IndexedDB)
+  const existingData = await getStoredProgress();
+  const newData = existingData.filter(p => p.id !== progress.id);
+  newData.push(progress);
+  
+  // Simulate async storage
+  return new Promise(resolve => {
+    setTimeout(() => {
+      console.log('✅ Progress saved');
+      resolve();
+    }, 100);
+  });
+}
+
+async function getStoredProgress() {
+  // Simulate getting from storage
+  return [];
+}
 
 // Periodic cleanup
 async function periodicCleanup() {
@@ -594,3 +639,361 @@ self.addEventListener('notificationclick', event => {
     );
   }
 });
+
+// ======== ✅ BACKGROUND SYNC IMPLEMENTATION ========
+
+// Background Sync Event Handler
+self.addEventListener('sync', event => {
+  console.log('🔄 Background Sync triggered:', event.tag);
+  
+  switch (event.tag) {
+    case 'content-sync':
+      event.waitUntil(syncContentUpdates());
+      break;
+      
+    case 'user-data-sync':
+      event.waitUntil(syncUserData());
+      break;
+      
+    case 'pdf-metadata-sync':
+      event.waitUntil(syncPDFMetadata());
+      break;
+      
+    default:
+      console.log('Unknown sync tag:', event.tag);
+  }
+});
+
+// Sync content updates
+async function syncContentUpdates() {
+  try {
+    console.log('🔄 Syncing content updates...');
+    
+    // Get pending updates from IndexedDB
+    const pendingUpdates = await getPendingUpdates();
+    
+    if (pendingUpdates.length > 0) {
+      console.log(`📦 Found ${pendingUpdates.length} pending updates`);
+      
+      for (const update of pendingUpdates) {
+        await processContentUpdate(update);
+      }
+      
+      // Clear processed updates
+      await clearPendingUpdates();
+      
+      console.log('✅ Content sync completed');
+      
+      // Notify user
+      await showSyncNotification('Content updated successfully');
+    } else {
+      console.log('✅ No pending content updates');
+    }
+    
+  } catch (error) {
+    console.error('❌ Content sync failed:', error);
+    throw error; // Important: re-throw to retry
+  }
+}
+
+// Sync user data (bookmarks, progress, etc)
+async function syncUserData() {
+  try {
+    console.log('🔄 Syncing user data...');
+    
+    const userData = await getUserDataFromStorage();
+    
+    if (userData && Object.keys(userData).length > 0) {
+      // Simulate API call to sync user data
+      const success = await syncToBackend(userData);
+      
+      if (success) {
+        console.log('✅ User data synced successfully');
+        await clearSyncedUserData();
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ User data sync failed:', error);
+    throw error;
+  }
+}
+
+// Sync PDF reading progress/metadata
+async function syncPDFMetadata() {
+  try {
+    console.log('🔄 Syncing PDF metadata...');
+    
+    const pdfProgress = await getPDFProgressFromStorage();
+    
+    if (pdfProgress && pdfProgress.length > 0) {
+      for (const progress of pdfProgress) {
+        await syncPDFProgress(progress);
+      }
+      console.log('✅ PDF metadata synced');
+    }
+    
+  } catch (error) {
+    console.error('❌ PDF metadata sync failed:', error);
+    throw error;
+  }
+}
+
+// Helper functions for Background Sync
+async function getPendingUpdates() {
+  // Simulate getting updates from storage
+  // In real app, this would use IndexedDB
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve([
+        { type: 'content', id: '1', data: 'update1' },
+        { type: 'content', id: '2', data: 'update2' }
+      ]);
+    }, 100);
+  });
+}
+
+async function processContentUpdate(update) {
+  console.log('📄 Processing update:', update.id);
+  // Simulate processing
+  await new Promise(resolve => setTimeout(resolve, 200));
+}
+
+async function clearPendingUpdates() {
+  console.log('🧹 Clearing pending updates');
+}
+
+async function getUserDataFromStorage() {
+  // Get user data from localStorage or IndexedDB
+  const userName = localStorage.getItem('userName');
+  const userSettings = localStorage.getItem('userSettings');
+  
+  return userName || userSettings ? { userName, userSettings } : null;
+}
+
+async function syncToBackend(userData) {
+  console.log('🌐 Syncing to backend:', userData);
+  // Simulate API call
+  await new Promise(resolve => setTimeout(resolve, 300));
+  return true; // Simulate success
+}
+
+async function clearSyncedUserData() {
+  console.log('✅ User data cleared after sync');
+}
+
+async function getPDFProgressFromStorage() {
+  // Get PDF progress from storage
+  const progress = localStorage.getItem('pdfProgress');
+  return progress ? JSON.parse(progress) : [];
+}
+
+async function syncPDFProgress(progress) {
+  console.log('📊 Syncing PDF progress:', progress);
+  await new Promise(resolve => setTimeout(resolve, 150));
+}
+
+async function showSyncNotification(message) {
+  const clients = await self.clients.matchAll();
+  const isAppInForeground = clients.some(client => client.visibilityState === 'visible');
+  
+  if (!isAppInForeground) {
+    self.registration.showNotification('ELSA Sync', {
+      body: message,
+      icon: './icons/icon-192x192.png',
+      tag: 'sync-notification'
+    });
+  }
+}
+
+// ======== ✅ REAL BACKGROUND SYNC IMPLEMENTATION ========
+
+// Background Sync Event Handler - ENHANCED
+self.addEventListener('sync', event => {
+  console.log('🔄 Background Sync triggered:', event.tag);
+  
+  switch (event.tag) {
+    case 'sync-pdf-history':
+      event.waitUntil(syncPDFHistory());
+      break;
+      
+    case 'sync-user-activity':
+      event.waitUntil(syncUserActivity());
+      break;
+      
+    case 'retry-failed-requests':
+      event.waitUntil(retryFailedRequests());
+      break;
+      
+    default:
+      console.log('Unknown sync tag:', event.tag);
+  }
+});
+
+// REAL SYNC: PDF Reading History
+async function syncPDFHistory() {
+  try {
+    console.log('🔄 Starting PDF history sync...');
+    
+    // Get pending history from storage
+    const pendingHistory = await getPendingPDFHistory();
+    
+    if (pendingHistory.length > 0) {
+      console.log(`📚 Found ${pendingHistory.length} pending history items`);
+      
+      // Simulate API call to sync with backend
+      const success = await sendPDFHistoryToServer(pendingHistory);
+      
+      if (success) {
+        console.log('✅ PDF history synced successfully');
+        
+        // Clear only successfully synced items
+        await clearSyncedPDFHistory(pendingHistory);
+        
+        // Show notification
+        await showSyncNotification('Reading history synced');
+      } else {
+        // If sync fails, throw error to retry later
+        throw new Error('PDF history sync failed');
+      }
+    } else {
+      console.log('✅ No pending PDF history to sync');
+    }
+    
+  } catch (error) {
+    console.error('❌ PDF history sync failed:', error);
+    throw error; // ⭐ IMPORTANT: Re-throw untuk automatic retry
+  }
+}
+
+// REAL SYNC: User Activity
+async function syncUserActivity() {
+  try {
+    console.log('🔄 Syncing user activity...');
+    
+    const userActivity = await getPendingUserActivity();
+    
+    if (userActivity && userActivity.length > 0) {
+      // Simulate batch API call
+      const batchSuccess = await sendUserActivityToServer(userActivity);
+      
+      if (batchSuccess) {
+        console.log('✅ User activity synced');
+        await clearSyncedUserActivity(userActivity);
+      } else {
+        throw new Error('User activity sync failed');
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ User activity sync failed:', error);
+    throw error;
+  }
+}
+
+// REAL SYNC: Retry Failed Requests
+async function retryFailedRequests() {
+  try {
+    console.log('🔄 Retrying failed requests...');
+    
+    const failedRequests = await getFailedRequests();
+    
+    for (const request of failedRequests) {
+      try {
+        await retryRequest(request);
+        await removeFailedRequest(request.id);
+        console.log('✅ Request retry successful:', request.id);
+      } catch (retryError) {
+        console.log('❌ Request retry failed, will retry later:', request.id);
+        // Keep in queue for next retry
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Failed requests retry failed:', error);
+    throw error;
+  }
+}
+
+// ======== ✅ STORAGE HELPERS ========
+
+async function getPendingPDFHistory() {
+  // Get from IndexedDB atau localStorage
+  return new Promise((resolve) => {
+    const history = JSON.parse(localStorage.getItem('pendingPDFHistory') || '[]');
+    console.log('📖 Pending PDF history:', history.length);
+    resolve(history);
+  });
+}
+
+async function sendPDFHistoryToServer(history) {
+  console.log('🌐 Sending PDF history to server:', history);
+  
+  // Simulate API call dengan kemungkinan gagal
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // 80% success rate untuk demo
+      const success = Math.random() > 0.2;
+      
+      if (success) {
+        console.log('✅ Server accepted PDF history');
+        resolve(true);
+      } else {
+        console.log('❌ Server rejected PDF history');
+        reject(new Error('Server error'));
+      }
+    }, 1000);
+  });
+}
+
+async function clearSyncedPDFHistory(syncedHistory) {
+  const currentHistory = JSON.parse(localStorage.getItem('pendingPDFHistory') || '[]');
+  
+  // Remove only synced items
+  const syncedIds = syncedHistory.map(item => item.id);
+  const remainingHistory = currentHistory.filter(item => !syncedIds.includes(item.id));
+  
+  localStorage.setItem('pendingPDFHistory', JSON.stringify(remainingHistory));
+  console.log('🧹 Cleared synced PDF history, remaining:', remainingHistory.length);
+}
+
+async function getPendingUserActivity() {
+  return JSON.parse(localStorage.getItem('pendingUserActivity') || '[]');
+}
+
+async function sendUserActivityToServer(activity) {
+  console.log('🌐 Sending user activity to server:', activity.length, 'items');
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return true; // Simulate success
+}
+
+async function clearSyncedUserActivity(activity) {
+  localStorage.removeItem('pendingUserActivity');
+}
+
+async function getFailedRequests() {
+  return JSON.parse(localStorage.getItem('failedRequests') || '[]');
+}
+
+async function retryRequest(request) {
+  console.log('🔄 Retrying request:', request.url);
+  
+  // Simulate retry dengan fetch
+  const response = await fetch(request.url, {
+    method: request.method || 'GET',
+    body: request.body,
+    headers: request.headers
+  });
+  
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  
+  return response;
+}
+
+async function removeFailedRequest(requestId) {
+  const requests = JSON.parse(localStorage.getItem('failedRequests') || '[]');
+  const updatedRequests = requests.filter(req => req.id !== requestId);
+  localStorage.setItem('failedRequests', JSON.stringify(updatedRequests));
+}

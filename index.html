@@ -1862,6 +1862,123 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// ======== ✅ REAL BACKGROUND SYNC TRIGGERS ========
+
+// Track PDF reading session
+class ReadingSession {
+  constructor() {
+    this.sessionStart = Date.now();
+    this.pageTurns = 0;
+    this.currentPDF = null;
+  }
+  
+  startPDF(pdfName) {
+    this.currentPDF = pdfName;
+    this.sessionStart = Date.now();
+    this.pageTurns = 0;
+    console.log('📖 Reading session started:', pdfName);
+  }
+  
+  trackPageTurn() {
+    this.pageTurns++;
+    
+    // Schedule background sync setelah beberapa page turns
+    if (this.pageTurns % 3 === 0) { // Setiap 3 page turns
+      this.scheduleHistorySync();
+    }
+  }
+  
+  async scheduleHistorySync() {
+    if (!this.currentPDF) return;
+    
+    const sessionData = {
+      id: `${this.currentPDF}-${Date.now()}`,
+      pdfName: this.currentPDF,
+      duration: Date.now() - this.sessionStart,
+      pageTurns: this.pageTurns,
+      timestamp: Date.now(),
+      synced: false
+    };
+    
+    // Save to pending history
+    const pendingHistory = JSON.parse(localStorage.getItem('pendingPDFHistory') || '[]');
+    pendingHistory.push(sessionData);
+    localStorage.setItem('pendingPDFHistory', JSON.stringify(pendingHistory));
+    
+    console.log('💾 Saved reading session:', sessionData);
+    
+    // Register background sync
+    const success = await registerBackgroundSync('sync-pdf-history');
+    
+    if (success) {
+      this.showSyncIndicator('Reading progress saved');
+    }
+  }
+  
+  showSyncIndicator(message) {
+    // Show subtle sync indicator
+    const indicator = document.createElement('div');
+    indicator.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #4CAF50;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      z-index: 10000;
+    `;
+    indicator.textContent = '✓ ' + message;
+    document.body.appendChild(indicator);
+    
+    setTimeout(() => {
+      document.body.removeChild(indicator);
+    }, 2000);
+  }
+}
+
+// Initialize reading session tracker
+const readingSession = new ReadingSession();
+
+// Demo: Simulate network failure and retry
+async function demoBackgroundSync() {
+  console.log('🚀 Starting background sync demo...');
+  
+  // Simulate a failed API request
+  const failedRequest = {
+    id: 'req-' + Date.now(),
+    url: '/api/user-activity',
+    method: 'POST',
+    body: JSON.stringify({ action: 'demo', timestamp: Date.now() }),
+    headers: { 'Content-Type': 'application/json' }
+  };
+  
+  // Save failed request for retry
+  const failedRequests = JSON.parse(localStorage.getItem('failedRequests') || '[]');
+  failedRequests.push(failedRequest);
+  localStorage.setItem('failedRequests', JSON.stringify(failedRequests));
+  
+  console.log('💾 Saved failed request for retry');
+  
+  // Register background sync untuk retry
+  const success = await registerBackgroundSync('retry-failed-requests');
+  
+  if (success) {
+    alert('Demo started! Disconnect internet and wait, then reconnect to see background sync in action.');
+  }
+}
+
+// Enhanced PDF progress tracking dengan reading session
+function trackPDFView(pdfName) {
+  readingSession.startPDF(pdfName);
+  
+  // Schedule periodic user activity sync
+  setInterval(() => {
+    registerBackgroundSync('sync-user-activity');
+  }, 30000); // Setiap 30 detik
+}
+
     </script>
 </body>
 </html>

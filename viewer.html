@@ -375,7 +375,15 @@
         // ==================== BACKGROUND SYNC INTEGRATION ====================
 
 // Update PDF progress untuk background sync
+// ==================== REAL BACKGROUND SYNC INTEGRATION ====================
+
+// Enhanced PDF progress dengan reading session
 function updatePDFProgress(pdfName, pageNum, totalPages) {
+  // Track dalam reading session
+  if (window.readingSession) {
+    window.readingSession.trackPageTurn();
+  }
+  
   const progress = {
     id: pdfName,
     page: pageNum,
@@ -386,11 +394,10 @@ function updatePDFProgress(pdfName, pageNum, totalPages) {
   
   console.log('📊 PDF Progress:', progress);
   
-  // Simpan progress ke localStorage
+  // Simpan progress untuk sync
   let existingProgress = JSON.parse(localStorage.getItem('pdfProgress') || '[]');
-  
-  // Update atau tambah progress
   const existingIndex = existingProgress.findIndex(p => p.id === pdfName);
+  
   if (existingIndex !== -1) {
     existingProgress[existingIndex] = progress;
   } else {
@@ -399,67 +406,44 @@ function updatePDFProgress(pdfName, pageNum, totalPages) {
   
   localStorage.setItem('pdfProgress', JSON.stringify(existingProgress));
   
-  // Trigger background sync jika service worker ready
+  // Trigger background sync
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready.then(registration => {
-      // Kirim message ke service worker
-      if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: 'PDF_PROGRESS_UPDATE',
-          progress: progress
-        });
-      }
-      
-      // Register background sync
       if ('sync' in registration) {
-        registration.sync.register('pdf-metadata-sync')
-          .then(() => console.log('✅ PDF progress sync scheduled'))
-          .catch(err => console.log('❌ PDF progress sync failed:', err));
+        registration.sync.register('sync-pdf-history')
+          .then(() => console.log('✅ PDF history sync scheduled'))
+          .catch(err => console.log('❌ PDF history sync failed:', err));
       }
     });
   }
 }
 
-// Enhanced event handlers dengan progress tracking
-document.getElementById("prev").addEventListener("click", () => {
-  const now = Date.now();
-  if (now - lastClickTime < clickDebounceTime) return;
-  lastClickTime = now;
-  
-  if (pageNum > 1 && !pageIsRendering) {
-    pageNum--;
-    queueRenderPage(pageNum);
-    
-    // ✅ SYNC PROGRESS
-    if (pdfDoc && fileNameDisplay.textContent) {
-      updatePDFProgress(
-        fileNameDisplay.textContent,
-        pageNum, 
-        pdfDoc.numPages
-      );
+// Initialize reading session ketika PDF dibuka
+function initReadingSession() {
+  if (!window.readingSession && fileNameDisplay.textContent) {
+    // Load reading session dari main window
+    if (window.opener && window.opener.readingSession) {
+      window.readingSession = window.opener.readingSession;
+    } else {
+      // Fallback: create new session
+      window.readingSession = {
+        startPDF: (name) => console.log('📖 Session started:', name),
+        trackPageTurn: () => console.log('📄 Page turned')
+      };
     }
+    
+    window.readingSession.startPDF(fileNameDisplay.textContent);
   }
-});
+}
 
-document.getElementById("next").addEventListener("click", () => {
-  const now = Date.now();
-  if (now - lastClickTime < clickDebounceTime) return;
-  lastClickTime = now;
-  
-  if (pageNum < pdfDoc.numPages && !pageIsRendering) {
-    pageNum++;
-    queueRenderPage(pageNum);
-    
-    // ✅ SYNC PROGRESS
-    if (pdfDoc && fileNameDisplay.textContent) {
-      updatePDFProgress(
-        fileNameDisplay.textContent,
-        pageNum, 
-        pdfDoc.numPages
-      );
-    }
-  }
-});
+// Panggil ketika PDF berhasil load
+// Di dalam loadPDFFromNetwork atau loadPDFFromBlob, setelah pdfDoc di-set:
+pdfDoc = pdf;
+loading.style.display = 'none';
+renderPage(pageNum);
+
+// ✅ TAMBAHKAN: Initialize reading session
+initReadingSession();
 
         // ==================== CLEANUP ON EXIT ====================
         
