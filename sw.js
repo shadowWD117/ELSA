@@ -1,8 +1,8 @@
 /* ============================
-   ELSA PWA Service Worker v3.1 - RELATIVE PATHS
+   ELSA PWA Service Worker v3.2 - RELATIVE PATHS
    ============================ */
 
-const APP_VERSION = 'v3.1-debug';
+const APP_VERSION = 'v3.2-pwabuilder-test';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
 const STATIC_CACHE = `static-${APP_VERSION}`;
 const PDF_CACHE = `pdf-cache-${APP_VERSION}`;
@@ -28,8 +28,7 @@ const urlsToCache = [
   './icons/icon-96x96.png',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',
-  './fallback/offline.html',
-  './sw-offline.js'
+  './fallback/offline.html'
 ];
 
 // ======== ✅ INTEGRITY CHECKER ========
@@ -274,13 +273,12 @@ self.addEventListener('activate', event => {
         client.postMessage({ type: 'VERSION_ACTIVATED', version: APP_VERSION });
       }
 
-      // ======== ✅ CHECK INTEGRITY SETELAH ACTIVATE ========
-      console.log('⏰ SW: Setting activate timeout for integrity check...');
-      setTimeout(() => {
-        console.log('🔔 SW: Activate timeout executed, calling integrity check...');
-        integrityChecker.checkAllCachedAssets();
-      }, 2000);
-      // ======== ✅ END CHECK ========
+      // ======== ✅ CHECK INTEGRITY // ======== ⏸️ DISABLED FOR PWABUILDER TEST ========
+console.log('⏸️ SW: Integrity checker disabled for PWA Builder test');
+ setTimeout(() => {
+   integrityChecker.checkAllCachedAssets();
+}, 3000);
+// ======== ⏸️ END DISABLED ============
 
       console.log('🎯 SW: activated & clients claimed');
     })()
@@ -357,29 +355,61 @@ async function handlePDFRequest(event) {
 }
 
 // Handle navigation
+// Handle navigation - OPTIMIZED FOR PWABUILDER
 async function handleNavigationRequest(event) {
   const request = event.request;
+  console.log('[SW] Navigation request for PWABuilder test');
+  
   try {
+    // 1. Coba network - SANGAT SIMPLE & RELIABLE
+    console.log('[SW] Trying network request...');
     const networkResponse = await fetch(request);
+    
+    // Cache successful responses
     if (networkResponse && networkResponse.ok) {
       const clone = networkResponse.clone();
       caches.open(STATIC_CACHE).then(cache => {
-        cache.put(request, clone).then(() => limitCacheSize(STATIC_CACHE, MAX_STATIC_ITEMS));
+        cache.put(request, clone)
+          .then(() => limitCacheSize(STATIC_CACHE, MAX_STATIC_ITEMS))
+          .catch(e => console.warn('[SW] Cache put failed:', e));
       });
     }
+    
+    console.log('[SW] Network success - returning response');
     return networkResponse;
+    
   } catch (err) {
-    console.log('🌐 navigation failed, fallback to cache/offline', err);
+    console.log('[SW] Network failed, using cache fallback');
+    
+    // 2. Coba cache halaman yang diminta
     const cached = await caches.match(request);
-    if (cached) return cached;
+    if (cached) {
+      console.log('[SW] Serving from cache:', request.url);
+      return cached;
+    }
     
-    // ✅ RELATIVE PATH untuk offline
+    // 3. Fallback ke offline page - GUNAKAN PATH EXISTING
     const offline = await caches.match('./fallback/offline.html');
-    if (offline) return offline;
+    if (offline) {
+      console.log('[SW] Serving offline page');
+      return offline;
+    }
     
-    return new Response('<h1>Offline</h1><p>Aplikasi ELSA sedang offline</p>', {
+    // 4. Ultimate fallback - SUPER SIMPLE
+    console.log('[SW] Using ultimate fallback');
+    return new Response(`
+      <!DOCTYPE html>
+      <html>
+        <head><title>Offline</title><meta charset="UTF-8"></head>
+        <body>
+          <h1>Offline</h1>
+          <p>Aplikasi ELSA sedang offline</p>
+          <button onclick="window.location.reload()">Coba Lagi</button>
+        </body>
+      </html>
+    `, {
       status: 503,
-      headers: { 'Content-Type': 'text/html' }
+      headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
   }
 }
@@ -399,12 +429,28 @@ async function handleStaticRequest(event) {
     }
     return networkResponse;
   } catch (err) {
-    console.warn('❌ static fetch failed for', request.url, err);
-    if (request.url.match(/\.(css|js)$/)) {
-      return new Response('', { status: 404, headers: { 'Content-Type': 'text/plain' } });
-    }
-    return new Response('Resource tidak tersedia', { status: 503 });
+  console.warn('[SW] Static fetch failed for', request.url, err);
+  
+  // Better fallback based on content type
+  if (request.url.match(/\.(css)$/)) {
+    return new Response('/* CSS tidak tersedia offline */', {
+      status: 404,
+      headers: { 'Content-Type': 'text/css' }
+    });
   }
+  
+  if (request.url.match(/\.(js)$/)) {
+    return new Response('// JS tidak tersedia offline', {
+      status: 404,
+      headers: { 'Content-Type': 'application/javascript' }
+    });
+  }
+  
+  // For other file types
+  return new Response('Resource tidak tersedia offline', {
+    status: 503,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+  });
 }
 
 // Helper
