@@ -1,8 +1,8 @@
 /* ============================
-   ELSA PWA Service Worker v3.2 - RELATIVE PATHS
+   ELSA PWA Service Worker v3.1 - RELATIVE PATHS
    ============================ */
 
-const APP_VERSION = 'v3.2-debug';
+const APP_VERSION = 'v3.1-debug';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
 const STATIC_CACHE = `static-${APP_VERSION}`;
 const PDF_CACHE = `pdf-cache-${APP_VERSION}`;
@@ -28,7 +28,8 @@ const urlsToCache = [
   './icons/icon-96x96.png',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',
-  './fallback/offline.html'
+  './fallback/offline.html',
+  './sw-offline.js'
 ];
 
 // ======== ✅ INTEGRITY CHECKER ========
