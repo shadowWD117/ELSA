@@ -236,6 +236,7 @@ self.addEventListener('install', event => {
 });
 
 // ACTIVATE: clean old caches
+// ACTIVATE: clean old caches
 self.addEventListener('activate', event => {
   console.log(`🟢 [SW ${APP_VERSION}] activating...`);
   event.waitUntil(
@@ -264,12 +265,11 @@ self.addEventListener('activate', event => {
         client.postMessage({ type: 'VERSION_ACTIVATED', version: APP_VERSION });
       }
 
-      // ======== ✅ CHECK INTEGRITY // ======== ⏸️ DISABLED FOR PWABUILDER TEST ========
-console.log('⏸️ SW: Integrity checker disabled for PWA Builder test');
- setTimeout(() => {
-   integrityChecker.checkAllCachedAssets();
-}, 3000);
-// ======== ⏸️ END DISABLED ============
+      // ❌ HAPUS INI — JANGAN PANGGIL integrityChecker DI SINI
+      // console.log('⏸️ SW: Integrity checker disabled for PWA Builder test');
+      // setTimeout(() => {
+      //   integrityChecker.checkAllCachedAssets();
+      // }, 3000);
 
       console.log('🎯 SW: activated & clients claimed');
     })()
@@ -444,6 +444,7 @@ async function handleStaticRequest(event) {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' }
   });
 }
+}
 
 // Helper
 function getFileNameFromUrl(url) {
@@ -462,6 +463,15 @@ self.addEventListener('message', event => {
   console.log('📨 SW: Received message:', data);
   
   if (!data || !data.type) return;
+
+  // ✅ TAMBAHKAN INI: Handle integrity check dari halaman
+  if (data.type === 'RUN_INTEGRITY_CHECK') {
+    console.log('🔍 SW: Menjalankan integrity check berdasarkan permintaan halaman...');
+    integrityChecker.checkAllCachedAssets().catch(err => {
+      console.error('💥 Integrity check error:', err);
+    });
+    return; // Penting: hentikan di sini agar tidak proses handler lain
+  }
 
   if (data.type === 'SKIP_WAITING') {
     console.log('🔔 SW: Received SKIP_WAITING message — calling skipWaiting()');

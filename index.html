@@ -1345,6 +1345,7 @@ body {
         }
 
         // 🔄 SIMPLE & ROBUST SERVICE WORKER REGISTRATION
+// 🔄 SIMPLE & ROBUST SERVICE WORKER REGISTRATION
 function initializeServiceWorker() {
     if ('serviceWorker' in navigator) {
         console.log('🚀 Initializing Service Worker...');
@@ -1368,6 +1369,14 @@ function initializeServiceWorker() {
                             console.log('✅ New content available!');
                             showUpdateNotification();
                         }
+                    });
+                });
+                
+                // ✅ JALANKAN INTEGRITY CHECK SETELAH SW SIAP
+                navigator.serviceWorker.ready.then(() => {
+                    console.log('📬 Mengirim perintah integrity check ke SW...');
+                    navigator.serviceWorker.controller?.postMessage({
+                        type: 'RUN_INTEGRITY_CHECK'
                     });
                 });
                 
