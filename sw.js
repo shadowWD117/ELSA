@@ -213,27 +213,24 @@ async function limitCacheSize(cacheName, maxItems) {
 }
 
 // INSTALL: cache app shell
+// INSTALL: cache app shell — DIPERBAIKI UNTUK PWABUILDER
 self.addEventListener('install', event => {
-  console.log(`🟢 [SW ${APP_VERSION}] install - caching app shell...`);
+  console.log(`🟢 [SW ${APP_VERSION}] install - caching critical assets...`);
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then(cache => {
-        // Gunakan Promise.allSettled agar satu gagal tidak batalkan semua
-        const promises = urlsToCache.map(url =>
-          cache.add(url).catch(err => {
-            console.warn(`⚠️ Gagal cache ${url}:`, err.message || err);
-            // Jangan return error — biarkan install tetap lanjut
-          })
-        );
-        return Promise.allSettled(promises); // ⭐ Lebih aman
+        // ✅ CACHE offline.html SECARA WAJIB — jangan biarkan gagal
+        return cache.addAll(urlsToCache)
+          .catch(err => {
+            console.error('❌ Gagal meng-cache aset kritis:', err);
+            // Jika offline.html tidak bisa di-cache, batalkan install
+            // Ini memastikan SW hanya aktif jika offline support benar-benar siap
+            throw new Error('Offline fallback tidak tersedia — install dibatalkan');
+          });
       })
       .then(() => {
-        console.log('✅ [OFFLINE SUPPORT] App shell caching attempt completed');
-        return self.skipWaiting(); // ⭐ Aktifkan segera
-      })
-      .catch(err => {
-        console.error('❌ SW: Install phase had critical error:', err);
-        // Jangan batalkan install hanya karena cache gagal
+        console.log('✅ [OFFLINE SUPPORT] Semua aset kritis (termasuk offline.html) berhasil di-cache');
+        return self.skipWaiting();
       })
   );
 });
@@ -351,66 +348,62 @@ async function handlePDFRequest(event) {
 // Handle navigation
 // Handle navigation - OPTIMIZED FOR PWABUILDER
 // Handle navigation - DIPERBAIKI UNTUK PWABUILDER
+// Handle navigation — DIPERBAIKI 100% UNTUK PWABUILDER
 async function handleNavigationRequest(event) {
   const request = event.request;
-  const url = new URL(request.url);
 
-  // Jika ini adalah halaman utama atau halaman yang di-cache di urlsToCache
-  if (urlsToCache.some(path => {
-    const fullPath = new URL(path, self.location.origin).href;
-    return request.url === fullPath || 
-           (path === './' && request.url === self.location.origin + '/');
-  })) {
-    // ✅ CACHE-FIRST untuk halaman penting
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      console.log('[SW] Serving from cache (navigation):', request.url);
-      return cachedResponse;
-    }
-  }
-
-  // Jika tidak ada di cache, coba jaringan
   try {
+    // Coba jaringan dulu (untuk konten terbaru saat online)
     const networkResponse = await fetch(request);
     if (networkResponse.ok) {
-      // Cache respons untuk penggunaan offline berikutnya
+      // Cache respons untuk offline nanti
       const clone = networkResponse.clone();
       caches.open(STATIC_CACHE).then(cache => {
         cache.put(request, clone)
           .then(() => limitCacheSize(STATIC_CACHE, MAX_STATIC_ITEMS))
-          .catch(e => console.warn('[SW] Failed to cache navigation:', e));
+          .catch(e => console.warn('[SW] Gagal cache halaman:', e));
       });
+      return networkResponse;
     }
-    return networkResponse;
+    // Jika respons tidak OK (404, 500, dll), lanjut ke fallback
   } catch (err) {
-    console.log('[SW] Network failed, serving offline fallback');
-    
-    // Coba offline.html
-    const offlineResponse = await caches.match('./fallback/offline.html');
-    if (offlineResponse) {
-      return offlineResponse;
-    }
-
-    // Inline fallback
-    return new Response(`
-      <!DOCTYPE html>
-      <html lang="id">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>Offline</title>
-          <style>body{font-family:sans-serif;text-align:center;padding:2rem;background:#f5f5f5;color:#333;}</style>
-        </head>
-        <body>
-          <h1>Anda Sedang Offline</h1>
-          <p>Aplikasi tidak dapat diakses tanpa koneksi internet.</p>
-        </body>
-      </html>
-    `, {
-      status: 200,
-      headers: { 'Content-Type': 'text/html; charset=utf-8' }
-    });
+    console.log('[SW] Network gagal untuk navigasi:', request.url);
   }
+
+  // Jika offline atau jaringan error, coba ambil dari cache
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+  // Jika tidak ada di cache, SAJIKAN offline.html DARI CACHE
+  const offlineResponse = await caches.match('./fallback/offline.html');
+  if (offlineResponse) {
+    console.log('[SW] Menyajikan offline.html untuk:', request.url);
+    return offlineResponse;
+  }
+
+  // Jika offline.html juga tidak ada (seharusnya tidak terjadi karena install dijamin cache-nya),
+  // sajikan inline sebagai cadangan terakhir
+  console.error('[SW] KRISIS: offline.html tidak ditemukan di cache!');
+  return new Response(`
+    <!DOCTYPE html>
+    <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Offline</title>
+        <style>body{font-family:sans-serif;text-align:center;padding:2rem;background:#f5f5f5;color:#333;}</style>
+      </head>
+      <body>
+        <h1>Anda Sedang Offline</h1>
+        <p>Aplikasi tidak dapat diakses tanpa koneksi internet.</p>
+      </body>
+    </html>
+  `, {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+  });
 }
 
 // Handle static assets
