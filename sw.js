@@ -353,36 +353,45 @@ async function handlePDFRequest(event) {
 // Handle navigation - DIPERBAIKI UNTUK PWABUILDER
 async function handleNavigationRequest(event) {
   const request = event.request;
-  console.log('[SW] Handling navigation request for:', request.url);
+  const url = new URL(request.url);
 
+  // Jika ini adalah halaman utama atau halaman yang di-cache di urlsToCache
+  if (urlsToCache.some(path => {
+    const fullPath = new URL(path, self.location.origin).href;
+    return request.url === fullPath || 
+           (path === './' && request.url === self.location.origin + '/');
+  })) {
+    // ✅ CACHE-FIRST untuk halaman penting
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      console.log('[SW] Serving from cache (navigation):', request.url);
+      return cachedResponse;
+    }
+  }
+
+  // Jika tidak ada di cache, coba jaringan
   try {
-    // Coba jaringan dulu (network-first)
     const networkResponse = await fetch(request);
-    
-    // Cache respons sukses
     if (networkResponse.ok) {
+      // Cache respons untuk penggunaan offline berikutnya
       const clone = networkResponse.clone();
       caches.open(STATIC_CACHE).then(cache => {
         cache.put(request, clone)
           .then(() => limitCacheSize(STATIC_CACHE, MAX_STATIC_ITEMS))
-          .catch(e => console.warn('[SW] Failed to cache navigation response:', e));
+          .catch(e => console.warn('[SW] Failed to cache navigation:', e));
       });
     }
-    
     return networkResponse;
-    
   } catch (err) {
-    console.log('[SW] Network failed for navigation, using offline fallback');
+    console.log('[SW] Network failed, serving offline fallback');
     
-    // Langsung coba fallback offline.html — jangan coba cache halaman asli dulu
+    // Coba offline.html
     const offlineResponse = await caches.match('./fallback/offline.html');
     if (offlineResponse) {
-      console.log('[SW] Serving offline.html from cache');
       return offlineResponse;
     }
-    
-    // Ultimate fallback: pastikan selalu ada
-    console.warn('[SW] offline.html not found in cache — using inline fallback');
+
+    // Inline fallback
     return new Response(`
       <!DOCTYPE html>
       <html lang="id">
@@ -394,14 +403,11 @@ async function handleNavigationRequest(event) {
         </head>
         <body>
           <h1>Anda Sedang Offline</h1>
-          <p>Aplikasi ELSA tidak dapat diakses tanpa koneksi internet.</p>
-          <button onclick="window.location.reload()" style="margin-top:1rem;padding:0.5rem 1rem;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;">
-            Coba Lagi
-          </button>
+          <p>Aplikasi tidak dapat diakses tanpa koneksi internet.</p>
         </body>
       </html>
     `, {
-      status: 200, // ⭐ Penting: jangan 503!
+      status: 200,
       headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
   }
