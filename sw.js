@@ -25,8 +25,14 @@ const urlsToCache = [
   './alat/konversi/berat/index.html',
   './alat/periodik/index.html',
   './alat/TodoList/index.html',
+  
+  // ⭐ NEW: Add handler pages
+  './file-handler.html',
+  './share-target.html',
+  './protocol-handler.html',
+  
   './icons/icon-96x96.png',
-  './icons/icon-192x192.png',
+  './icons/icon-192x192.png', 
   './icons/icon-512x512.png',
   './fallback/offline.html'
 ];
@@ -280,6 +286,20 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
+  
+    // ⭐ NEW: Handle file protocol requests
+  if (url.search.includes('file-handler') || url.pathname.includes('/file-handler')) {
+    console.log('📁 [SW] File handler request detected:', request.url);
+    event.respondWith(handleFileHandlerRequest(event));
+    return;
+  }
+
+  // ⭐ NEW: Handle custom protocol requests
+  if (url.protocol === 'web+elsa:' || url.search.includes('web+elsa')) {
+    console.log('🔗 [SW] Custom protocol request:', request.url);
+    event.respondWith(handleProtocolRequest(event));
+    return;
+  }
 
   // Abaikan non-GET & external resources
   if (request.method !== 'GET') return;
@@ -1204,3 +1224,202 @@ async function clearSyncedNotificationStatus(status) {
 
 // PWABUILDER: OFFLINE SUPPORT ENABLED ✅
 // This service worker provides a valid offline fallback for navigation requests.
+
+// ⭐ NEW: Handle File Handler Requests
+async function handleFileHandlerRequest(event) {
+  try {
+    console.log('📁 [SW] Processing file handler request...');
+    
+    // Untuk GET requests ke file-handler.html
+    if (event.request.url.includes('/file-handler.html')) {
+      const cachedResponse = await caches.match('./file-handler.html');
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      
+      // Fallback ke halaman file handler
+      return new Response(`
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>ELSA - File Handler</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+                .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>📁 File Handler ELSA</h1>
+                <p>File akan diproses oleh aplikasi ELSA.</p>
+                <div id="file-info"></div>
+            </div>
+            <script>
+                // JavaScript untuk menangani file akan ditambahkan di halaman asli
+                console.log('File handler page loaded');
+            </script>
+        </body>
+        </html>
+      `, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+    }
+    
+    // Untuk POST requests dengan file data
+    return new Response(JSON.stringify({
+      status: 'success',
+      message: 'File received by ELSA',
+      timestamp: new Date().toISOString()
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+  } catch (error) {
+    console.error('❌ [SW] File handler error:', error);
+    return new Response(JSON.stringify({
+      error: 'FILE_HANDLER_ERROR',
+      message: 'Gagal memproses file'
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+// ⭐ NEW: Handle Custom Protocol Requests
+async function handleProtocolRequest(event) {
+  try {
+    const url = new URL(event.request.url);
+    console.log('🔗 [SW] Processing protocol request:', url.toString());
+    
+    // Extract parameters dari protocol
+    const linkParam = url.searchParams.get('link') || url.searchParams.get('url') || '';
+    
+    // Redirect ke halaman utama dengan parameter
+    const redirectUrl = `./index.html?protocol=web+elsa&data=${encodeURIComponent(linkParam)}`;
+    
+    return new Response(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Redirecting...</title>
+        <script>
+          window.location.href = '${redirectUrl}';
+        </script>
+      </head>
+      <body>
+        <p>Mengarahkan ke ELSA...</p>
+      </body>
+      </html>
+    `, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    });
+    
+  } catch (error) {
+    console.error('❌ [SW] Protocol handler error:', error);
+    
+    // Fallback redirect
+    return new Response(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <script>window.location.href = './index.html';</script>
+      </head>
+      </html>
+    `, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    });
+  }
+}
+
+// ⭐ NEW: Handle Share Target Requests
+async function handleShareTargetRequest(event) {
+  try {
+    console.log('📤 [SW] Processing share target request...');
+    
+    // Untuk GET requests ke share-target.html
+    if (event.request.method === 'GET') {
+      const cachedResponse = await caches.match('./share-target.html');
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      
+      // Fallback share target page
+      return new Response(`
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>ELSA - Share Content</title>
+        </head>
+        <body>
+            <h1>📤 Berbagi Konten ke ELSA</h1>
+            <p>Konten akan diproses...</p>
+        </body>
+        </html>
+      `, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+    }
+    
+    // Untuk POST requests dengan shared data
+    if (event.request.method === 'POST') {
+      const formData = await event.request.formData();
+      const title = formData.get('title') || '';
+      const text = formData.get('text') || '';
+      const url = formData.get('url') || '';
+      
+      console.log('📤 [SW] Shared data received:', { title, text, url });
+      
+      // Simpan shared data untuk diproses nanti
+      await saveSharedData({ title, text, url });
+      
+      // Redirect ke halaman utama dengan shared data
+      return new Response(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <script>
+            localStorage.setItem('sharedData', JSON.stringify({
+              title: '${title.replace(/'/g, "\\'")}',
+              text: '${text.replace(/'/g, "\\'")}', 
+              url: '${url.replace(/'/g, "\\'")}',
+              timestamp: '${new Date().toISOString()}'
+            }));
+            window.location.href = './index.html?source=share';
+          </script>
+        </head>
+        </html>
+      `, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ [SW] Share target error:', error);
+    return new Response('Error processing share', { status: 500 });
+  }
+}
+
+// Helper untuk save shared data
+async function saveSharedData(data) {
+  // Simpan ke IndexedDB atau localStorage via client
+  console.log('💾 [SW] Saving shared data:', data);
+  
+  // Kirim ke semua clients
+  const clients = await self.clients.matchAll();
+  clients.forEach(client => {
+    client.postMessage({
+      type: 'SHARED_DATA_RECEIVED',
+      data: data
+    });
+  });
+}
