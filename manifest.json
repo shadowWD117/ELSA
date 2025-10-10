@@ -1,160 +1,177 @@
-  {
-  "id": "/index.html",
-  "name": "ELSA - Education Learning Smart App",
-  "short_name": "ELSA",
-  "description": "Aplikasi pembelajaran pintar untuk pendidikan",
-  "lang": "id",
-  "dir": "ltr",
-  "start_url": "./index.html",
-  "scope": "./",
-  "display": "standalone",
-  "display_override": ["windows-control-overlay", "tabbed", "standalone", "minimal-ui", "browser"],
-  "background_color": "#434343",
-  "theme_color": "#434343",
-  "orientation": "portrait-primary",
-  "categories": ["education", "productivity"],
-  "iarc_rating_id": "NOT_RATED",
-  
-  "related_applications": [],
-  
-  "screenshots": [
-    {
-      "src": "./screenshots/1.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "./screenshots/2.png",
-      "sizes": "1080x1920", 
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "./screenshots/3.png",
-      "sizes": "1080x1920", 
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "./screenshots/1-wide.png",
-      "sizes": "1920x1080",
-      "type": "image/png", 
-      "form_factor": "wide"
-    },
-    {
-      "src": "./screenshots/2-wide.png",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide"
-    }
-  ],
+{
+    "id": "/index.html",
+    "name": "ELSA - Education Learning Smart App",
+    "short_name": "ELSA",
+    "description": "Aplikasi pembelajaran pintar untuk pendidikan",
+    "lang": "id",
+    "dir": "ltr",
+    "start_url": "./index.html",
+    "scope": "./",
+    "display": "standalone",
+    "display_override": ["window-controls-overlay",
+        "tabbed",
+        "standalone",
+        "minimal-ui",
+        "browser"],
+    "background_color": "#434343",
+    "theme_color": "#434343",
+    "orientation": "portrait-primary",
+    "categories": ["education",
+        "productivity"],
+    "iarc_rating_id": "NOT_RATED",
 
-  "shortcuts": [
-    {
-      "name": "Kalkulator",
-      "short_name": "Kalkulator",
-      "description": "Buka alat kalkulator",
-      "url": "./alat/kalkulator/index.html",
-      "icons": [
+    "related_applications": [],
+
+    "screenshots": [{
+        "src": "./screenshots/1.png",
+        "sizes": "1080x1920",
+        "type": "image/png",
+        "form_factor": "narrow"
+    },
         {
-          "src": "./icons/calc-icon.png",
-          "sizes": "96x96",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
-      "name": "Profil",
-      "short_name": "Profil",
-      "description": "Buka halaman profil",
-      "url": "./profile/index.html",
-      "icons": [
+            "src": "./screenshots/2.png",
+            "sizes": "1080x1920",
+            "type": "image/png",
+            "form_factor": "narrow"
+        },
         {
-          "src": "./icons/profile-icon.png",
-          "sizes": "96x96",
-          "type": "image/png"
+            "src": "./screenshots/3.png",
+            "sizes": "1080x1920",
+            "type": "image/png",
+            "form_factor": "narrow"
+        },
+        {
+            "src": "./screenshots/1-wide.png",
+            "sizes": "1920x1080",
+            "type": "image/png",
+            "form_factor": "wide"
+        },
+        {
+            "src": "./screenshots/2-wide.png",
+            "sizes": "1920x1080",
+            "type": "image/png",
+            "form_factor": "wide"
+        }],
+
+    "shortcuts": [{
+        "name": "Kalkulator",
+        "short_name": "Kalkulator",
+        "description": "Buka alat kalkulator",
+        "url": "./alat/kalkulator/index.html",
+        "icons": [{
+            "src": "./icons/calc-icon.png",
+            "sizes": "96x96",
+            "type": "image/png"
+        }]
+    },
+        {
+            "name": "Profil",
+            "short_name": "Profil",
+            "description": "Buka halaman profil",
+            "url": "./profile/index.html",
+            "icons": [{
+                "src": "./icons/profile-icon.png",
+                "sizes": "96x96",
+                "type": "image/png"
+            }]
+        }],
+
+    "icons": [{
+        "src": "./icons/icon-72x72.png",
+        "sizes": "72x72",
+        "type": "image/png",
+        "purpose": "any maskable"
+    },
+        {
+            "src": "./icons/icon-96x96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "./icons/icon-128x128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "./icons/icon-144x144.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "./icons/icon-152x152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "./icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "./icons/icon-384x384.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "./icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }],
+
+    "launch_handler": {
+        "client_mode": "navigate-existing"
+    },
+
+    "edge_side_panel": {
+        "preferred_width": 400
+    },
+
+    "share_target": {
+        "action": "/share-target",
+        "method": "POST",
+        "enctype": "multipart/form-data",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url",
+            "files": [{
+                "name": "file",
+                "accept": ["image/*",
+                    "text/plain",
+                    "application/pdf"]
+            }]
         }
-      ]
-    }
-  ],
+    },
 
-  "icons": [
-    {
-      "src": "./icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
+    "file_handlers": [{
+        "action": "/file-handler",
+        "accept": {
+            "text/*": [".txt",
+                ".md"],
+            "application/pdf": [".pdf"]
+        }
+    }],
 
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
+    "protocol_handlers": [{
+        "protocol": "web+elsa",
+        "url": "/?link=%s"
+    }],
 
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
-
-  "share_target": {
-    "action": "/share-target",
-    "method": "GET",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  },
-
-  "file_handlers": [
-    {
-      "action": "/file-handler",
-      "accept": {
-        "text/*": [".txt", ".md"],
-        "application/pdf": [".pdf"]
-      }
-    }
-  ]
+    "widgets": [{
+        "name": "Info Harian",
+        "description": "Menampilkan ringkasan belajar hari ini",
+        "url": "/widgets/info.html",
+        "icons": [{
+            "src": "./icons/widget-icon.png",
+            "sizes": "96x96",
+            "type": "image/png"
+        }]
+    }]
 }
