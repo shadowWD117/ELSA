@@ -8,10 +8,15 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "background_color": "#434343",
   "theme_color": "#434343",
   "orientation": "portrait-primary",
   "categories": ["education", "productivity"],
+  "iarc_rating_id": "NOT_RATED", // atau dapatkan rating dari https://www.globalratings.com/
+  
+  "related_applications": [], // Kosong jika tidak ada app native
+  
   "screenshots": [
     {
       "src": "./screenshots/1.png",
@@ -30,8 +35,22 @@
       "sizes": "1080x1920", 
       "type": "image/png",
       "form_factor": "narrow"
+    },
+    // Tambahkan screenshot landscape (wide)
+    {
+      "src": "./screenshots/1-wide.png",
+      "sizes": "1920x1080",
+      "type": "image/png", 
+      "form_factor": "wide"
+    },
+    {
+      "src": "./screenshots/2-wide.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ],
+
   "shortcuts": [
     {
       "name": "Kalkulator",
@@ -60,6 +79,7 @@
       ]
     }
   ],
+
   "icons": [
     {
       "src": "./icons/icon-72x72.png",
