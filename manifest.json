@@ -1,3 +1,4 @@
+  {
   "id": "/index.html",
   "name": "ELSA - Education Learning Smart App",
   "short_name": "ELSA",
@@ -129,7 +130,6 @@
     }
   ],
 
-  // FITUR ADVANCED UNTUK APLIKASI EDUKASI
   "launch_handler": {
     "client_mode": "navigate-existing"
   },
@@ -157,3 +157,4 @@
       }
     }
   ]
+}
