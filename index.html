@@ -735,7 +735,7 @@ body {
         
     </style>
 </head>
-<body>
+<body id="body">
     <div id="main-content">
         <header class="app-header">
             <div class="app-header-left">
@@ -1092,6 +1092,12 @@ body {
     
     <script src="pdfjs/pdf.js"></script>
     <script>
+        
+        const body = document.getElementById("body");
+        
+        body.addEventListener('click', function(){
+            document.documentElement.requestFullscreen()
+        });
         // NAVIGATION FUNCTIONALITY
         document.addEventListener('DOMContentLoaded', function() {
             const navItems = document.querySelectorAll('.nav-item');
@@ -1229,13 +1235,21 @@ body {
                 return;
             }
 
-            loadingTask.promise.then(pdf => {
-                pdfDoc = pdf;
-                renderPage(pageNum);
-            }).catch(err => {
-                console.error("Error loading PDF from URL:", err);
-                loading.textContent = "Gagal memuat PDF: " + err.message;
-            });
+            // DI main.js - MODIFIKASI function yang sudah ada:
+
+// Di function loadPDF - tambahkan notifikasi
+loadingTask.promise.then(pdf => {
+    pdfDoc = pdf;
+    renderPage(pageNum);
+    
+    // ✅ TAMBAHKAN notifikasi
+    notifyPDFLoaded(fileNameDisplay.textContent);
+    
+}).catch(err => {
+    console.error("Error loading PDF:", err);
+    loading.textContent = "Gagal memuat PDF: " + err.message;
+});
+
         }
         
         document.getElementById("prev").addEventListener("click", () => {
@@ -1587,27 +1601,20 @@ async function registerPeriodicSync() {
 }
 
 // Demo functions to trigger background sync
+// Di background sync functions - tambahkan notifikasi
 function demoBackgroundSync() {
-  console.log('🚀 Triggering demo background sync...');
-  
-  // Simulate some user action that requires sync
-  const userAction = {
-    type: 'content-update',
-    timestamp: Date.now(),
-    data: 'User performed some action'
-  };
-  
-  // Store the action for later sync
-  storeActionForSync(userAction);
-  
-  // Register background sync
-  registerBackgroundSync('content-sync').then(success => {
-    if (success) {
-      showSyncStatus('Sync scheduled - will complete when online');
-    } else {
-      showSyncStatus('Sync failed - please check connection');
-    }
-  });
+    console.log('🚀 Triggering demo background sync...');
+    
+    registerBackgroundSync('content-sync').then(success => {
+        if (success) {
+            showSyncStatus('Sync scheduled - will complete when online');
+            // ✅ TAMBAHKAN notifikasi
+            triggerPushNotification(
+                'ELSA - Sync Scheduled',
+                'Data akan disinkronisasi ketika online kembali'
+            );
+        }
+    });
 }
 
 function syncUserData() {
@@ -2650,6 +2657,80 @@ async function registerOfflineSW() {
     }
   }
 }
+
+// DI main.js - dalam DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Notifikasi random untuk testing (5-10 detik)
+    setInterval(() => {
+        const messages = ["Pengingat ELSA", "Cek konten baru", "Lanjutkan membaca"];
+        const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+        
+        triggerPushNotification("ELSA Reminder", randomMsg);
+    }, Math.random() * 5000 + 5000); // 5-10 detik
+});
+
+
+// DI main.js - TAMBAHKAN di akhir script:
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize push notifications automatically
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(() => {
+            initializePushNotifications();
+            
+            // Juga initialize push manager
+            pushManager.initialize().then(success => {
+                if (success) {
+                    console.log('🚀 Push notifications initialized successfully');
+                }
+            });
+        });
+    }
+});
+
+
+// DI main.js - TAMBAHKAN function untuk trigger push:
+function triggerPushNotification(title, body, data = {}) {
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+            type: 'SHOW_PUSH_NOTIFICATION',
+            notification: {
+                title: title,
+                body: body,
+                data: data,
+                timestamp: Date.now()
+            }
+        });
+    } else {
+        // Fallback ke browser notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(title, {
+                body: body,
+                icon: './icons/icon-192x192.png',
+                data: data
+            });
+        }
+    }
+}
+
+// Contoh penggunaan:
+function notifyPDFLoaded(pdfName) {
+    triggerPushNotification(
+        'ELSA - PDF Loaded', 
+        `"${pdfName}" berhasil dimuat`,
+        { type: 'pdf_loaded', pdfName: pdfName }
+    );
+}
+
+function notifySyncCompleted(result) {
+    triggerPushNotification(
+        'ELSA - Sync Completed',
+        `Data berhasil disinkronisasi: ${result}`,
+        { type: 'sync_completed', result: result }
+    );
+}
+
+
+
 registerOfflineSW();
 
     </script>

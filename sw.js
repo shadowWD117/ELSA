@@ -37,6 +37,80 @@ const urlsToCache = [
   './fallback/offline.html'
 ];
 
+// IndexedDB helper khusus untuk Service Worker
+const DB_NAME = 'elsa-sw-db';
+const DB_VERSION = 1;
+const STORE_MAP = {
+  userData: 'userData',
+  pdfProgress: 'pdfProgress',
+  pendingPDFHistory: 'pendingPDFHistory',
+  pendingUserActivity: 'pendingUserActivity',
+  failedRequests: 'failedRequests',
+  pendingNotificationStatus: 'pendingNotificationStatus',
+};
+
+function openDB() {
+  if (!('indexedDB' in self)) {
+    console.warn('IndexedDB not supported in this Service Worker context');
+    return Promise.reject(new Error('IndexedDB not supported'));
+  }
+  const req = indexedDB.open(DB_NAME, DB_VERSION);
+  req.onupgradeneeded = (event) => {
+    const db = event.target.result;
+    for (const store of Object.values(STORE_MAP)) {
+      if (!db.objectStoreNames.contains(store)) {
+        db.createObjectStore(store, { keyPath: 'id' });
+      }
+    }
+  };
+  req.onsuccess = () => resolve(req.result);
+  req.onerror = () => reject(req.error);
+}
+
+async function idbGetAll(storeName) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const store = tx.objectStore(storeName);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbPut(storeName, value) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.put(value);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbDelete(storeName, id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbClear(storeName) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
+    const req = store.clear();
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
 // ======== ✅ INTEGRITY CHECKER ========
 class StartupIntegrityChecker {
     constructor() {
@@ -48,17 +122,13 @@ class StartupIntegrityChecker {
     }
     
     async checkAllCachedAssets() {
-        console.log('🎯 CHECKER: Starting checkAllCachedAssets...');
-        console.log('🎯 CHECKER: Online status:', navigator.onLine);
-        console.log('🎯 CHECKER: Already checked:', this.checked);
-        
-        if (this.checked || !navigator.onLine) {
-            console.log('⏩ CHECKER: Skip - already checked or offline');
-            return [];
-        }
-        
-        this.checked = true;
-        console.log('🔍 CHECKER: Running startup integrity check...');
+  console.log('🎯 CHECKER: Starting checkAllCachedAssets...');
+  if (this.checked || !(await isOnline())) {
+    console.log('⏩ CHECKER: Skip - already checked or offline');
+    return [];
+  }
+  this.checked = true;
+  console.log('🔍 CHECKER: Running startup integrity check...');
         
         const allChanges = [];
         
@@ -223,22 +293,20 @@ async function limitCacheSize(cacheName, maxItems) {
 self.addEventListener('install', event => {
   console.log(`🟢 [SW ${APP_VERSION}] install - caching critical assets...`);
   event.waitUntil(
-    caches.open(STATIC_CACHE)
-      .then(cache => {
-        // ✅ CACHE offline.html SECARA WAJIB — jangan biarkan gagal
-        return cache.addAll(urlsToCache)
-          .catch(err => {
-            console.error('❌ Gagal meng-cache aset kritis:', err);
-            // Jika offline.html tidak bisa di-cache, batalkan install
-            // Ini memastikan SW hanya aktif jika offline support benar-benar siap
-            throw new Error('Offline fallback tidak tersedia — install dibatalkan');
-          });
-      })
-      .then(() => {
-        console.log('✅ [OFFLINE SUPPORT] Semua aset kritis (termasuk offline.html) berhasil di-cache');
-        return self.skipWaiting();
-      })
-  );
+  caches.open(STATIC_CACHE).then(async cache => {
+    const results = await Promise.allSettled(
+      urlsToCache.map(url => cache.add(url))
+    );
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(`❌ Failed to cache ${urlsToCache[index]}:`, result.reason);
+      }
+    });
+    if (results.some(r => r.status === 'rejected')) {
+      throw new Error('Some critical assets failed to cache');
+    }
+  })
+);
 });
 
 // ACTIVATE: clean old caches
@@ -330,6 +398,24 @@ self.addEventListener('fetch', event => {
     event.respondWith(handleNavigationRequest(event));
     return;
   }
+  
+  if (request.url.match(/\.(css)$/)) {
+  return new Response('/* CSS tidak tersedia offline */', {
+    status: 404,
+    headers: { 'Content-Type': 'text/css' }
+  });
+}
+if (request.url.match(/\.(js)$/)) {
+  return new Response('// JS tidak tersedia offline', {
+    status: 404,
+    headers: { 'Content-Type': 'application/javascript' }
+  });
+}
+  
+  if (url.pathname.includes('/share-target.html')) {
+  event.respondWith(handleShareTargetRequest(event));
+  return;
+}
 
   // Static asset
   event.respondWith(handleStaticRequest(event));
@@ -478,58 +564,73 @@ function getFileNameFromUrl(url) {
 // Messaging
 // Di messaging section yang sudah ada, tambahkan:
 // Di messaging section, pastikan seperti ini:
+// DI sw.js - PERBAIKI bagian message handler:
+// DI sw.js - PERBAIKI bagian message handler YANG UTUH:
+// MESSAGE HANDLER YANG UTUH & TERPUSAT
 self.addEventListener('message', event => {
-  const data = event.data;
-  console.log('📨 SW: Received message:', data);
-  
-  if (!data || !data.type) return;
-
-  // ✅ TAMBAHKAN INI: Handle integrity check dari halaman
-  if (data.type === 'RUN_INTEGRITY_CHECK') {
-    console.log('🔍 SW: Menjalankan integrity check berdasarkan permintaan halaman...');
-    integrityChecker.checkAllCachedAssets().catch(err => {
-      console.error('💥 Integrity check error:', err);
-    });
-    return; // Penting: hentikan di sini agar tidak proses handler lain
-  }
-
-  if (data.type === 'SKIP_WAITING') {
-    console.log('🔔 SW: Received SKIP_WAITING message — calling skipWaiting()');
-    self.skipWaiting();
-  }
-  
-  // Handle manual sync requests
-  if (data.type === 'MANUAL_SYNC_REQUEST') {
-    console.log('🔄 SW: Manual sync requested');
-    event.waitUntil(
-      performBackgroundSync().then(result => {
-        // ✅ FIX: Gunakan event.ports dengan safety check
-        if (event.ports && event.ports[0]) {
-          event.ports[0].postMessage({
-            type: 'MANUAL_SYNC_RESULT',
-            result: result
-          });
-        }
-      })
-    );
-  }
-  
-  // Handle PDF progress updates
-  if (data.type === 'PDF_PROGRESS_UPDATE') {
-    console.log('📊 SW: PDF progress update received:', data.progress);
+    const data = event.data;
+    console.log('📨 SW: Received message:', data);
     
-    // Simpan progress untuk sync nanti
-    event.waitUntil(
-      savePDFProgress(data.progress).then(() => {
-        // Trigger background sync untuk PDF metadata
-        return self.registration.sync.register('pdf-metadata-sync');
-      }).then(() => {
-        console.log('✅ PDF progress sync scheduled');
-      }).catch(err => {
-        console.log('❌ PDF progress sync failed:', err);
-      })
-    );
-  }
+    if (!data || !data.type) return;
+
+    if (data.type === 'RUN_INTEGRITY_CHECK') {
+        console.log('🔍 SW: Menjalankan integrity check berdasarkan permintaan halaman...');
+        event.waitUntil(
+            integrityChecker.checkAllCachedAssets().catch(err => {
+                console.error('💥 Integrity check error:', err);
+            })
+        );
+    } 
+    else if (data.type === 'SKIP_WAITING') {
+        console.log('🔔 SW: Received SKIP_WAITING message — calling skipWaiting()');
+        self.skipWaiting();
+    }
+    else if (data.type === 'MANUAL_SYNC_REQUEST') {
+        console.log('🔄 SW: Manual sync requested');
+        event.waitUntil(
+            performBackgroundSync().then(result => {
+                if (event.ports && event.ports[0]) {
+                    event.ports[0].postMessage({
+                        type: 'MANUAL_SYNC_RESULT',
+                        result: result
+                    });
+                }
+            })
+        );
+    }
+    else if (data.type === 'PUSH_SUBSCRIBE') {
+        console.log('🔔 SW: Push subscribe request received');
+        // Handle push subscription logic here
+    }
+    else if (data.type === 'PUSH_UNSUBSCRIBE') {
+        console.log('🔔 SW: Push unsubscribe request received');
+        // Handle push unsubscription logic here
+    }
+    else if (data.type === 'SHOW_PUSH_NOTIFICATION') {
+        console.log('🔔 SW: Show push notification request:', data.notification);
+        
+        event.waitUntil(
+            self.registration.showNotification(
+                data.notification.title, 
+                {
+                    body: data.notification.body,
+                    icon: './icons/icon-192x192.png',
+                    badge: './icons/icon-96x96.png',
+                    data: data.notification.data,
+                    actions: [
+                        {
+                            action: 'open-app',
+                            title: 'Buka'
+                        },
+                        {
+                            action: 'dismiss', 
+                            title: 'Tutup'
+                        }
+                    ]
+                }
+            )
+        );
+    }
 });
 
 // Helper untuk save PDF progress
@@ -537,7 +638,6 @@ async function savePDFProgress(progress) {
   // Simpan ke IndexedDB atau storage
   console.log('💾 Saving PDF progress:', progress);
   
-  // Simpan ke localStorage simulation (di real app bisa pakai IndexedDB)
   const existingData = await getStoredProgress();
   const newData = existingData.filter(p => p.id !== progress.id);
   newData.push(progress);
@@ -566,7 +666,6 @@ async function periodicCleanup() {
     console.error('Cleanup error:', err);
   }
 }
-setInterval(periodicCleanup, 24 * 60 * 60 * 1000);
 
 console.log('🚀 SW: Service Worker loaded successfully');
 
@@ -574,12 +673,8 @@ console.log('🚀 SW: Service Worker loaded successfully');
 
 // Periodic Sync Event Handler
 self.addEventListener('periodicsync', event => {
-  console.log('🔄 Periodic Sync triggered:', event.tag);
-  
-  if (event.tag === 'content-update') {
-    event.waitUntil(
-      performBackgroundSync()
-    );
+  if (event.tag === 'content-cleanup') {
+    event.waitUntil(periodicCleanup());
   }
 });
 
@@ -697,27 +792,6 @@ async function showBackgroundNotification(updates) {
     });
   }
 }
-
-// Handle notification clicks
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  
-  if (event.action === 'open') {
-    event.waitUntil(
-      clients.matchAll({ type: 'window' }).then(windowClients => {
-        // Focus existing window or open new one
-        for (const client of windowClients) {
-          if (client.url.includes(self.location.origin) && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        if (clients.openWindow) {
-          return clients.openWindow('./');
-        }
-      })
-    );
-  }
-});
 
 // ======== ✅ BACKGROUND SYNC IMPLEMENTATION ========
 
@@ -842,12 +916,16 @@ async function clearPendingUpdates() {
   console.log('🧹 Clearing pending updates');
 }
 
+// Simpan userData sebagai satu objek, id = 'main'
 async function getUserDataFromStorage() {
-  // Get user data from localStorage or IndexedDB
-  const userName = localStorage.getItem('userName');
-  const userSettings = localStorage.getItem('userSettings');
-  
-  return userName || userSettings ? { userName, userSettings } : null;
+  const all = await idbGetAll(STORE_MAP.userData);
+  return all.find(x => x.id === 'main')?.data || null;
+}
+async function saveUserData(data) {
+  await idbPut(STORE_MAP.userData, { id: 'main', data });
+}
+async function clearSyncedUserData() {
+  await idbDelete(STORE_MAP.userData, 'main');
 }
 
 async function syncToBackend(userData) {
@@ -857,14 +935,13 @@ async function syncToBackend(userData) {
   return true; // Simulate success
 }
 
-async function clearSyncedUserData() {
-  console.log('✅ User data cleared after sync');
-}
 
+// id = progress.id
 async function getPDFProgressFromStorage() {
-  // Get PDF progress from storage
-  const progress = localStorage.getItem('pdfProgress');
-  return progress ? JSON.parse(progress) : [];
+  return (await idbGetAll(STORE_MAP.pdfProgress)).map(x => x.data);
+}
+async function savePDFProgress(progress) {
+  await idbPut(STORE_MAP.pdfProgress, { id: progress.id, data: progress });
 }
 
 async function syncPDFProgress(progress) {
@@ -887,27 +964,6 @@ async function showSyncNotification(message) {
 
 // ======== ✅ REAL BACKGROUND SYNC IMPLEMENTATION ========
 
-// Background Sync Event Handler - ENHANCED
-self.addEventListener('sync', event => {
-  console.log('🔄 Background Sync triggered:', event.tag);
-  
-  switch (event.tag) {
-    case 'sync-pdf-history':
-      event.waitUntil(syncPDFHistory());
-      break;
-      
-    case 'sync-user-activity':
-      event.waitUntil(syncUserActivity());
-      break;
-      
-    case 'retry-failed-requests':
-      event.waitUntil(retryFailedRequests());
-      break;
-      
-    default:
-      console.log('Unknown sync tag:', event.tag);
-  }
-});
 
 // REAL SYNC: PDF Reading History
 async function syncPDFHistory() {
@@ -996,13 +1052,18 @@ async function retryFailedRequests() {
 
 // ======== ✅ STORAGE HELPERS ========
 
+// Setiap history punya id unik
 async function getPendingPDFHistory() {
-  // Get from IndexedDB atau localStorage
-  return new Promise((resolve) => {
-    const history = JSON.parse(localStorage.getItem('pendingPDFHistory') || '[]');
-    console.log('📖 Pending PDF history:', history.length);
-    resolve(history);
-  });
+  return (await idbGetAll(STORE_MAP.pendingPDFHistory)).map(x => x.data);
+}
+async function clearSyncedPDFHistory(syncedHistory) {
+  const all = await idbGetAll(STORE_MAP.pendingPDFHistory);
+  const syncedIds = syncedHistory.map(item => item.id);
+  for (const item of all) {
+    if (syncedIds.includes(item.data.id)) {
+      await idbDelete(STORE_MAP.pendingPDFHistory, item.id);
+    }
+  }
 }
 
 async function sendPDFHistoryToServer(history) {
@@ -1025,19 +1086,12 @@ async function sendPDFHistoryToServer(history) {
   });
 }
 
-async function clearSyncedPDFHistory(syncedHistory) {
-  const currentHistory = JSON.parse(localStorage.getItem('pendingPDFHistory') || '[]');
-  
-  // Remove only synced items
-  const syncedIds = syncedHistory.map(item => item.id);
-  const remainingHistory = currentHistory.filter(item => !syncedIds.includes(item.id));
-  
-  localStorage.setItem('pendingPDFHistory', JSON.stringify(remainingHistory));
-  console.log('🧹 Cleared synced PDF history, remaining:', remainingHistory.length);
-}
 
 async function getPendingUserActivity() {
-  return JSON.parse(localStorage.getItem('pendingUserActivity') || '[]');
+  return (await idbGetAll(STORE_MAP.pendingUserActivity)).map(x => x.data);
+}
+async function clearSyncedUserActivity() {
+  await idbClear(STORE_MAP.pendingUserActivity);
 }
 
 async function sendUserActivityToServer(activity) {
@@ -1046,12 +1100,9 @@ async function sendUserActivityToServer(activity) {
   return true; // Simulate success
 }
 
-async function clearSyncedUserActivity(activity) {
-  localStorage.removeItem('pendingUserActivity');
-}
 
 async function getFailedRequests() {
-  return JSON.parse(localStorage.getItem('failedRequests') || '[]');
+  return (await idbGetAll(STORE_MAP.failedRequests)).map(x => x.data);
 }
 
 async function retryRequest(request) {
@@ -1072,102 +1123,86 @@ async function retryRequest(request) {
 }
 
 async function removeFailedRequest(requestId) {
-  const requests = JSON.parse(localStorage.getItem('failedRequests') || '[]');
-  const updatedRequests = requests.filter(req => req.id !== requestId);
-  localStorage.setItem('failedRequests', JSON.stringify(updatedRequests));
+  // Ambil semua request dari IndexedDB
+  const all = await idbGetAll(STORE_MAP.failedRequests);
+  for (const item of all) {
+    if (item.data.id === requestId) {
+      await idbDelete(STORE_MAP.failedRequests, item.id);
+      break;
+    }
+  }
 }
 
 // ======== ✅ PUSH NOTIFICATIONS IMPLEMENTATION ========
 
 // Push Event Handler - Terima push notifications
+// DI sw.js - PASTIKAN push handler ada:
 self.addEventListener('push', event => {
-  console.log('📨 Push notification received:', event);
-  
-  // Parse push data
-  let data = {};
-  try {
-    data = event.data ? event.data.json() : {};
-  } catch (error) {
-    console.log('❌ Error parsing push data:', error);
-    data = {
-      title: 'ELSA Update',
-      body: 'New content available',
-      icon: './icons/icon-192x192.png'
-    };
-  }
-  
-  console.log('📊 Push data:', data);
-  
-  // Tampilkan notification
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'ELSA', {
-      body: data.body || 'You have new updates',
-      icon: data.icon || './icons/icon-192x192.png',
-      badge: './icons/icon-96x96.png',
-      image: data.image,
-      data: data,
-      actions: data.actions || [
-        {
-          action: 'open-app',
-          title: 'Buka Aplikasi',
-          icon: './icons/icon-96x96.png'
-        },
-        {
-          action: 'dismiss',
-          title: 'Tutup',
-          icon: './icons/icon-96x96.png'
-        }
-      ],
-      tag: data.tag || 'elsa-update',
-      requireInteraction: data.requireInteraction || false,
-      vibrate: [200, 100, 200] // Vibrate pattern
-    })
-  );
+    console.log('📨 Push notification received:', event);
+    
+    let data = {};
+    try {
+        data = event.data ? event.data.json() : {};
+    } catch (error) {
+        console.log('❌ Error parsing push data:', error);
+        data = {
+            title: 'ELSA Update',
+            body: 'New content available',
+            icon: './icons/icon-192x192.png'
+        };
+    }
+    
+    console.log('📊 Push data:', data);
+    
+    event.waitUntil(
+        self.registration.showNotification(data.title || 'ELSA', {
+            body: data.body || 'You have new updates',
+            icon: data.icon || './icons/icon-192x192.png',
+            badge: './icons/icon-96x96.png',
+            data: data,
+            actions: [
+                {
+                    action: 'open-app',
+                    title: 'Buka Aplikasi'
+                },
+                {
+                    action: 'dismiss',
+                    title: 'Tutup'
+                }
+            ],
+            tag: data.tag || 'elsa-update'
+        })
+    );
 });
+
 
 // Notification Click Handler
 self.addEventListener('notificationclick', event => {
   console.log('👆 Notification clicked:', event.notification.data);
-  
   event.notification.close();
-  
+
   const notificationData = event.notification.data || {};
   const action = event.action;
-  
-  // Handle different actions
+
   if (action === 'open-app' || action === '') {
-    // Default action - open app
     event.waitUntil(
-      clients.matchAll({ 
-        type: 'window', 
-        includeUncontrolled: true 
-      }).then(clientList => {
-        // Cari window yang sudah terbuka
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
         for (const client of clientList) {
           if (client.url.includes(self.location.origin) && 'focus' in client) {
-            console.log('🎯 Focusing existing window:', client.url);
             return client.focus();
           }
         }
-        
-        // Buka window baru jika tidak ada yang terbuka
         if (clients.openWindow) {
-          console.log('🚀 Opening new window');
           return clients.openWindow('./');
         }
       })
     );
   } else if (action === 'view-content' && notificationData.url) {
-    // Open specific content
-    event.waitUntil(
-      clients.openWindow(notificationData.url)
-    );
+    event.waitUntil(clients.openWindow(notificationData.url));
   } else if (action === 'dismiss') {
-    // Do nothing - notification already closed
     console.log('❌ Notification dismissed');
   }
-  
-  // Send analytics atau track click
+
   trackNotificationClick(notificationData, action);
 });
 
@@ -1208,7 +1243,11 @@ async function syncNotificationStatus() {
 
 // Helper functions untuk notification status sync
 async function getPendingNotificationStatus() {
-  return JSON.parse(localStorage.getItem('pendingNotificationStatus') || '[]');
+  return (await idbGetAll(STORE_MAP.pendingNotificationStatus)).map(x => x.data);
+}
+
+async function clearSyncedNotificationStatus() {
+  await idbClear(STORE_MAP.pendingNotificationStatus);
 }
 
 async function sendNotificationStatusToServer(status) {
@@ -1216,10 +1255,6 @@ async function sendNotificationStatusToServer(status) {
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 500));
   return true;
-}
-
-async function clearSyncedNotificationStatus(status) {
-  localStorage.removeItem('pendingNotificationStatus');
 }
 
 // PWABUILDER: OFFLINE SUPPORT ENABLED ✅
@@ -1411,7 +1446,6 @@ async function handleShareTargetRequest(event) {
 
 // Helper untuk save shared data
 async function saveSharedData(data) {
-  // Simpan ke IndexedDB atau localStorage via client
   console.log('💾 [SW] Saving shared data:', data);
   
   // Kirim ke semua clients
