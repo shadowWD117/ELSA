@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Konverter Suhu</title>
+  <style>
+    :root {
+      --primary: #4CAF50;
+      --primary-dark: #388E3C;
+      --secondary: #FFC107;
+      --dark: #121212;
+      --dark-card: #1E1E1E;
+      --dark-border: #333;
+      --text: #FFFFFF;
+      --text-secondary: #AAAAAA;
+      --success: #2196F3;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--dark) 0%, #1a1a2e 100%);
+      color: var(--text);
+      padding: 20px;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .container {
+        height: 100%;
+      width: 100%;
+      max-width: 550px;
+      background-color: var(--dark-card);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      overflow: auto;
+      border: 1px solid var(--dark-border);
+      padding: 2rem;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+      padding-bottom: 1rem;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 3px;
+    }
+
+    .title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .input-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .number-input {
+      width: 100%;
+      padding: 1rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 2px solid var(--dark-border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1.2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .number-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+    }
+
+    .number-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .units-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1rem;
+      border: 1px solid var(--dark-border);
+    }
+
+    .unit-select {
+      flex: 1;
+      padding: 0.8rem;
+      background-color: var(--dark-card);
+      border: 2px solid var(--dark-border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0 0.5rem;
+    }
+
+    .unit-select:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    .conversion-arrow {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin: 0 0.5rem;
+    }
+
+    .result-container {
+      background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(255, 193, 7, 0.1));
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .result-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .result-container:hover::before {
+      left: 100%;
+    }
+
+    .result-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .result-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    .result-unit {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-left: 0.5rem;
+    }
+
+    .copy-notification {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background-color: var(--success);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+
+    .copy-notification.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--dark-border);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+    }
+
+    .unit-categories {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem;
+      }
+      
+      .title {
+        font-size: 1.8rem;
+      }
+      
+      .units-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .conversion-arrow {
+        transform: rotate(90deg);
+      }
+      
+      .result-value {
+        font-size: 1.5rem;
+      }
+      
+      .unit-select {
+        margin: 0;
+      }
+    }
+    
+        .header-back {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header-back a {
+            color: #007bff;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            text-decoration: none;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        .header-back h1 {
+            font-size: 1.5rem;
+            color: #e0e0e0;
+        }
+        
+        .icon-svg {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            color: currentColor; /* Agar bisa mengikuti warna text/icon */
+        }
+        
+  </style>
+</head>
+<body>
+  <div class="container">
+        <header class="header-back">
+            <a href="../../../index.html" title="Kembali">
+                <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </a>
+            <h1>Kembali</h1>
+        </header>
+    <div class="header">
+      <h1 class="title">KONVERSI SUHU</h1>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label" for="num">Masukkan Nilai Suhu</label>
+      <input type="number" id="num" class="number-input" placeholder="0" step="any" />
+    </div>
+
+    <div class="units-container">
+      <select id="fromUnit" class="unit-select">
+        <optgroup label="Skala Umum">
+          <option value="c" selected>Celcius (°C)</option>
+          <option value="f">Fahrenheit (°F)</option>
+          <option value="k">Kelvin (K)</option>
+        </optgroup>
+        <optgroup label="Skala Lainnya">
+          <option value="r">Réaumur (°Ré)</option>
+          <option value="ra">Rankine (°R)</option>
+        </optgroup>
+      </select>
+      
+      <div class="conversion-arrow">⇄</div>
+      
+      <select id="toUnit" class="unit-select">
+        <optgroup label="Skala Umum">
+          <option value="c">Celcius (°C)</option>
+          <option value="f" selected>Fahrenheit (°F)</option>
+          <option value="k">Kelvin (K)</option>
+        </optgroup>
+        <optgroup label="Skala Lainnya">
+          <option value="r">Réaumur (°Ré)</option>
+          <option value="ra">Rankine (°R)</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="result-container" id="resultContainer">
+      <div class="result-label">HASIL KONVERSI</div>
+      <div id="result">
+        <span class="result-value">-</span>
+        <span class="result-unit" id="resultUnit">-</span>
+      </div>
+    </div>
+
+    <div class="footer">
+      Hasil akan terupdate secara otomatis. Klik hasil untuk menyalin ke clipboard.
+    </div>
+  </div>
+
+  <div class="copy-notification" id="copyNotification">Hasil disalin!</div>
+
+  <script>
+    // Fungsi konversi suhu
+    function convertTemperature() {
+      const value = parseFloat(numInput.value);
+      const fromUnit = fromUnitSelect.value;
+      const toUnit = toUnitSelect.value;
+
+      if (isNaN(value)) {
+        resultValue.textContent = '-';
+        resultUnit.textContent = '-';
+        return;
+      }
+
+      // Konversi ke Celcius dulu (satuan dasar)
+      let valueInCelsius;
+      
+      switch(fromUnit) {
+        case 'c': // Celcius
+          valueInCelsius = value;
+          break;
+        case 'f': // Fahrenheit
+          valueInCelsius = (value - 32) * 5/9;
+          break;
+        case 'k': // Kelvin
+          valueInCelsius = value - 273.15;
+          break;
+        case 'r': // Réaumur
+          valueInCelsius = value * 5/4;
+          break;
+        case 'ra': // Rankine
+          valueInCelsius = (value - 491.67) * 5/9;
+          break;
+        default:
+          valueInCelsius = value;
+      }
+
+      // Konversi dari Celcius ke satuan tujuan
+      let result;
+      
+      switch(toUnit) {
+        case 'c': // Celcius
+          result = valueInCelsius;
+          break;
+        case 'f': // Fahrenheit
+          result = (valueInCelsius * 9/5) + 32;
+          break;
+        case 'k': // Kelvin
+          result = valueInCelsius + 273.15;
+          break;
+        case 'r': // Réaumur
+          result = valueInCelsius * 4/5;
+          break;
+        case 'ra': // Rankine
+          result = (valueInCelsius * 9/5) + 491.67;
+          break;
+        default:
+          result = valueInCelsius;
+      }
+
+      // Format angka berdasarkan besarnya hasil
+      let formattedResult;
+      
+      if (result === 0) {
+        formattedResult = '0';
+      } else if (Math.abs(result) < 0.000001) {
+        // Untuk nilai sangat kecil, gunakan notasi ilmiah
+        formattedResult = result.toExponential(6);
+      } else if (Math.abs(result) < 0.01) {
+        // Untuk nilai kecil, tampilkan lebih banyak desimal
+        formattedResult = result.toFixed(8);
+        // Hapus trailing zeros
+        formattedResult = formattedResult.replace(/\.?0+$/, '');
+      } else if (Math.abs(result) < 1) {
+        // Untuk nilai antara 0.01 dan 1
+        formattedResult = result.toFixed(6);
+        // Hapus trailing zeros
+        formattedResult = formattedResult.replace(/\.?0+$/, '');
+      } else if (Math.abs(result) < 1000) {
+        // Untuk nilai biasa
+        formattedResult = result.toFixed(4);
+        // Hapus trailing zeros
+        formattedResult = formattedResult.replace(/\.?0+$/, '');
+      } else if (Math.abs(result) < 1000000) {
+        // Untuk nilai besar, format dengan koma
+        formattedResult = result.toLocaleString('id-ID', {
+          maximumFractionDigits: 2
+        });
+      } else {
+        // Untuk nilai sangat besar, gunakan notasi ilmiah
+        formattedResult = result.toExponential(4);
+      }
+
+      resultValue.textContent = formattedResult;
+      resultUnit.textContent = unitNames[toUnit];
+    }
+
+    // Format nama satuan yang lebih baik
+    const unitNames = {
+      'c': '°C',
+      'f': '°F',
+      'k': 'K',
+      'r': '°Ré',
+      'ra': '°R'
+    };
+
+    // Elemen DOM
+    const numInput = document.getElementById('num');
+    const fromUnitSelect = document.getElementById('fromUnit');
+    const toUnitSelect = document.getElementById('toUnit');
+    const resultValue = document.querySelector('.result-value');
+    const resultUnit = document.getElementById('resultUnit');
+    const resultContainer = document.getElementById('resultContainer');
+    const copyNotification = document.getElementById('copyNotification');
+
+    // Fungsi salin ke clipboard
+    function copyToClipboard() {
+      const resultText = resultValue.textContent + ' ' + resultUnit.textContent;
+      
+      if (resultText === '- -') return;
+      
+      navigator.clipboard.writeText(resultText).then(() => {
+        // Tampilkan notifikasi
+        copyNotification.classList.add('show');
+        setTimeout(() => {
+          copyNotification.classList.remove('show');
+        }, 2000);
+      }).catch(err => {
+        console.error('Gagal menyalin teks: ', err);
+      });
+    }
+
+    // Event listeners untuk auto-convert
+    numInput.addEventListener('input', convertTemperature);
+    fromUnitSelect.addEventListener('change', convertTemperature);
+    toUnitSelect.addEventListener('change', convertTemperature);
+
+    // Event listener untuk copy to clipboard
+    resultContainer.addEventListener('click', copyToClipboard);
+
+    // Konversi otomatis saat halaman dimuat
+    window.addEventListener('load', convertTemperature);
+
+    // Tambahkan efek visual saat input difokuskan
+    numInput.addEventListener('focus', function() {
+      this.parentElement.style.transform = 'translateY(-2px)';
+    });
+
+    numInput.addEventListener('blur', function() {
+      this.parentElement.style.transform = 'translateY(0)';
+    });
+  </script>
+</body>
+</html>
