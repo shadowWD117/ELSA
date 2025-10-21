@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List & Catatan Minimalis</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cbc;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+            --light-gray: #e0e0e0;
+            --medium-gray: #b0b0b0;
+            --white: #ffffff;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08); /* Shadow lebih halus */
+            --radius-md: 6px; /* Radius sedang untuk elemen utama */
+            --radius-sm: 4px; /* Radius kecil untuk tombol */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.5; /* Kurangi line-height */
+            padding: 20px 15px; /* Sedikit lebih lebar */
+            max-width: 1000px; /* Kurangi lebar maksimal container */
+            margin: 0 auto;
+            user-select: none;
+            -web-kit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            font-size: 15px; /* Font dasar lebih kecil */
+        }
+
+        /* --- Header Styles --- */
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px; /* Jarak lebih kecil */
+            font-size: 24px; /* Judul lebih kecil */
+        }
+        
+        /* --- Layout Container (Grid) --- */
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px; /* Gap lebih kecil */
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .section {
+            background-color: var(--white);
+            border-radius: var(--radius-md);
+            padding: 20px; /* Padding section lebih kecil */
+            box-shadow: var(--shadow-light);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px; /* Jarak lebih kecil */
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--light-gray);
+            font-size: 20px; /* Subjudul lebih kecil */
+        }
+
+        /* --- Input Group (Form) --- */
+        .input-group {
+            display: flex;
+            margin-bottom: 15px; /* Margin lebih kecil */
+            gap: 8px; /* Gap lebih kecil */
+        }
+
+        input, textarea {
+            flex: 1;
+            padding: 9px 12px; /* Padding vertikal dikurangi (lebih kecil) */
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-sm);
+            font-size: 14px; /* Ukuran font input dikurangi */
+            transition: border 0.3s, box-shadow 0.3s;
+            min-width: 0;
+        }
+        
+        textarea {
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2); /* Efek fokus profesional */
+        }
+
+        /* Tombol Form Tambah/Simpan */
+        .input-group button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex-shrink: 0;
+            
+            /* Mobile: Ikon kecil */
+            width: 38px; /* Lebih kecil */
+            height: 38px; /* Lebih kecil */
+            padding: 0; 
+            font-size: 20px; /* Ikon lebih kecil */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1;
+        }
+        
+        .input-group button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        @media (min-width: 500px) {
+            .input-group button {
+                width: auto; 
+                height: auto;
+                padding: 9px 15px; /* Padding disesuaikan dengan input */
+                font-size: 14px; /* Font tombol disesuaikan */
+            }
+        }
+
+        /* --- Item List & Items --- */
+        .item-list {
+            list-style-type: none;
+            max-height: 350px; /* Tinggi maksimal list dikurangi */
+            overflow-y: auto;
+        }
+
+        .item, .note-item {
+            background-color: var(--white);
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px; /* Padding item dikurangi */
+            margin-bottom: 8px; /* Margin bawah dikurangi */
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: all 0.2s;
+            flex-wrap: wrap;
+        }
+
+        .item:hover, .note-item:hover {
+             transform: translateY(-1px);
+             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-content {
+            flex: 1 1 100%;
+            margin-right: 0;
+            min-width: 0;
+            overflow-wrap: break-word; 
+            word-break: break-word; 
+            margin-bottom: 8px; /* Jarak lebih kecil */
+        }
+        
+        .item-title, .note-title {
+            font-weight: 600; /* Dibuat sedikit lebih tipis dari 'bold' */
+            margin-bottom: 3px; /* Jarak lebih kecil */
+            font-size: 15px; /* Ukuran judul item/catatan disesuaikan */
+        }
+
+        .item-text, .note-content {
+            font-size: 13px; /* Ukuran teks konten dikurangi */
+            color: #666;
+        }
+        
+        /* Aksi Tombol Daftar (Todo & Catatan) */
+        .item-actions {
+            display: flex;
+            gap: 4px; /* Gap lebih kecil */
+            flex-shrink: 0;
+            flex: 1 1 100%; 
+            justify-content: flex-end; 
+            margin-top: 0;
+        }
+        
+        .item-actions button {
+            /* Dibuat sangat kecil dan ringkas */
+            padding: 6px; 
+            font-size: 13px;
+            width: 30px; 
+            height: 30px; 
+            border-radius: var(--radius-sm);
+        }
+        
+        @media (min-width: 500px) {
+            .item-content { margin-bottom: 0; } /* Hapus margin di desktop */
+            .item-actions {
+                flex: 0 0 auto; 
+                margin-top: 0;
+            }
+            .item-actions button {
+                width: auto;
+                height: auto;
+                padding: 6px 10px; /* Padding horizontal disesuaikan */
+            }
+        }
+        
+
+        .completed { opacity: 0.6; }
+        .completed .item-title { text-decoration: line-through; }
+        .empty-state { padding: 25px; font-size: 14px; }
+        
+        .header-back {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header-back a {
+            color: #007bff;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            text-decoration: none;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        .header-back h1 {
+            font-size: 1.5rem;
+            color: #e0e0e0;
+        }
+        
+        .icon-svg {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            color: currentColor; /* Agar bisa mengikuti warna text/icon */
+        }
+    </style>
+
+    </style>
+</head>
+<body>
+        <header class="header-back">
+            <a href="./../../index.html" title="Kembali">
+                <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </a>
+            <h1>Kembali</h1>
+        </header>
+    <header>
+        <h1>Todo List & Catatan</h1>
+        <p>Kelola tugas dan catatan Anda dengan mudah</p>
+    </header>
+
+    <div class="container">
+        <section class="section">
+            <h2>Daftar Tugas</h2>
+            <div class="input-group">
+                <input type="text" id="todoInput" placeholder="Tambah tugas baru...">
+                <button id="addTodoBtn" title="Tambah Tugas Baru">+</button>
+            </div>
+            <ul class="item-list" id="todoList">
+                </ul>
+        </section>
+
+        <section class="section">
+            <h2>Catatan Cepat</h2>
+            <div class="input-group">
+                <input type="text" id="noteTitle" placeholder="Judul catatan...">
+                <button id="addNoteBtn" title="Tambah Catatan Baru">+</button>
+            </div>
+            <textarea id="noteContent" placeholder="Isi catatan..." rows="3" style="margin-bottom: 15px;"></textarea>
+            <div id="notesList">
+                </div>
+        </section>
+    </div>
+
+    <script>
+        // Data aplikasi
+        let todos = JSON.parse(localStorage.getItem('todos')) || [];
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+        let editingTodoId = null;
+        let editingNoteId = null;
+
+        // Elemen DOM
+        const todoInput = document.getElementById('todoInput');
+        const addTodoBtn = document.getElementById('addTodoBtn');
+        const todoList = document.getElementById('todoList');
+        const noteTitle = document.getElementById('noteTitle');
+        const noteContent = document.getElementById('noteContent');
+        const addNoteBtn = document.getElementById('addNoteBtn');
+        const notesList = document.getElementById('notesList');
+        
+        // Konstanta Ikon
+        const ICON_ADD = '+';
+        const ICON_SAVE = '✔';
+
+        // Fungsi untuk menyimpan data ke localStorage
+        function saveData() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+            localStorage.setItem('notes', JSON.stringify(notes));
+        }
+
+        // Fungsi untuk mengupdate teks tombol 'Tambah'
+        function updateAddButtonText(button, isEditing) {
+            if (window.matchMedia('(min-width: 500px)').matches) {
+                // Desktop: Teks lengkap
+                button.textContent = isEditing ? 'Simpan' : 'Tambah';
+            } else {
+                // Mobile: Ikon
+                button.textContent = isEditing ? ICON_SAVE : ICON_ADD;
+                button.title = isEditing ? 'Simpan Perubahan' : 'Tambah Baru';
+            }
+        }
+
+        // Fungsi untuk menampilkan todo list
+        function renderTodos() {
+            todoList.innerHTML = '';
+            
+            if (todos.length === 0) {
+                todoList.innerHTML = `<div class="empty-state"><p>Tidak ada tugas yang perlu dilakukan.</p><p>Tambahkan tugas baru untuk memulai!</p></div>`;
+                return;
+            }
+            
+            todos.forEach(todo => {
+                const todoItem = document.createElement('li');
+                todoItem.className = `item ${todo.completed ? 'completed' : ''}`;
+                const toggleIcon = todo.completed ? '✔' : '⚪'; 
+                const toggleTitle = todo.completed ? 'Batal Selesai' : 'Tandai Selesai';
+                
+                todoItem.innerHTML = `
+                    <div class="item-content">
+                        <div class="item-title">${todo.text}</div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="${todo.completed ? 'success' : ''}" onclick="toggleTodo(${todo.id})" title="${toggleTitle}">
+                            ${toggleIcon}
+                        </button>
+                        <button onclick="editTodo(${todo.id})" title="Edit Tugas">✎</button>
+                        <button class="danger" onclick="deleteTodo(${todo.id})" title="Hapus Tugas">✖</button>
+                    </div>
+                `;
+                todoList.appendChild(todoItem);
+            });
+        }
+
+        // Fungsi untuk menampilkan catatan
+        function renderNotes() {
+            notesList.innerHTML = '';
+            
+            if (notes.length === 0) {
+                notesList.innerHTML = `<div class="empty-state"><p>Tidak ada catatan.</p><p>Tambahkan catatan baru untuk memulai!</p></div>`;
+                return;
+            }
+            
+            notes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.className = 'note-item';
+                // Konten dan tombol digabungkan dalam item-content untuk struktur yang rapi
+                noteItem.innerHTML = `
+                    <div class="item-content">
+                        <div class="note-title">${note.title}</div>
+                        <div class="note-content">${note.content}</div>
+                    </div>
+                    <div class="item-actions">
+                        <button onclick="editNote(${note.id})" title="Edit Catatan">✎</button>
+                        <button class="danger" onclick="deleteNote(${note.id})" title="Hapus Catatan">✖</button>
+                    </div>
+                `;
+                notesList.appendChild(noteItem);
+            });
+        }
+
+        // Fungsi CRUD (add, edit, delete, toggle)
+        function addTodo() {
+            const text = todoInput.value.trim();
+            if (text === '') return;
+            if (editingTodoId !== null) {
+                const todoIndex = todos.findIndex(todo => todo.id === editingTodoId);
+                if (todoIndex !== -1) {
+                    todos[todoIndex].text = text;
+                    editingTodoId = null;
+                    updateAddButtonText(addTodoBtn, false); 
+                }
+            } else {
+                const newTodo = { id: Date.now(), text: text, completed: false };
+                todos.push(newTodo);
+            }
+            todoInput.value = '';
+            saveData();
+            renderTodos();
+        }
+
+        function addNote() {
+            const title = noteTitle.value.trim();
+            const content = noteContent.value.trim();
+            if (title === '' || content === '') return;
+            if (editingNoteId !== null) {
+                const noteIndex = notes.findIndex(note => note.id === editingNoteId);
+                if (noteIndex !== -1) {
+                    notes[noteIndex].title = title;
+                    notes[noteIndex].content = content;
+                    editingNoteId = null;
+                    updateAddButtonText(addNoteBtn, false); 
+                }
+            } else {
+                const newNote = { id: Date.now(), title: title, content: content };
+                notes.push(newNote);
+            }
+            noteTitle.value = '';
+            noteContent.value = '';
+            saveData();
+            renderNotes();
+        }
+
+        function editTodo(id) {
+            const todo = todos.find(todo => todo.id === id);
+            if (todo) {
+                todoInput.value = todo.text;
+                editingTodoId = id;
+                updateAddButtonText(addTodoBtn, true); 
+                todoInput.focus();
+            }
+        }
+
+        function editNote(id) {
+            const note = notes.find(note => note.id === id);
+            if (note) {
+                noteTitle.value = note.title;
+                noteContent.value = note.content;
+                editingNoteId = id;
+                updateAddButtonText(addNoteBtn, true); 
+                noteTitle.focus();
+            }
+        }
+        
+        function deleteTodo(id) { if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) { todos = todos.filter(todo => todo.id !== id); saveData(); renderTodos(); } }
+        function deleteNote(id) { if (confirm('Apakah Anda yakin ingin menghapus catatan ini?')) { notes = notes.filter(note => note.id !== id); saveData(); renderNotes(); } }
+        function toggleTodo(id) { const todoIndex = todos.findIndex(todo => todo.id === id); if (todoIndex !== -1) { todos[todoIndex].completed = !todos[todoIndex].completed; saveData(); renderTodos(); } }
+
+        // Event listeners
+        addTodoBtn.addEventListener('click', addTodo);
+        todoInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTodo(); });
+        addNoteBtn.addEventListener('click', addNote);
+        noteTitle.addEventListener('keypress', (e) => { if (e.key === 'Enter') addNote(); });
+        
+        window.addEventListener('resize', () => {
+            updateAddButtonText(addTodoBtn, editingTodoId !== null);
+            updateAddButtonText(addNoteBtn, editingNoteId !== null);
+        });
+
+        // Inisialisasi aplikasi
+        renderTodos();
+        renderNotes();
+        updateAddButtonText(addTodoBtn, editingTodoId !== null);
+        updateAddButtonText(addNoteBtn, editingNoteId !== null);
+    </script>
+</body>
+</html>
