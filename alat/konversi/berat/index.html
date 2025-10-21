@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Konversi Berat</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f9f9f9 0%, #e8f5e9 100%);
+      padding: 20px;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #2e7d32;
+      font-weight: 600;
+    }
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+    input, select {
+      flex: 1;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: 2px solid #e0e0e0;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2e7d32;
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    li {
+      background: #f8f9fa;
+      margin: 8px 0;
+      padding: 12px 15px;
+      border-radius: 8px;
+      border-left: 4px solid #2e7d32;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    li:hover {
+      background: #e8f5e9;
+      transform: translateX(5px);
+    }
+    
+    #inputUnit{
+        width: 160px;
+        flex: 0 0 auto;
+    }
+    
+    input{
+        transition: all 0.3s ease;
+    }
+    
+    input:hover{
+        transform: scale(0.98);
+        border-color: #a5d6a7;
+    }
+    
+    /* Loading state */
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    
+    /* Error styling */
+    .error {
+      color: #d32f2f;
+      background: #ffebee !important;
+      border-left-color: #d32f2f !important;
+    }
+    
+    /* Highlight for copied items */
+    .highlight {
+      background: #e8f5e9 !important;
+      border-left-color: #4caf50 !important;
+      font-weight: 600;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 600px) {
+      .input-group {
+        flex-direction: column;
+      }
+      
+      #inputUnit {
+        width: 100%;
+      }
+      
+      .container {
+        padding: 15px;
+      }
+    }
+    
+    /* Scrollbar styling */
+    ul::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ul::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    
+    ul::-webkit-scrollbar-thumb {
+      background: #c8e6c9;
+      border-radius: 10px;
+    }
+    
+    ul::-webkit-scrollbar-thumb:hover {
+      background: #a5d6a7;
+    }
+    
+    /* Header info */
+    .info-text {
+      text-align: center;
+      color: #757575;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #9e9e9e;
+      font-size: 12px;
+    }
+    
+    /* Copy notification */
+    .copy-notification {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 1000;
+    }
+    
+    .copy-notification.show {
+      opacity: 1;
+    }
+    
+    /* Category headers */
+    .category-header {
+      background: #2e7d32 !important;
+      color: white;
+      font-weight: bold;
+      cursor: default !important;
+      margin-top: 15px;
+    }
+    
+    .category-header:hover {
+      transform: none !important;
+      background: #2e7d32 !important;
+    }
+    
+        .header-back {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header-back a {
+            color: #007bff;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            text-decoration: none;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        .header-back h1 {
+            font-size: 1.5rem;
+            color: #e0e0e0;
+        }
+        
+        .icon-svg {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            color: currentColor; /* Agar bisa mengikuti warna text/icon */
+        }
+  </style>
+</head>
+<body>
+  <div class="container">
+      
+        <header class="header-back">
+            <a href="../../../index.html" title="Kembali">
+                <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </a>
+            <h1>Kembali</h1>
+        </header>
+        
+    <h2>Konverter Berat</h2>
+    <p class="info-text">Masukkan nilai berat dan pilih satuan. Klik pada hasil untuk menyalin.</p>
+    
+    <div class="input-group">
+      <input type="number" id="inputValue" placeholder="Masukkan nilai berat" aria-label="Masukkan nilai berat">
+      <select id="inputUnit" aria-label="Pilih satuan berat awal">
+        <option value="kg">Kilogram (kg)</option>
+        <option value="g">Gram (g)</option>
+        <option value="mg">Miligram (mg)</option>
+        <option value="lb">Pound (lb)</option>
+        <option value="oz">Ons (oz)</option>
+        <option value="ton">Ton (metrik)</option>
+        <option value="stone">Stone (st)</option>
+        <option value="carat">Karat (ct)</option>
+        <option value="ton-us">Ton pendek (US)</option>
+        <option value="ton-uk">Ton panjang (UK)</option>
+      </select>
+    </div>
+    
+    <ul id="resultList"></ul>
+    
+    <div class="footer">
+      Gunakan Ctrl+K untuk fokus ke input | Escape untuk menghapus | Nilai otomatis dikonversi
+    </div>
+  </div>
+  
+  <div class="copy-notification" id="copyNotification">Teks disalin!</div>
+
+  <script>
+    // Elemen DOM
+    const inputValue = document.getElementById('inputValue');
+    const inputUnit = document.getElementById('inputUnit');
+    const resultList = document.getElementById('resultList');
+    const copyNotification = document.getElementById('copyNotification');
+    
+    // Debouncing variabel
+    let timeoutId;
+    
+    // Faktor konversi ke kilogram (kg)
+    const toKG = new Map([
+      ["kg", 1],
+      ["g", 0.001],
+      ["mg", 0.000001],
+      ["lb", 0.45359237],
+      ["oz", 0.028349523125],
+      ["ton", 1000],
+      ["stone", 6.35029318],
+      ["carat", 0.0002],
+      ["ton-us", 907.18474],
+      ["ton-uk", 1016.0469088]
+    ]);
+    
+    // Format angka dengan notasi yang sesuai
+    function formatNumber(num) {
+      if (!isFinite(num)) return "Tak Terhingga";
+      if (num === 0) return "0";
+      
+      const absNum = Math.abs(num);
+      
+      if (absNum < 1e-9 || absNum > 1e12) {
+        return num.toExponential(4).replace('e', ' × 10^');
+      }
+      
+      // Format dengan pemisah ribuan
+      return num.toLocaleString("id-ID", { 
+        maximumFractionDigits: 6,
+        minimumFractionDigits: 0
+      });
+    }
+    
+    // Validasi input
+    function validateInput(value) {
+      if (value === "") {
+        inputValue.style.borderColor = "#e0e0e0";
+        return { isValid: true, isEmpty: true };
+      }
+      
+      const numValue = parseFloat(value);
+      
+      if (isNaN(numValue)) {
+        inputValue.style.borderColor = "#d32f2f";
+        return { isValid: false, message: "Masukkan angka yang valid" };
+      }
+      
+      // Batasi nilai yang terlalu besar/kecil
+      if (Math.abs(numValue) > 1e50 || (numValue !== 0 && Math.abs(numValue) < 1e-50)) {
+        inputValue.style.borderColor = "#d32f2f";
+        return { isValid: false, message: "Nilai terlalu besar/kecil" };
+      }
+      
+      // Tidak boleh negatif untuk berat
+      if (numValue < 0) {
+        inputValue.style.borderColor = "#d32f2f";
+        return { isValid: false, message: "Berat tidak boleh negatif" };
+      }
+      
+      inputValue.style.borderColor = "#4caf50";
+      return { isValid: true, value: numValue };
+    }
+    
+    // Konversi berat
+    function performConversion() {
+      const validation = validateInput(inputValue.value);
+      
+      if (!validation.isValid) {
+        resultList.innerHTML = `<li class="error">${validation.message}</li>`;
+        return;
+      }
+      
+      if (validation.isEmpty) {
+        resultList.innerHTML = "";
+        return;
+      }
+      
+      const value = validation.value;
+      const unit = inputUnit.value;
+      
+      try {
+        // Ubah ke kilogram
+        const valueKG = value * toKG.get(unit);
+        
+        // Konversi ke semua satuan, dikelompokkan berdasarkan kategori
+        const conversions = [
+          // Satuan Metrik
+          { category: "SISTEM METRIK", units: [
+            ["Kilogram (kg)", valueKG],
+            ["Gram (g)", valueKG * 1000],
+            ["Miligram (mg)", valueKG * 1e6],
+            ["Ton (metrik)", valueKG / 1000],
+            ["Kuintal (q)", valueKG / 100],
+            ["Hektogram (hg)", valueKG * 10],
+            ["Dekagram (dag)", valueKG * 100],
+            ["Desigram (dg)", valueKG * 10000],
+            ["Sentigram (cg)", valueKG * 100000],
+            ["Mikrogram (μg)", valueKG * 1e9],
+            ["Nanogram (ng)", valueKG * 1e12]
+          ]},
+          
+          // Satuan Imperial/US
+          { category: "SISTEM IMPERIAL/US", units: [
+            ["Pound (lb)", valueKG * 2.20462262185],
+            ["Ons (oz)", valueKG * 35.27396194958],
+            ["Stone (st)", valueKG * 0.15747304441777],
+            ["Ton pendek (US ton)", valueKG * 0.0011023113109244],
+            ["Ton panjang (UK ton)", valueKG * 0.00098420652761106],
+            ["Grain (gr)", valueKG * 15432.358352941],
+            ["Dram (dr)", valueKG * 564.38339119329],
+            ["Hundredweight (cwt) pendek", valueKG * 0.022046226218488],
+            ["Hundredweight (cwt) panjang", valueKG * 0.019684130552221]
+          ]},
+          
+          // Satuan Lainnya
+          { category: "SATUAN LAINNYA", units: [
+            ["Karat (ct)", valueKG * 5000],
+            ["Tael (Tiongkok)", valueKG * 26.666666666667],
+            ["Tael (Jepang)", valueKG * 26.659],
+            ["Tael (Hong Kong)", valueKG * 26.455471462196],
+            ["Picul (Tiongkok)", valueKG * 0.016666666666667],
+            ["Picul (Jepang)", valueKG * 0.016666],
+            ["Pound Troy", valueKG * 2.679228880719],
+            ["Ons Troy", valueKG * 32.150746568628],
+            ["Pennyweight (dwt)", valueKG * 643.01493137256],
+            ["Mite", valueKG * 308647.16705883],
+            ["Quintal (Prancis)", valueKG * 0.02],
+            ["Livres (Prancis)", valueKG * 2.0429009193054],
+            ["Pfund (Jerman)", valueKG * 2],
+            ["Pood (Rusia)", valueKG * 0.06104821074799],
+            ["Catty (Tiongkok)", valueKG * 1.6666666666667],
+            ["Catty (Jepang)", valueKG * 1.6666],
+            ["Kin (Jepang)", valueKG * 1.6666],
+            ["Monme (Jepang)", valueKG * 266.66666666667],
+            ["Baht (Thailand)", valueKG * 66.666666666667],
+            ["Tola (India)", valueKG * 85.735],
+            ["Ser (India)", valueKG * 1.07169],
+            ["Maund (India)", valueKG * 0.026792],
+            ["Tael (Korea)", valueKG * 37.5]
+          ]}
+        ];
+        
+        resultList.innerHTML = "";
+        
+        conversions.forEach(category => {
+          // Tambahkan header kategori
+          const headerLi = document.createElement("li");
+          headerLi.textContent = category.category;
+          headerLi.classList.add("category-header");
+          resultList.appendChild(headerLi);
+          
+          // Tambahkan unit dalam kategori
+          category.units.forEach(([unitName, convertedValue]) => {
+            const li = document.createElement("li");
+            li.textContent = `${unitName}: ${formatNumber(convertedValue)}`;
+            li.setAttribute('data-value', convertedValue);
+            li.setAttribute('data-unit', unitName);
+            resultList.appendChild(li);
+          });
+        });
+        
+      } catch (error) {
+        console.error('Conversion error:', error);
+        resultList.innerHTML = `<li class="error">Terjadi kesalahan dalam konversi</li>`;
+      }
+    }
+    
+    // Fungsi konversi dengan debouncing
+    function convertWeight() {
+      clearTimeout(timeoutId);
+      document.body.classList.add('loading');
+      
+      timeoutId = setTimeout(() => {
+        performConversion();
+        document.body.classList.remove('loading');
+      }, 300);
+    }
+    
+    // Fitur salin ke clipboard
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        // Tampilkan notifikasi
+        copyNotification.classList.add('show');
+        setTimeout(() => {
+          copyNotification.classList.remove('show');
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
+    }
+    
+    // Event listener untuk hasil konversi
+    resultList.addEventListener('click', (e) => {
+      if (e.target.tagName === 'LI' && !e.target.classList.contains('error') && !e.target.classList.contains('category-header')) {
+        const text = e.target.textContent;
+        copyToClipboard(text);
+        
+        // Highlight item yang disalin
+        e.target.classList.add('highlight');
+        setTimeout(() => {
+          e.target.classList.remove('highlight');
+        }, 1000);
+      }
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Ctrl+K untuk fokus ke input
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        inputValue.focus();
+      }
+      
+      // Escape untuk menghapus input
+      if (e.key === 'Escape') {
+        inputValue.value = '';
+        convertWeight();
+      }
+    });
+    
+    // Simpan dan muat preferensi
+    function savePreference() {
+      const unit = inputUnit.value;
+      localStorage.setItem('preferredWeightUnit', unit);
+    }
+    
+    function loadPreference() {
+      const savedUnit = localStorage.getItem('preferredWeightUnit');
+      if (savedUnit && toKG.has(savedUnit)) {
+        inputUnit.value = savedUnit;
+      }
+    }
+    
+    // Event listeners
+    inputValue.addEventListener('input', convertWeight);
+    inputUnit.addEventListener('change', () => {
+      convertWeight();
+      savePreference();
+    });
+    
+    // Inisialisasi saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPreference();
+      inputValue.focus();
+      
+      // Contoh nilai default untuk demonstrasi
+      inputValue.value = '1';
+      convertWeight();
+    });
+  </script>
+</body>
+</html>
