@@ -9,9 +9,9 @@
     <meta name="description" content="Aplikasi PWA sederhana untuk membaca PDF dan alat belajar">
     
     <!-- ✅ PERBAIKI: Gunakan absolute path untuk GitHub Pages -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" href="./icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
     
     <!-- ✅ TAMBAHKAN meta tags untuk iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -124,7 +124,6 @@ body {
             align-items: center;
             color: #b0b0b0;
             text-decoration: none;
-            font-size: 0.8rem;
             padding: 5px 10px;
             border-radius: 8px;
             transition: all 0.2s;
@@ -133,10 +132,30 @@ body {
             color: #007bff;
             background-color: rgba(0, 123, 255, 0.1);
         }
-        .nav-icon {
-            font-size: 1.2rem;
-            margin-bottom: 3px;
-        }
+        
+        /* PERBAIKAN RESPONSIVE UNTUK ICONS */
+@media (max-width: 360px) {
+    .mobile-navbar .icon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .card-item .icon {
+        width: 28px;
+        height: 28px;
+        margin-bottom: 6px;
+    }
+    
+    .header-icons .icon {
+        width: 18px;
+        height: 18px;
+    }
+    .card-row .card-item .icon {
+        width: 24px;
+        height: 24px;
+        margin-bottom: 5px;
+    }
+}
 
         /* CONTENT SECTIONS */
         .content-section {
@@ -732,10 +751,44 @@ body {
     /* TAMBAHKAN ini untuk stability */
     transform: translateZ(0);
 }
-        
+
+/* PERBAIKAN UNTUK SVG ICONS */
+.icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+/* UKURAN KHUSUS UNTUK SVG DI NAVBAR */
+.mobile-navbar .icon {
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
+}
+
+/* UKURAN KHUSUS UNTUK SVG DI CARD ITEMS */
+.card-item .icon {
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+/* UKURAN KHUSUS UNTUK SVG DI HEADER */
+.header-icons .icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* PINDAHKAN FONT-SIZE KE SPAN TEXT */
+.nav-item span {
+  font-size: 0.8rem;
+  margin-top: 3px;
+}
+
     </style>
 </head>
-<body id="body">
+<body>
     <div id="main-content">
         <header class="app-header">
             <div class="app-header-left">
@@ -766,54 +819,96 @@ body {
                         <div class="slider-wrapper">
                             <div class="card-row-slider">
                                 <a href="alat/kalkulator/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
+                        
+        <svg class="icon" aria-label="Kalkulator">
+  <use xlink:href="icons/icons.svg#icon-calculator"></use>
+</svg>
+                        
                                     <h3>Kalkulator</h3>
                                     <p>multi</p>
                                 </a>
-                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
-                                    <h3>Konversi</h3>
-                                    <p>kecepatan</p>
+                                <a href="alat/konversi/suhu/index.html" class="card-item">
+                        
+        <svg class="icon" aria-label="Waktu">
+  <use xlink:href="icons/icons.svg#icon-time"></use>
+</svg>
+
+                        
+                                        <h3>Konversi</h3>
+                                    <p>suhu</p>
                                 </a>
                                 <a href="alat/konversi/berat/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
+                        
+        <svg class="icon" aria-label="Berat">
+  <use xlink:href="icons/icons.svg#icon-weight"></use>
+</svg>
+                        
                                     <h3>Konversi</h3>
                                     <p>berat</p>
                                 </a>
                                 <a href="alat/konversi/jarak/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
+                        
+        <svg class="icon" aria-label="Penggaris">
+  <use xlink:href="icons/icons.svg#icon-rule"></use>
+</svg>
+                        
                                     <h3>Konversi</h3>
                                     <p>jarak</p>
                                 </a>
                                 <a href="alat/periodik/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
+                        
+        <svg class="icon" aria-label="Lab">
+  <use xlink:href="icons/icons.svg#icon-lab"></use>
+</svg>
+                        
                                     <h3>periodik</h3>
                                     <p>unsur</p>
                                 </a>
                             </div>
                             <div class="card-row-slider">
                                 <a href="alat/kalkulator/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
+                        
+        <svg class="icon" aria-label="Kalkulator">
+  <use xlink:href="icons/icons.svg#icon-calculator"></use>
+</svg>
+                        
                                     <h3>Kalkulator</h3>
                                     <p>multi</p>
                                 </a>
-                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
+                                <a href="alat/konversi/suhu/index.html" class="card-item">
+                        
+        <svg class="icon" aria-label="Waktu">
+  <use xlink:href="icons/icons.svg#icon-time"></use>
+</svg>
+
+                        
                                     <h3>Konversi</h3>
-                                    <p>kecepatan</p>
+                                    <p>suhu</p>
                                 </a>
                                 <a href="alat/konversi/berat/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
+                        
+        <svg class="icon" aria-label="Berat">
+  <use xlink:href="icons/icons.svg#icon-weight"></use>
+</svg>
+                        
                                     <h3>Konversi</h3>
                                     <p>berat</p>
                                 </a>
                                 <a href="alat/konversi/jarak/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
+                        
+        <svg class="icon" aria-label="Penggaris">
+  <use xlink:href="icons/icons.svg#icon-rule"></use>
+</svg>
+                        
                                     <h3>Konversi</h3>
                                     <p>jarak</p>
                                 </a>
                                 <a href="alat/periodik/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
+                        
+        <svg class="icon" aria-label="Lab">
+  <use xlink:href="icons/icons.svg#icon-lab"></use>
+</svg>
+                        
                                     <h3>periodik</h3>
                                     <p>unsur</p>
                                 </a>
@@ -942,54 +1037,96 @@ body {
                         <div class="slider-wrapper">
                             <div class="card-row-slider">
                                 <a href="alat/kalkulator/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
+                        
+        <svg class="icon" aria-label="Kalkulator">
+  <use xlink:href="icons/icons.svg#icon-calculator"></use>
+</svg>
+                        
                                     <h3>Kalkulator</h3>
                                     <p>multi</p>
                                 </a>
-                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
+                                <a href="alat/konversi/suhu/index.html" class="card-item">
+                        
+        <svg class="icon" aria-label="Waktu">
+  <use xlink:href="icons/icons.svg#icon-time"></use>
+</svg>
+
+                        
                                     <h3>Konversi</h3>
-                                    <p>kecepatan</p>
+                                    <p>suhu</p>
                                 </a>
                                 <a href="alat/konversi/berat/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
+                        
+        <svg class="icon" aria-label="Berat">
+  <use xlink:href="icons/icons.svg#icon-weight"></use>
+</svg>
+                        
                                     <h3>Konversi</h3>
                                     <p>berat</p>
                                 </a>
                                 <a href="alat/konversi/jarak/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
+                        
+        <svg class="icon" aria-label="Penggaris">
+  <use xlink:href="icons/icons.svg#icon-rule"></use>
+</svg>
+                        
                                     <h3>Konversi</h3>
                                     <p>jarak</p>
                                 </a>
                                 <a href="alat/periodik/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
+                        
+        <svg class="icon" aria-label="Lab">
+  <use xlink:href="icons/icons.svg#icon-lab"></use>
+</svg>
+                        
                                     <h3>periodik</h3>
                                     <p>unsur</p>
                                 </a>
                             </div>
                             <div class="card-row-slider">
                                 <a href="alat/kalkulator/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-calculator"></span></div>
+                        
+        <svg class="icon" aria-label="Kalkulator">
+  <use xlink:href="icons/icons.svg#icon-calculator"></use>
+</svg>
+                        
                                     <h3>Kalkulator</h3>
                                     <p>multi</p>
                                 </a>
-                                <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-speed"></span></div>
+                                <a href="alat/konversi/suhu/index.html" class="card-item">
+                        
+        <svg class="icon" aria-label="Waktu">
+  <use xlink:href="icons/icons.svg#icon-time"></use>
+</svg>
+
+                        
                                     <h3>Konversi</h3>
-                                    <p>kecepatan</p>
+                                    <p>suhu</p>
                                 </a>
                                 <a href="alat/konversi/berat/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-weight"></span></div>
+                                    
+        <svg class="icon" aria-label="Berat">
+  <use xlink:href="icons/icons.svg#icon-weight"></use>
+</svg>
+                        
                                     <h3>Konversi</h3>
                                     <p>berat</p>
                                 </a>
                                 <a href="alat/konversi/jarak/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-ruler"></span></div>
+                        
+        <svg class="icon" aria-label="Penggaris">
+  <use xlink:href="icons/icons.svg#icon-rule"></use>
+</svg>
+                        
                                     <h3>Konversi</h3>
                                     <p>jarak</p>
                                 </a>
                                 <a href="alat/periodik/index.html" class="card-item">
-                                    <div class="icon-wrapper"><span class="icon-pu"></span></div>
+                        
+        <svg class="icon" aria-label="Lab">
+  <use xlink:href="icons/icons.svg#icon-lab"></use>
+</svg>
+                        
                                     <h3>periodik</h3>
                                     <p>unsur</p>
                                 </a>
@@ -1001,27 +1138,48 @@ body {
                 <h2 class="section-title">Semua Alat</h2>
                 <div class="alat-grid">
                     <a href="alat/kalkulator/index.html" class="card-item">
-                        <div class="icon-wrapper"><span class="icon-calculator"></span></div>
+                        
+        <svg class="icon" aria-label="Kalkulator">
+  <use xlink:href="icons/icons.svg#icon-calculator"></use>
+</svg>
+                        
                         <h3>Kalkulator</h3>
                         <p>multi</p>
                     </a>
-                    <a href="alat/konversi/kecepatan/index.html" class="card-item">
-                        <div class="icon-wrapper"><span class="icon-speed"></span></div>
+                    <a href="alat/konversi/suhu/index.html" class="card-item">
+                        
+        <svg class="icon" aria-label="Waktu">
+  <use xlink:href="icons/icons.svg#icon-time"></use>
+</svg>
+
+                        
                         <h3>Konversi</h3>
-                        <p>kecepatan</p>
+                        <p>suhu</p>
                     </a>
                     <a href="alat/konversi/berat/index.html" class="card-item">
-                        <div class="icon-wrapper"><span class="icon-weight"></span></div>
+                        
+        <svg class="icon" aria-label="Berat">
+  <use xlink:href="icons/icons.svg#icon-weight"></use>
+</svg>
+                        
                         <h3>Konversi</h3>
                         <p>berat</p>
                     </a>
                     <a href="alat/konversi/jarak/index.html" class="card-item">
-                        <div class="icon-wrapper"><span class="icon-ruler"></span></div>
+                        
+        <svg class="icon" aria-label="Penggaris">
+  <use xlink:href="icons/icons.svg#icon-rule"></use>
+</svg>
+                        
                         <h3>Konversi</h3>
                         <p>jarak</p>
                     </a>
                     <a href="alat/periodik/index.html" class="card-item">
-                        <div class="icon-wrapper"><span class="icon-pu"></span></div>
+                        
+        <svg class="icon" aria-label="Lab">
+  <use xlink:href="icons/icons.svg#icon-lab"></use>
+</svg>
+                        
                         <h3>periodik</h3>
                         <p>unsur</p>
                     </a>
@@ -1033,15 +1191,27 @@ body {
         <!-- MOBILE NAVBAR -->
         <nav class="mobile-navbar">
             <a href="#" class="nav-item active" data-target="home-section">
-                <span class="nav-icon">🏠</span>
+        
+        <svg class="icon" aria-label="Rumah">
+  <use xlink:href="icons/icons.svg#icon-home"></use>
+</svg>
+        
                 <span>Home</span>
             </a>
             <a href="#" class="nav-item" data-target="buku-section">
-                <span class="nav-icon">📚</span>
+                
+        <svg class="icon" aria-label="Buku">
+  <use xlink:href="icons/icons.svg#icon-book"></use>
+</svg>
+                
                 <span>Buku</span>
             </a>
             <a href="#" class="nav-item" data-target="alat-section">
-                <span class="nav-icon">🧰</span>
+                
+        <svg class="icon" aria-label="Alat">
+  <use xlink:href="icons/icons.svg#icon-tools"></use>
+</svg>
+                
                 <span>Alat</span>
             </a>
         </nav>
@@ -1091,1648 +1261,953 @@ body {
     </div>
     
     <script src="pdfjs/pdf.js"></script>
-    <script>
+<script>
+    // NAVIGATION FUNCTIONALITY
+    document.addEventListener('DOMContentLoaded', function() {
+        const navItems = document.querySelectorAll('.nav-item');
         
-        const body = document.getElementById("body");
-        
-        body.addEventListener('click', function(){
-            document.documentElement.requestFullscreen()
-        });
-        // NAVIGATION FUNCTIONALITY
-        document.addEventListener('DOMContentLoaded', function() {
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            navItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Remove active class from all nav items
-                    navItems.forEach(nav => nav.classList.remove('active'));
-                    
-                    // Add active class to clicked nav item
-                    this.classList.add('active');
-                    
-                    // Hide all content sections
-                    const contentSections = document.querySelectorAll('.content-section');
-                    contentSections.forEach(section => section.classList.remove('active'));
-                    
-                    // Show the target content section
-                    const targetId = this.getAttribute('data-target');
-                    document.getElementById(targetId).classList.add('active');
-                });
+        navItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all nav items
+                navItems.forEach(nav => nav.classList.remove('active'));
+                
+                // Add active class to clicked nav item
+                this.classList.add('active');
+                
+                // Hide all content sections
+                const contentSections = document.querySelectorAll('.content-section');
+                contentSections.forEach(section => section.classList.remove('active'));
+                
+                // Show the target content section
+                const targetId = this.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+                
+                // Adjust card sizes after navigation
+                setTimeout(adjustCardSizes, 100);
             });
         });
 
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs/pdf.worker.js';
+        // Initialize card sizes
+        adjustCardSizes();
+    });
 
-        let pdfDoc = null,
-            pageNum = 1,
-            pageIsRendering = false,
-            pageNumIsPending = null;
+    // PDF.JS CONFIGURATION
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs/pdf.worker.js';
 
-        const mainContent = document.getElementById('main-content');
-        const pdfViewer = document.getElementById('pdf-viewer');
-        const canvas = document.getElementById("pdf-render");
-        const ctx = canvas.getContext("2d");
-        const pageInfo = document.getElementById("page-info");
-        const pageInput = document.getElementById("page-input");
-        const viewerContainer = document.getElementById("viewer-container");
-        const loading = document.getElementById("loading");
-        const fileNameDisplay = document.getElementById("file-name-display");
-        
-        function tampilkanPDFViewer() {
-            mainContent.style.display = 'none';
-            pdfViewer.style.display = 'flex';
-        }
+    let pdfDoc = null,
+        pageNum = 1,
+        pageIsRendering = false,
+        pageNumIsPending = null;
 
-        function sembunyikanPDFViewer() {
-            mainContent.style.display = 'block';
-            pdfViewer.style.display = 'none';
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            pdfDoc = null;
-            pageNum = 1;
-        }
-
-        const updatePageInfo = num => {
-            if (!pdfDoc) return;
-            pageInfo.textContent = `Halaman ${num} dari ${pdfDoc.numPages}`;
-            document.getElementById("prev").classList.toggle('disabled', pageNum <= 1);
-            document.getElementById("next").classList.toggle('disabled', pageNum >= pdfDoc.numPages);
-        };
-
-        const renderPage = num => {
-            pageIsRendering = true;
-            loading.style.display = 'block';
-            canvas.style.display = 'none';
-            
-            pdfDoc.getPage(num).then(page => {
-                let viewport = page.getViewport({ scale: 1.0 });
-                let scale = (viewerContainer.clientWidth - 40) / viewport.width;
-                scale = Math.max(0.5, Math.min(scale, 3.0));
-                
-                const scaledViewport = page.getViewport({ scale });
-                const outputScale = window.devicePixelRatio || 1;
-                
-                canvas.width = Math.floor(scaledViewport.width * outputScale);
-                canvas.height = Math.floor(scaledViewport.height * outputScale);
-                canvas.style.width = Math.floor(scaledViewport.width) + "px";
-                canvas.style.height = Math.floor(scaledViewport.height) + "px";
-                
-                const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
-                
-                const renderCtx = {
-                    canvasContext: ctx,
-                    viewport: scaledViewport,
-                    transform: transform
-                };
-                
-                page.render(renderCtx).promise.then(() => {
-                    pageIsRendering = false;
-                    loading.style.display = 'none';
-                    canvas.style.display = 'block';
-                    
-                    if (pageNumIsPending !== null) {
-                        renderPage(pageNumIsPending);
-                        pageNumIsPending = null;
-                    }
-                });
-                
-                updatePageInfo(num);
-            }).catch(err => {
-                console.error("Error rendering page:", err);
-                loading.textContent = "Error memuat halaman: " + err.message;
-            });
-        };
-
-        const queueRenderPage = num => {
-            if (pageIsRendering) {
-                pageNumIsPending = num;
-            } else {
-                renderPage(num);
-            }
-        };
-
-        function loadPDF(source) {
-            loading.textContent = "Memuat PDF...";
-            tampilkanPDFViewer();
-            
-            let loadingTask;
-            if (typeof source === 'string') {
-                loadingTask = pdfjsLib.getDocument({ url: source });
-            } else {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(event.target.result) });
-                    loadingTask.promise.then(pdf => {
-                        pdfDoc = pdf;
-                        renderPage(pageNum);
-                    }).catch(err => {
-                        console.error("Error loading PDF from file:", err);
-                        loading.textContent = "Gagal memuat PDF: " + err.message;
-                    });
-                };
-                reader.readAsArrayBuffer(source);
-                return;
-            }
-
-            // DI main.js - MODIFIKASI function yang sudah ada:
-
-// Di function loadPDF - tambahkan notifikasi
-loadingTask.promise.then(pdf => {
-    pdfDoc = pdf;
-    renderPage(pageNum);
+    const mainContent = document.getElementById('main-content');
+    const pdfViewer = document.getElementById('pdf-viewer');
+    const canvas = document.getElementById("pdf-render");
+    const ctx = canvas.getContext("2d");
+    const pageInfo = document.getElementById("page-info");
+    const pageInput = document.getElementById("page-input");
+    const viewerContainer = document.getElementById("viewer-container");
+    const loading = document.getElementById("loading");
+    const fileNameDisplay = document.getElementById("file-name-display");
     
-    // ✅ TAMBAHKAN notifikasi
-    notifyPDFLoaded(fileNameDisplay.textContent);
-    
-}).catch(err => {
-    console.error("Error loading PDF:", err);
-    loading.textContent = "Gagal memuat PDF: " + err.message;
-});
+    // PDF VIEWER FUNCTIONS
+    function tampilkanPDFViewer() {
+        mainContent.style.display = 'none';
+        pdfViewer.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
 
+    function sembunyikanPDFViewer() {
+        mainContent.style.display = 'block';
+        pdfViewer.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pdfDoc = null;
+        pageNum = 1;
+        
+        // Track reading session end
+        if (readingSession.currentPDF) {
+            readingSession.scheduleHistorySync();
         }
-        
-        document.getElementById("prev").addEventListener("click", () => {
-            if (pageNum > 1 && !pageIsRendering) {
-                pageNum--;
-                queueRenderPage(pageNum);
-            }
-        });
-        
-        document.getElementById("next").addEventListener("click", () => {
-            if (pageNum < pdfDoc.numPages && !pageIsRendering) {
-                pageNum++;
-                queueRenderPage(pageNum);
-            }
-        });
+    }
 
-        pageInfo.addEventListener("click", () => {
-            pageInfo.style.display = "none";
-            pageInput.style.display = "inline-block";
-            pageInput.value = pageNum;
-            pageInput.focus();
-        });
+    const updatePageInfo = num => {
+        if (!pdfDoc) return;
+        pageInfo.textContent = `Halaman ${num} dari ${pdfDoc.numPages}`;
+        document.getElementById("prev").classList.toggle('disabled', pageNum <= 1);
+        document.getElementById("next").classList.toggle('disabled', pageNum >= pdfDoc.numPages);
+    };
 
-        pageInput.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                let val = parseInt(pageInput.value, 10);
-                if (isNaN(val) || val < 1 || val > pdfDoc.numPages) {
-                    alert(`Masukkan halaman 1-${pdfDoc.numPages}`);
-                } else {
-                    pageNum = val;
-                    queueRenderPage(pageNum);
+    const renderPage = num => {
+        pageIsRendering = true;
+        loading.style.display = 'block';
+        canvas.style.display = 'none';
+        
+        pdfDoc.getPage(num).then(page => {
+            let viewport = page.getViewport({ scale: 1.0 });
+            let scale = (viewerContainer.clientWidth - 40) / viewport.width;
+            scale = Math.max(0.5, Math.min(scale, 3.0));
+            
+            const scaledViewport = page.getViewport({ scale });
+            const outputScale = window.devicePixelRatio || 1;
+            
+            canvas.width = Math.floor(scaledViewport.width * outputScale);
+            canvas.height = Math.floor(scaledViewport.height * outputScale);
+            canvas.style.width = Math.floor(scaledViewport.width) + "px";
+            canvas.style.height = Math.floor(scaledViewport.height) + "px";
+            
+            const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
+            
+            const renderCtx = {
+                canvasContext: ctx,
+                viewport: scaledViewport,
+                transform: transform
+            };
+            
+            page.render(renderCtx).promise.then(() => {
+                pageIsRendering = false;
+                loading.style.display = 'none';
+                canvas.style.display = 'block';
+                
+                if (pageNumIsPending !== null) {
+                    renderPage(pageNumIsPending);
+                    pageNumIsPending = null;
                 }
-                pageInput.style.display = "none";
-                pageInfo.style.display = "inline-block";
-            }
-        });
-        
-        function bukaPDF(path) {
-            fileNameDisplay.textContent = path.split("/").pop().replace(/%20/g, " ");
-            loadPDF(path);
-        }
-        
-        function bacaPDFUpload() {
-            const fileInput = document.getElementById('pdfUpload');
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                fileNameDisplay.textContent = file.name;
-                loadPDF(file);
-            } else {
-                alert('Silakan pilih file PDF terlebih dahulu.');
-            }
-        }
-
-        document.getElementById('pdfUpload').addEventListener('change', function() {
-            const fileNameSpan = document.getElementById('selectedFileName');
-            if (this.files.length > 0) {
-                fileNameSpan.textContent = this.files[0].name;
-            } else {
-                fileNameSpan.textContent = 'Tidak ada file yang dipilih';
-            }
-        });
-
-        function tampilkanModal() { document.getElementById('installModal').style.display = 'flex'; }
-        function sembunyikanModal() { document.getElementById('installModal').style.display = 'none'; }
-        
-        let deferredPrompt;
-        const installButton = document.getElementById('installButton');
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installButton.style.display = 'block';
-            installButton.addEventListener('click', () => {
-                installButton.style.display = 'none';
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') { console.log('Pengguna menerima instalasi'); }
-                    deferredPrompt = null;
-                });
             });
-            setTimeout(tampilkanModal, 2000);
+            
+            updatePageInfo(num);
+        }).catch(err => {
+            console.error("Error rendering page:", err);
+            loading.textContent = "Error memuat halaman: " + err.message;
         });
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            const greetingElement = document.getElementById('greetingName');
-            const userName = localStorage.getItem('userName');
+    };
 
-            if (userName && userName.trim() !== '' && userName !== 'Nama Pengguna') {
-                greetingElement.textContent = 'Halo, ' + userName + '!';
-            } else {
-                greetingElement.textContent = 'Halo!';
-            }
+    const queueRenderPage = num => {
+        if (pageIsRendering) {
+            pageNumIsPending = num;
+        } else {
+            renderPage(num);
+        }
+    };
+
+    function loadPDF(source) {
+        loading.textContent = "Memuat PDF...";
+        tampilkanPDFViewer();
+        
+        let loadingTask;
+        if (typeof source === 'string') {
+            loadingTask = pdfjsLib.getDocument({ url: source });
+            // Track PDF view for background sync
+            trackPDFView(source.split("/").pop());
+        } else {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(event.target.result) });
+                loadingTask.promise.then(pdf => {
+                    pdfDoc = pdf;
+                    renderPage(pageNum);
+                    // Track PDF view for background sync
+                    trackPDFView(source.name);
+                }).catch(err => {
+                    console.error("Error loading PDF from file:", err);
+                    loading.textContent = "Gagal memuat PDF: " + err.message;
+                });
+            };
+            reader.readAsArrayBuffer(source);
+            return;
+        }
+
+        loadingTask.promise.then(pdf => {
+            pdfDoc = pdf;
+            renderPage(pageNum);
+        }).catch(err => {
+            console.error("Error loading PDF:", err);
+            loading.textContent = "Gagal memuat PDF: " + err.message;
         });
+    }
     
-        function installApp() {
-            if (deferredPrompt) {
-                installButton.style.display = 'none';
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('Pengguna menerima instalasi');
-                    }
-                    deferredPrompt = null;
-                });
-            }
-            sembunyikanModal();
+    // PDF NAVIGATION EVENT LISTENERS
+    document.getElementById("prev").addEventListener("click", () => {
+        if (pageNum > 1 && !pageIsRendering) {
+            pageNum--;
+            queueRenderPage(pageNum);
+            readingSession.trackPageTurn();
         }
+    });
+    
+    document.getElementById("next").addEventListener("click", () => {
+        if (pageNum < pdfDoc.numPages && !pageIsRendering) {
+            pageNum++;
+            queueRenderPage(pageNum);
+            readingSession.trackPageTurn();
+        }
+    });
 
-        // 🔄 SIMPLE & ROBUST SERVICE WORKER REGISTRATION
-// 🔄 SIMPLE & ROBUST SERVICE WORKER REGISTRATION
-function initializeServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        console.log('🚀 Initializing Service Worker...');
-        
-        navigator.serviceWorker.register('./sw.js')
-            .then(registration => {
-                console.log('✅ Service Worker registered successfully');
-                
-                if (navigator.serviceWorker.controller) {
-                    console.log('🎯 Service Worker is controlling the page');
+    pageInfo.addEventListener("click", () => {
+        pageInfo.style.display = "none";
+        pageInput.style.display = "inline-block";
+        pageInput.value = pageNum;
+        pageInput.focus();
+    });
+
+    pageInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            let val = parseInt(pageInput.value, 10);
+            if (isNaN(val) || val < 1 || val > pdfDoc.numPages) {
+                alert(`Masukkan halaman 1-${pdfDoc.numPages}`);
+            } else {
+                pageNum = val;
+                queueRenderPage(pageNum);
+                readingSession.trackPageTurn();
+            }
+            pageInput.style.display = "none";
+            pageInfo.style.display = "inline-block";
+        }
+    });
+    
+    // PDF OPENING FUNCTIONS
+    function bukaPDF(path) {
+        const fileName = path.split("/").pop().replace(/%20/g, " ");
+        fileNameDisplay.textContent = fileName;
+        loadPDF(path);
+    }
+    
+    function bacaPDFUpload() {
+        const fileInput = document.getElementById('pdfUpload');
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            fileNameDisplay.textContent = file.name;
+            loadPDF(file);
+        } else {
+            alert('Silakan pilih file PDF terlebih dahulu.');
+        }
+    }
+
+    document.getElementById('pdfUpload').addEventListener('change', function() {
+        const fileNameSpan = document.getElementById('selectedFileName');
+        if (this.files.length > 0) {
+            fileNameSpan.textContent = this.files[0].name;
+        } else {
+            fileNameSpan.textContent = 'Tidak ada file yang dipilih';
+        }
+    });
+
+    // PWA INSTALLATION
+    let deferredPrompt;
+    const installButton = document.getElementById('installButton');
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installButton.style.display = 'block';
+        installButton.addEventListener('click', () => {
+            installButton.style.display = 'none';
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') { 
+                    console.log('Pengguna menerima instalasi'); 
                 }
-                
-                registration.update();
-                
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    console.log('🔄 New Service Worker found, state:', newWorker.state);
-                    
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('✅ New content available!');
-                            showUpdateNotification();
-                        }
-                    });
-                });
-                
-                // ✅ JALANKAN INTEGRITY CHECK SETELAH SW SIAP
-                navigator.serviceWorker.ready.then(() => {
-                    console.log('📬 Mengirim perintah integrity check ke SW...');
-                    navigator.serviceWorker.controller?.postMessage({
-                        type: 'RUN_INTEGRITY_CHECK'
-                    });
-                });
-                
-                setInterval(() => {
-                    registration.update();
-                }, 60 * 60 * 1000);
-                
-            })
-            .catch(error => {
-                console.error('❌ Service Worker registration failed:', error);
+                deferredPrompt = null;
             });
-        
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            console.log('🔄 Controller changed!');
-            showUpdateNotification();
         });
-        
-    } else {
+        // Show install modal after 2 seconds
+        setTimeout(tampilkanModal, 2000);
+    });
+    
+    function tampilkanModal() { 
+        document.getElementById('installModal').style.display = 'flex'; 
+    }
+    
+    function sembunyikanModal() { 
+        document.getElementById('installModal').style.display = 'none'; 
+    }
+    
+    function installApp() {
+        if (deferredPrompt) {
+            installButton.style.display = 'none';
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('Pengguna menerima instalasi');
+                }
+                deferredPrompt = null;
+            });
+        }
+        sembunyikanModal();
+    }
+
+    // GREETING SYSTEM
+    document.addEventListener('DOMContentLoaded', () => {
+        const greetingElement = document.getElementById('greetingName');
+        const userName = localStorage.getItem('userName');
+
+        if (userName && userName.trim() !== '' && userName !== 'Nama Pengguna') {
+            greetingElement.textContent = 'Halo, ' + userName + '!';
+        } else {
+            greetingElement.textContent = 'Halo!';
+        }
+    });
+
+    // ✅ SERVICE WORKER REGISTRATION - PRODUCTION READY
+// ✅ BENAR: Service Worker initialization yang fixed
+async function initializeServiceWorker() {
+    if (!('serviceWorker' in navigator)) {
         console.log('❌ Service Worker not supported');
+        return;
     }
-}
 
-// ✅ Offline Detection
-function checkOnlineStatus() {
-    if (!navigator.onLine) {
-        console.log('📴 Aplikasi sedang offline');
-    }
-}
-
-window.addEventListener('online', checkOnlineStatus);
-window.addEventListener('offline', checkOnlineStatus);
-checkOnlineStatus();
-
-// DI index.html - cari bagian ini:
-// ✅ Start initialization
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeServiceWorker);
-} else {
-    initializeServiceWorker();
-}
-
-// ======== ✅ PERIODIC SYNC PERMISSION REQUEST ========
-
-async function setupPeriodicSync() {
-  // Check if Periodic Background Sync is supported
-  if ('periodicSync' in registration) {
     try {
-      // Check current permission status
-      const status = await navigator.permissions.query({
-        name: 'periodic-background-sync'
-      });
-      
-      console.log('📋 Periodic Sync permission status:', status.state);
-      
-      if (status.state === 'granted') {
-        // Permission already granted - register sync
-        await registerPeriodicSync();
-      } else if (status.state === 'prompt') {
-        // Show custom UI to request permission
-        showSyncPermissionRequest();
-      }
-      
+        console.log('🚀 Starting ELSA PWA initialization...');
+        
+        // ✅ CLEAN UP EXISTING REGISTRATIONS
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let registration of registrations) {
+            console.log('🗑️ Unregistering old SW:', registration.scope);
+            await registration.unregister();
+        }
+
+        // ✅ WAIT BEFORE REGISTERING NEW ONE
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // ✅ REGISTER WITH EXPLICIT PATH
+        const swUrl = './sw.js';
+        console.log('📝 Registering SW from:', swUrl);
+        
+        // ✅ VERIFY FILE EXISTS FIRST
+        try {
+            const response = await fetch(swUrl);
+            if (!response.ok) throw new Error('SW file not found');
+            console.log('✅ SW file verified:', response.status);
+        } catch (fileError) {
+            console.error('❌ SW file not accessible:', fileError);
+            return;
+        }
+
+        // ✅ REGISTER NEW SERVICE WORKER
+        const registration = await navigator.serviceWorker.register(swUrl, {
+            scope: './',
+            updateViaCache: 'none'
+        });
+
+        console.log('✅ Service Worker registered successfully');
+
+        // ✅ TUNGGU SAMPAI SW READY SEBELUM TEST OFFLINE
+        await navigator.serviceWorker.ready;
+        console.log('🎯 Service Worker ready, testing offline capability...');
+        
+        // Test offline capability setelah SW ready
+        await testOfflineCapability();
+
+        // ✅ HANDLE UPDATES PROPERLY
+        registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            console.log('🔄 New Service Worker found, state:', newWorker.state);
+            
+            newWorker.addEventListener('statechange', () => {
+                console.log('📊 SW state changed:', newWorker.state);
+                
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('🎯 New content available, please refresh');
+                    showUpdateNotification();
+                }
+                
+                if (newWorker.state === 'activated') {
+                    console.log('✅ New Service Worker activated');
+                    // Trigger integrity check after activation
+                    setTimeout(() => {
+                        if (navigator.serviceWorker.controller) {
+                            navigator.serviceWorker.controller.postMessage({
+                                type: 'RUN_INTEGRITY_CHECK'
+                            });
+                        }
+                    }, 3000);
+                }
+            });
+        });
+
+        // ✅ SETUP LISTENER UNTUK SW CONTROLLER CHANGE
+        if (navigator.serviceWorker.controller) {
+            console.log('🎮 Service Worker controlling the page');
+            
+            // Test ulang offline capability setelah controller aktif
+            setTimeout(() => {
+                testOfflineCapability();
+            }, 2000);
+        }
+
+        // ✅ LISTEN FOR CONTROLLER CHANGES
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('🔄 Controller changed, re-testing offline capability...');
+            setTimeout(() => {
+                testOfflineCapability();
+            }, 1000);
+        });
+
+        // ✅ SETUP BACKGROUND SYNC WHEN READY
+        navigator.serviceWorker.ready.then(reg => {
+            setupBackgroundSync(reg);
+        });
+
+        return registration;
+
     } catch (error) {
-      console.log('⚠️ Periodic Sync not supported:', error);
+        console.error('❌ Service Worker registration failed:', error);
+        return null;
     }
-  } else {
-    console.log('❌ Periodic Background Sync not supported');
-  }
 }
 
-// Register periodic sync
-async function registerPeriodicSync() {
-  try {
-    const registration = await navigator.serviceWorker.ready;
-    
-    // Try to register periodic sync
-    if ('periodicSync' in registration) {
-      await registration.periodicSync.register('content-update', {
-        minInterval: 24 * 60 * 60 * 1000, // 24 hours minimum
-      });
-      console.log('✅ Periodic Sync registered successfully');
-    }
-  } catch (error) {
-    console.log('❌ Periodic Sync registration failed:', error);
-    
-    // Fallback to manual background sync
-    setupManualBackgroundSync();
-  }
-}
-
-// Manual background sync fallback
-function setupManualBackgroundSync() {
-  console.log('🔄 Setting up manual background sync fallback');
-  
-  // Sync when app becomes visible
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      triggerManualSync();
-    }
-  });
-  
-  // Sync on network status change
-  window.addEventListener('online', triggerManualSync);
-}
-
-// Trigger manual sync
-function triggerManualSync() {
-  if (navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({
-      type: 'MANUAL_SYNC_REQUEST'
-    });
-  }
-}
-
-// Show permission request UI
-function showSyncPermissionRequest() {
-  // You can create a subtle UI element to explain and request permission
-  console.log('👆 Periodic Sync permission available - consider adding UI to request it');
-  
-  // Example: Add a small indicator in settings
-  // This would be implemented based on your UI design
-}
-
-// Initialize when service worker is ready
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.ready.then(registration => {
-    setupPeriodicSync();
-  });
-}
-
-// Add message handler for manual sync
-navigator.serviceWorker.addEventListener('message', event => {
-  if (event.data.type === 'MANUAL_SYNC_RESULT') {
-    console.log('🔄 Manual sync completed:', event.data.result);
-  }
-});
-
-// ======== ✅ BACKGROUND SYNC FUNCTIONS ========
-
-// Register background sync
-// ======== ✅ BACKGROUND SYNC FUNCTIONS - FIXED ========
-
-// Register background sync - FIXED VERSION
-async function registerBackgroundSync(tag = 'content-sync') {
-  if (!navigator.serviceWorker) {
-    console.log('❌ Service Worker not supported');
-    return false;
-  }
-  
-  try {
-    // ✅ FIX: Dapatkan registration dengan benar
-    const registration = await navigator.serviceWorker.ready;
-    
-    // Check if Background Sync is supported
-    if ('sync' in registration) {
-      await registration.sync.register(tag);
-      console.log(`✅ Background Sync registered: ${tag}`);
-      return true;
-    } else {
-      console.log('❌ Background Sync not supported');
-      return false;
-    }
-    
-  } catch (error) {
-    console.error('❌ Background Sync registration failed:', error);
-    return false;
-  }
-}
-
-// Periodic Sync - FIXED VERSION  
-async function setupPeriodicSync() {
-  try {
-    // ✅ FIX: Dapatkan registration dengan benar
-    const registration = await navigator.serviceWorker.ready;
-    
-    // Check if Periodic Background Sync is supported
-    if ('periodicSync' in registration) {
-      const status = await navigator.permissions.query({
-        name: 'periodic-background-sync'
-      });
-      
-      console.log('📋 Periodic Sync permission status:', status.state);
-      
-      if (status.state === 'granted') {
-        await registerPeriodicSync();
-      }
-    }
-  } catch (error) {
-    console.log('⚠️ Periodic Sync not supported:', error);
-  }
-}
-
-// Register periodic sync - FIXED VERSION
-async function registerPeriodicSync() {
-  try {
-    // ✅ FIX: Dapatkan registration dengan benar
-    const registration = await navigator.serviceWorker.ready;
-    
-    if ('periodicSync' in registration) {
-      await registration.periodicSync.register('content-update', {
-        minInterval: 24 * 60 * 60 * 1000, // 24 hours
-      });
-      console.log('✅ Periodic Sync registered successfully');
-    }
-  } catch (error) {
-    console.log('❌ Periodic Sync registration failed:', error);
-  }
-}
-
-// Demo functions to trigger background sync
-// Di background sync functions - tambahkan notifikasi
-function demoBackgroundSync() {
-    console.log('🚀 Triggering demo background sync...');
-    
-    registerBackgroundSync('content-sync').then(success => {
-        if (success) {
-            showSyncStatus('Sync scheduled - will complete when online');
-            // ✅ TAMBAHKAN notifikasi
-            triggerPushNotification(
-                'ELSA - Sync Scheduled',
-                'Data akan disinkronisasi ketika online kembali'
-            );
-        }
-    });
-}
-
-function syncUserData() {
-  console.log('👤 Syncing user data...');
-  
-  // Store user data changes
-  const userData = {
-    lastSync: Date.now(),
-    profile: localStorage.getItem('userName') || 'Guest'
-  };
-  
-  localStorage.setItem('pendingUserData', JSON.stringify(userData));
-  
-  registerBackgroundSync('user-data-sync').then(success => {
-    if (success) {
-      showSyncStatus('User data sync scheduled');
-    }
-  });
-}
-
-function syncPDFProgress(pdfData) {
-  console.log('📚 Syncing PDF progress...');
-  
-  // Store PDF progress
-  const progress = {
-    pdfId: pdfData.id,
-    page: pdfData.page,
-    timestamp: Date.now()
-  };
-  
-  let existingProgress = JSON.parse(localStorage.getItem('pdfProgress') || '[]');
-  existingProgress.push(progress);
-  localStorage.setItem('pdfProgress', JSON.stringify(existingProgress));
-  
-  registerBackgroundSync('pdf-metadata-sync').then(success => {
-    if (success) {
-      showSyncStatus('Reading progress saved');
-    }
-  });
-}
-
-// Helper functions
-function storeActionForSync(action) {
-  const pendingActions = JSON.parse(localStorage.getItem('pendingActions') || '[]');
-  pendingActions.push(action);
-  localStorage.setItem('pendingActions', JSON.stringify(pendingActions));
-}
-
-function showSyncStatus(message) {
-  // Create or update sync status UI
-  let statusEl = document.getElementById('sync-status');
-  
-  if (!statusEl) {
-    statusEl = document.createElement('div');
-    statusEl.id = 'sync-status';
-    statusEl.style.cssText = `
-      position: fixed;
-      bottom: 120px;
-      right: 20px;
-      background: #4CAF50;
-      color: white;
-      padding: 10px 15px;
-      border-radius: 6px;
-      z-index: 1000;
-      font-size: 0.9rem;
-      max-width: 200px;
-    `;
-    document.body.appendChild(statusEl);
-  }
-  
-  statusEl.textContent = message;
-  statusEl.style.display = 'block';
-  
-  // Auto-hide after 3 seconds
-  setTimeout(() => {
-    statusEl.style.display = 'none';
-  }, 3000);
-}
-
-// Initialize background sync when online
-window.addEventListener('online', () => {
-  console.log('🌐 Online - checking for pending sync...');
-  
-  // Check if we have pending actions that need sync
-  const pendingActions = JSON.parse(localStorage.getItem('pendingActions') || '[]');
-  if (pendingActions.length > 0) {
-    registerBackgroundSync('content-sync');
-  }
-});
-
-// Add sync UI to your app (optional)
-function addSyncUI() {
-  // You can add sync buttons to your settings page
-  console.log('🔄 Sync UI available - add to settings page');
-}
-
-// ======== ✅ TAMBAHKAN DI SINI ========
-// Handle messages dari Service Worker
-navigator.serviceWorker.addEventListener('message', event => {
-    const data = event.data;
-    
-    if (data.type === 'STARTUP_UPDATES_DETECTED') {
-        console.log('📢 Updates detected on startup:', data.assets);
-        
-        // Gunakan notifikasi update yang sudah ada
-        showUpdateNotification();
-        
-        // Optional: Tampilkan detail assets yang berubah
-        const changedFiles = data.assets.map(url => {
-            return url.split('/').pop(); // Hanya nama file
-        }).join(', ');
-        
-        // Update notification text jika mau lebih detail
-        const notification = document.getElementById('update-notification');
-        if (notification) {
-            notification.innerHTML = 
-                `🔄 ${changedFiles} updated! <button id="updateRefreshBtn">Reload</button>`;
+    // ✅ BACKGROUND SYNC SETUP
+    async function setupBackgroundSync(registration) {
+        try {
+            // Check if Background Sync is supported
+            if ('sync' in registration) {
+                console.log('✅ Background Sync supported');
+                
+                // Register default sync tags
+                await registration.sync.register('sync-pdf-history');
+                await registration.sync.register('sync-user-activity');
+                await registration.sync.register('retry-failed-requests');
+                
+                console.log('✅ Background Sync tags registered');
+            }
+            
+            // Check if Periodic Sync is supported
+            if ('periodicSync' in registration) {
+                const status = await navigator.permissions.query({
+                    name: 'periodic-background-sync'
+                });
+                
+                console.log('📋 Periodic Sync permission status:', status.state);
+                
+                if (status.state === 'granted') {
+                    try {
+                        await registration.periodicSync.register('content-cleanup', {
+                            minInterval: 24 * 60 * 60 * 1000, // 24 hours
+                        });
+                        console.log('✅ Periodic Sync registered');
+                    } catch (periodicError) {
+                        console.log('⚠️ Periodic Sync not available:', periodicError);
+                    }
+                }
+            }
+            
+        } catch (error) {
+            console.log('⚠️ Background Sync setup failed:', error);
         }
     }
-});
-// ======== ✅ END OF ADDITION ========
 
-// LANJUTKAN DENGAN CODE YANG SUDAH ADA...
-// Pastikan navbar tetap visible saat scroll
+    // ✅ UPDATE NOTIFICATION SYSTEM
+    function showUpdateNotification() {
+        let notification = document.getElementById('update-notification');
+        
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'update-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 12px 16px;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-family: Arial, sans-serif;
+                display: none;
+            `;
+            document.body.appendChild(notification);
+        }
 
+        notification.innerHTML = '🔄 Update tersedia! <button id="updateRefreshBtn" style="background: white; color: #4CAF50; border: none; padding: 8px 16px; margin-left: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Perbarui Sekarang</button>';
+        notification.style.display = 'block';
 
-        // 🎯 Tampilkan notifikasi update
-// 🎯 Tampilkan notifikasi update — versi yang mengirim SKIP_WAITING ke waiting worker
-// ✅ Pastikan element update notification ada di HTML, atau buat dynamically
-function showUpdateNotification() {
-    let notification = document.getElementById('update-notification');
-    
-    // Jika element tidak ada, buat dynamically
-    if (!notification) {
-        notification = document.createElement('div');
-        notification.id = 'update-notification';
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4CAF50;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 10000;
-            font-family: Arial, sans-serif;
-        `;
-        document.body.appendChild(notification);
+        document.getElementById('updateRefreshBtn').addEventListener('click', async () => {
+            // Skip waiting and reload
+            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration && registration.waiting) {
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    
+                    // Listen for controller change
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                        window.location.reload();
+                    });
+                    
+                    return;
+                }
+            }
+            window.location.reload();
+        });
+
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+            notification.style.display = 'none';
+        }, 10000);
     }
 
-    notification.innerHTML = '🔄 Update tersedia! <button id="updateRefreshBtn">Perbarui</button>';
-    notification.style.display = 'block';
+    // ✅ SERVICE WORKER MESSAGE HANDLER
+    navigator.serviceWorker.addEventListener('message', event => {
+        const data = event.data;
+        console.log('📨 Client: Received message from SW:', data);
+        
+        switch (data.type) {
+            case 'STARTUP_UPDATES_DETECTED':
+                console.log('📢 Updates detected on startup:', data.assets);
+                showUpdateNotification();
+                break;
+                
+            case 'VERSION_ACTIVATED':
+                console.log('✅ New SW version activated:', data.version);
+                // Optional: Show welcome message for new version
+                break;
+                
+            case 'SW_ACTIVATED':
+                console.log('🎯 SW activated and ready');
+                break;
+        }
+    });
 
-    const btn = document.getElementById('updateRefreshBtn');
-    btn.addEventListener('click', async () => {
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-            const registration = await navigator.serviceWorker.getRegistration();
-            if (registration && registration.waiting) {
-                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                return;
+    // ✅ READING SESSION TRACKER (Background Sync)
+    class ReadingSession {
+        constructor() {
+            this.sessionStart = Date.now();
+            this.pageTurns = 0;
+            this.currentPDF = null;
+        }
+        
+        startPDF(pdfName) {
+            this.currentPDF = pdfName;
+            this.sessionStart = Date.now();
+            this.pageTurns = 0;
+            console.log('📖 Reading session started:', pdfName);
+        }
+        
+        trackPageTurn() {
+            this.pageTurns++;
+            
+            // Schedule background sync setelah beberapa page turns
+            if (this.pageTurns % 3 === 0) {
+                this.scheduleHistorySync();
             }
         }
-        window.location.reload();
-    });
+        
+        async scheduleHistorySync() {
+            if (!this.currentPDF) return;
+            
+            const sessionData = {
+                id: `${this.currentPDF}-${Date.now()}`,
+                pdfName: this.currentPDF,
+                duration: Date.now() - this.sessionStart,
+                pageTurns: this.pageTurns,
+                timestamp: Date.now(),
+                synced: false
+            };
+            
+            // Save to localStorage for background sync
+            const pendingHistory = JSON.parse(localStorage.getItem('pendingPDFHistory') || '[]');
+            pendingHistory.push(sessionData);
+            localStorage.setItem('pendingPDFHistory', JSON.stringify(pendingHistory));
+            
+            console.log('💾 Saved reading session:', sessionData);
+            
+            // Register background sync
+            if ('serviceWorker' in navigator) {
+                const registration = await navigator.serviceWorker.ready;
+                if ('sync' in registration) {
+                    await registration.sync.register('sync-pdf-history');
+                    this.showSyncIndicator('Progress membaca disimpan');
+                }
+            }
+        }
+        
+        showSyncIndicator(message) {
+            const indicator = document.createElement('div');
+            indicator.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: #4CAF50;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                z-index: 10000;
+            `;
+            indicator.textContent = '✓ ' + message;
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => {
+                if (indicator.parentNode) {
+                    document.body.removeChild(indicator);
+                }
+            }, 2000);
+        }
+    }
 
-    setTimeout(() => {
-        notification.style.display = 'none';
-    }, 10000);
+    const readingSession = new ReadingSession();
+
+    function trackPDFView(pdfName) {
+        readingSession.startPDF(pdfName);
+    }
+
+    // ✅ OFFLINE MANAGER
+    class OfflineManager {
+        constructor() {
+            this.isOnline = navigator.onLine;
+            this.offlineIndicator = null;
+            this.init();
+        }
+        
+        init() {
+            this.createOfflineIndicator();
+            this.setupNetworkListeners();
+            this.checkOfflineCapabilities();
+        }
+        
+        createOfflineIndicator() {
+            this.offlineIndicator = document.createElement('div');
+            this.offlineIndicator.id = 'offline-indicator';
+            this.offlineIndicator.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: #ff6b6b;
+                color: white;
+                padding: 10px;
+                text-align: center;
+                font-weight: bold;
+                z-index: 10000;
+                transform: translateY(-100%);
+                transition: transform 0.3s ease;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            `;
+            this.offlineIndicator.textContent = '📶 Anda sedang offline - Beberapa fitur terbatas';
+            document.body.appendChild(this.offlineIndicator);
+        }
+        
+        setupNetworkListeners() {
+            window.addEventListener('online', () => {
+                this.handleOnline();
+            });
+            
+            window.addEventListener('offline', () => {
+                this.handleOffline();
+            });
+        }
+        
+        handleOnline() {
+            this.isOnline = true;
+            this.hideOfflineIndicator();
+            this.showMessage('✅ Koneksi pulih', 'success');
+            this.syncPendingData();
+        }
+        
+        handleOffline() {
+            this.isOnline = false;
+            this.showOfflineIndicator();
+            this.showMessage('📶 Sedang offline', 'warning');
+        }
+        
+        showOfflineIndicator() {
+            if (this.offlineIndicator) {
+                this.offlineIndicator.style.transform = 'translateY(0)';
+            }
+        }
+        
+        hideOfflineIndicator() {
+            if (this.offlineIndicator) {
+                this.offlineIndicator.style.transform = 'translateY(-100%)';
+            }
+        }
+        
+        showMessage(text, type = 'info') {
+            const messageEl = document.createElement('div');
+            messageEl.style.cssText = `
+                position: fixed;
+                top: 50px;
+                right: 20px;
+                padding: 12px 16px;
+                border-radius: 6px;
+                color: white;
+                z-index: 10000;
+                font-weight: bold;
+                ${type === 'success' ? 'background: #4CAF50;' : ''}
+                ${type === 'warning' ? 'background: #ffc107; color: #000;' : ''}
+            `;
+            messageEl.textContent = text;
+            document.body.appendChild(messageEl);
+            
+            setTimeout(() => {
+                if (messageEl.parentNode) {
+                    document.body.removeChild(messageEl);
+                }
+            }, 3000);
+        }
+        
+        async syncPendingData() {
+            if (!this.isOnline) return;
+            
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.ready;
+                    
+                    if ('sync' in registration) {
+                        await registration.sync.register('sync-pdf-history');
+                        await registration.sync.register('sync-user-activity');
+                        console.log('✅ Background sync triggered for pending data');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Sync failed:', error);
+            }
+        }
+        
+// ✅ PERBAIKI: Fungsi checkOfflineCapabilities di class OfflineManager
+async checkOfflineCapabilities() {
+    if ('serviceWorker' in navigator && 'caches' in window) {
+        try {
+            const testUrls = [
+                './index.html',
+                './manifest.json', 
+                './icons/icon-192x192.png',
+                './fallback/offline.html'
+            ];
+            
+            let availableCount = 0;
+            for (const url of testUrls) {
+                // ✅ GUNAKAN caches.match() langsung, bukan buka cache dengan nama tertentu
+                const cached = await caches.match(url);
+                if (cached) availableCount++;
+            }
+            
+            console.log(`📦 Offline capability: ${availableCount}/${testUrls.length} resources available`);
+            
+        } catch (error) {
+            console.log('❌ Offline check failed:', error);
+        }
+    }
+}
 }
 
-// Pastikan navbar tetap visible saat scroll
-let lastScrollTop = 0;
-const navbar = document.querySelector('.mobile-navbar');
+    const offlineManager = new OfflineManager();
 
-window.addEventListener('scroll', function() {
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+// ✅ GANTI fungsi testOfflineCapability yang lama dengan ini:
+async function testOfflineCapability() {
+    console.log('🧪 Testing Offline Capability...');
     
-    if (scrollTop > lastScrollTop) {
-        // Scroll down - navbar tetap visible
-        navbar.style.transform = 'translateY(0)';
-    } else {
-        // Scroll up - navbar tetap visible  
-        navbar.style.transform = 'translateY(0)';
+    const testUrls = [
+        './index.html',
+        './manifest.json', 
+        './icons/icon-192x192.png',
+        './fallback/offline.html'
+    ];
+    
+    const results = {};
+    let availableCount = 0;
+    
+    for (const url of testUrls) {
+        try {
+            // ✅ GUNAKAN CACHE NAME YANG BENAR - langsung match tanpa nama cache
+            const response = await caches.match(url);
+            results[url] = !!response;
+            
+            if (response) {
+                availableCount++;
+                console.log(`✅ ${url}: Cached`);
+            } else {
+                console.log(`❌ ${url}: Not cached`);
+            }
+        } catch (error) {
+            results[url] = false;
+            console.log(`❌ ${url}: Error - ${error.message}`);
+        }
     }
-    lastScrollTop = scrollTop;
-}, { passive: true });
-
-// PERBAIKAN: Pastikan navbar selalu visible dan konten tidak tertutup
-document.addEventListener('DOMContentLoaded', function() {
-    const navbar = document.querySelector('.mobile-navbar');
-    const sections = document.querySelectorAll('.content-section');
     
-    // Force navbar tetap di bottom
+    console.log('📊 Offline Test Results:', results);
+    console.log(`📦 Offline capability: ${availableCount}/${testUrls.length} resources available`);
+    
+    return results;
+}
+
+    // ✅ LAYOUT AND UI FUNCTIONS
+    function adjustCardSizes() {
+        const cardRows = document.querySelectorAll('.card-row');
+        
+        cardRows.forEach(row => {
+            const cardItems = row.querySelectorAll('.card-item');
+            const containerWidth = row.offsetWidth;
+            const totalWidth = Array.from(cardItems).reduce((total, card) => {
+                return total + card.offsetWidth + 15;
+            }, 0);
+            
+            if (totalWidth > containerWidth) {
+                const scaleFactor = containerWidth / totalWidth * 0.9;
+                cardItems.forEach(card => {
+                    const currentWidth = card.offsetWidth;
+                    const newWidth = Math.max(100, currentWidth * scaleFactor);
+                    card.style.minWidth = newWidth + 'px';
+                    card.style.maxWidth = newWidth + 'px';
+                });
+            }
+        });
+    }
+
+    // Ensure navbar doesn't hide content
     function ensureNavbarPosition() {
-        navbar.style.bottom = '0';
-        navbar.style.transform = 'translateY(0)';
-    }
-    
-    // Check dan adjust konten agar tidak tertutup
-    function checkContentPadding() {
+        const navbar = document.querySelector('.mobile-navbar');
+        const sections = document.querySelectorAll('.content-section');
+        
+        if (navbar) {
+            navbar.style.bottom = '0';
+            navbar.style.transform = 'translateY(0)';
+        }
+        
         sections.forEach(section => {
             const rect = section.getBoundingClientRect();
-            const navbarHeight = navbar.offsetHeight;
+            const navbarHeight = navbar ? navbar.offsetHeight : 0;
             
-            // Jika konten terlalu dekat dengan navbar, tambah padding
             if (window.innerHeight - rect.bottom < navbarHeight + 10) {
                 section.style.paddingBottom = (navbarHeight + 20) + 'px';
             }
         });
     }
-    
-    // Panggil fungsi
-    ensureNavbarPosition();
-    checkContentPadding();
-    
-    // Juga panggil saat resize dan scroll
-    window.addEventListener('resize', checkContentPadding);
-    window.addEventListener('scroll', checkContentPadding);
-});
 
-// PERBAIKAN: Handle resize untuk menyesuaikan ukuran card
-function adjustCardSizes() {
-    const cardItems = document.querySelectorAll('.card-row .card-item');
-    const containerWidth = document.querySelector('.card-row').offsetWidth;
+// ✅ PERBAIKI: Initialization sequence
+// ✅ PERBAIKI: Initialization sequence final
+window.addEventListener('load', () => {
+    console.log('🚀 Starting ELSA PWA initialization...');
     
-    cardItems.forEach(card => {
-        // Reset ke ukuran default
-        card.style.minWidth = '';
-        card.style.maxWidth = '';
-    });
-    
-    // Jika masih overflow, sesuaikan ukuran
-    const totalWidth = Array.from(cardItems).reduce((total, card) => {
-        return total + card.offsetWidth + 15; // 15 adalah gap
-    }, 0);
-    
-    if (totalWidth > containerWidth) {
-        // Sesuaikan ukuran card secara proporsional
-        const scaleFactor = containerWidth / totalWidth * 0.9; // 90% dari container
-        cardItems.forEach(card => {
-            const currentWidth = card.offsetWidth;
-            const newWidth = Math.max(100, currentWidth * scaleFactor); // Minimal 100px
-            card.style.minWidth = newWidth + 'px';
-            card.style.maxWidth = newWidth + 'px';
-        });
-    }
-}
-
-// Panggil saat load dan resize
-document.addEventListener('DOMContentLoaded', function() {
-    adjustCardSizes();
-    window.addEventListener('resize', adjustCardSizes);
-    
-    // Juga panggil saat berpindah tab
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-        item.addEventListener('click', function() {
-            setTimeout(adjustCardSizes, 100); // Beri delay sedikit
-        });
-    });
-});
-
-// ======== ✅ REAL BACKGROUND SYNC TRIGGERS ========
-
-// Track PDF reading session
-class ReadingSession {
-  constructor() {
-    this.sessionStart = Date.now();
-    this.pageTurns = 0;
-    this.currentPDF = null;
-  }
-  
-  startPDF(pdfName) {
-    this.currentPDF = pdfName;
-    this.sessionStart = Date.now();
-    this.pageTurns = 0;
-    console.log('📖 Reading session started:', pdfName);
-  }
-  
-  trackPageTurn() {
-    this.pageTurns++;
-    
-    // Schedule background sync setelah beberapa page turns
-    if (this.pageTurns % 3 === 0) { // Setiap 3 page turns
-      this.scheduleHistorySync();
-    }
-  }
-  
-  async scheduleHistorySync() {
-    if (!this.currentPDF) return;
-    
-    const sessionData = {
-      id: `${this.currentPDF}-${Date.now()}`,
-      pdfName: this.currentPDF,
-      duration: Date.now() - this.sessionStart,
-      pageTurns: this.pageTurns,
-      timestamp: Date.now(),
-      synced: false
-    };
-    
-    // Save to pending history
-    const pendingHistory = JSON.parse(localStorage.getItem('pendingPDFHistory') || '[]');
-    pendingHistory.push(sessionData);
-    localStorage.setItem('pendingPDFHistory', JSON.stringify(pendingHistory));
-    
-    console.log('💾 Saved reading session:', sessionData);
-    
-    // Register background sync
-    const success = await registerBackgroundSync('sync-pdf-history');
-    
-    if (success) {
-      this.showSyncIndicator('Reading progress saved');
-    }
-  }
-  
-  showSyncIndicator(message) {
-    // Show subtle sync indicator
-    const indicator = document.createElement('div');
-    indicator.style.cssText = `
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: #4CAF50;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      z-index: 10000;
-    `;
-    indicator.textContent = '✓ ' + message;
-    document.body.appendChild(indicator);
-    
-    setTimeout(() => {
-      document.body.removeChild(indicator);
-    }, 2000);
-  }
-}
-
-// Initialize reading session tracker
-const readingSession = new ReadingSession();
-
-// Demo: Simulate network failure and retry
-async function demoBackgroundSync() {
-  console.log('🚀 Starting background sync demo...');
-  
-  // Simulate a failed API request
-  const failedRequest = {
-    id: 'req-' + Date.now(),
-    url: '/api/user-activity',
-    method: 'POST',
-    body: JSON.stringify({ action: 'demo', timestamp: Date.now() }),
-    headers: { 'Content-Type': 'application/json' }
-  };
-  
-  // Save failed request for retry
-  const failedRequests = JSON.parse(localStorage.getItem('failedRequests') || '[]');
-  failedRequests.push(failedRequest);
-  localStorage.setItem('failedRequests', JSON.stringify(failedRequests));
-  
-  console.log('💾 Saved failed request for retry');
-  
-  // Register background sync untuk retry
-  const success = await registerBackgroundSync('retry-failed-requests');
-  
-  if (success) {
-    alert('Demo started! Disconnect internet and wait, then reconnect to see background sync in action.');
-  }
-}
-
-// Enhanced PDF progress tracking dengan reading session
-function trackPDFView(pdfName) {
-  readingSession.startPDF(pdfName);
-  
-  // Schedule periodic user activity sync
-  setInterval(() => {
-    registerBackgroundSync('sync-user-activity');
-  }, 30000); // Setiap 30 detik
-}
-
-// ======== ✅ PUSH NOTIFICATIONS SETUP ========
-
-class PushNotificationManager {
-  constructor() {
-    this.isSubscribed = false;
-    this.registration = null;
-  }
-  
-  async initialize() {
-    try {
-      // Check browser support
-      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        console.log('❌ Push notifications not supported');
-        return false;
-      }
-      
-      // Get service worker registration
-      this.registration = await navigator.serviceWorker.ready;
-      
-      // Check current subscription status
-      const subscription = await this.registration.pushManager.getSubscription();
-      this.isSubscribed = !(subscription === null);
-      
-      console.log('📋 Push notification status:', this.isSubscribed ? 'Subscribed' : 'Not subscribed');
-      
-      // Update UI based on subscription status
-      this.updateUI();
-      
-      return true;
-      
-    } catch (error) {
-      console.error('❌ Push notification initialization failed:', error);
-      return false;
-    }
-  }
-  
-  async subscribe() {
-    try {
-      console.log('🔔 Requesting push notification permission...');
-      
-      // Request permission
-      const permission = await Notification.requestPermission();
-      
-      if (permission !== 'granted') {
-        console.log('❌ Push notification permission denied');
-        this.showPermissionDeniedMessage();
-        return false;
-      }
-      
-      console.log('✅ Push notification permission granted');
-      
-      // Subscribe to push service
-      const subscription = await this.registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(this.getVapidPublicKey())
-      });
-      
-      console.log('✅ Push subscription successful:', subscription);
-      
-      // Send subscription to server (dalam real app)
-      await this.sendSubscriptionToServer(subscription);
-      
-      this.isSubscribed = true;
-      this.updateUI();
-      this.showSubscriptionSuccess();
-      
-      return true;
-      
-    } catch (error) {
-      console.error('❌ Push subscription failed:', error);
-      
-      if (error.name === 'NotAllowedError') {
-        this.showPermissionDeniedMessage();
-      }
-      
-      return false;
-    }
-  }
-  
-  async unsubscribe() {
-    try {
-      const subscription = await this.registration.pushManager.getSubscription();
-      
-      if (subscription) {
-        await subscription.unsubscribe();
-        console.log('✅ Push unsubscription successful');
-        
-        // Notify server tentang unsubscription
-        await this.sendUnsubscriptionToServer(subscription);
-      }
-      
-      this.isSubscribed = false;
-      this.updateUI();
-      this.showUnsubscriptionSuccess();
-      
-    } catch (error) {
-      console.error('❌ Push unsubscription failed:', error);
-    }
-  }
-  
-  // Helper: Convert VAPID key
-  urlBase64ToUint8Array(base64String) {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding)
-      .replace(/\-/g, '+')
-      .replace(/_/g, '/');
-    
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-    
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-  }
-  
-  // Demo VAPID public key (dalam real app, ini dari server)
-  getVapidPublicKey() {
-    // Ini adalah demo key - dalam production dapatkan dari server
-    return 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
-  }
-  
-  async sendSubscriptionToServer(subscription) {
-    console.log('🌐 Sending subscription to server:', subscription);
-    
-    // Simulate API call ke server
-    try {
-      // Simpan subscription locally untuk demo
-      localStorage.setItem('pushSubscription', JSON.stringify(subscription));
-      console.log('💾 Subscription saved locally');
-      
-      // Dalam real app, kirim ke backend server
-      // await fetch('/api/push-subscribe', {
-      //   method: 'POST',
-      //   body: JSON.stringify(subscription),
-      //   headers: { 'Content-Type': 'application/json' }
-      // });
-      
-    } catch (error) {
-      console.error('❌ Failed to send subscription to server:', error);
-    }
-  }
-  
-  async sendUnsubscriptionToServer(subscription) {
-    console.log('🌐 Notifying server about unsubscription');
-    localStorage.removeItem('pushSubscription');
-  }
-  
-  updateUI() {
-    // Update UI berdasarkan subscription status
-    const subscribeBtn = document.getElementById('push-subscribe-btn');
-    const unsubscribeBtn = document.getElementById('push-unsubscribe-btn');
-    const statusEl = document.getElementById('push-status');
-    
-    if (subscribeBtn) {
-      subscribeBtn.style.display = this.isSubscribed ? 'none' : 'block';
-    }
-    if (unsubscribeBtn) {
-      unsubscribeBtn.style.display = this.isSubscribed ? 'block' : 'none';
-    }
-    if (statusEl) {
-      statusEl.textContent = this.isSubscribed ? '🔔 Notifications Enabled' : '🔕 Notifications Disabled';
-      statusEl.className = this.isSubscribed ? 'status-enabled' : 'status-disabled';
-    }
-  }
-  
-  showPermissionDeniedMessage() {
-    this.showMessage('❌ Notifications blocked. Please enable in browser settings.', 'error');
-  }
-  
-  showSubscriptionSuccess() {
-    this.showMessage('✅ Push notifications enabled!', 'success');
-  }
-  
-  showUnsubscriptionSuccess() {
-    this.showMessage('🔕 Push notifications disabled', 'info');
-  }
-  
-  showMessage(text, type = 'info') {
-    // Show user-friendly message
-    const messageEl = document.createElement('div');
-    messageEl.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 12px 16px;
-      border-radius: 6px;
-      color: white;
-      z-index: 10000;
-      font-weight: bold;
-      ${type === 'error' ? 'background: #f44336;' : ''}
-      ${type === 'success' ? 'background: #4CAF50;' : ''}
-      ${type === 'info' ? 'background: #2196F3;' : ''}
-    `;
-    messageEl.textContent = text;
-    document.body.appendChild(messageEl);
-    
-    setTimeout(() => {
-      document.body.removeChild(messageEl);
-    }, 3000);
-  }
-  
-  // Demo: Test push notification
-  async testPushNotification() {
-    if (!this.isSubscribed) {
-      this.showMessage('Please enable push notifications first', 'error');
-      return;
-    }
-    
-    // Show local notification untuk testing
-    if ('Notification' in window && Notification.permission === 'granted') {
-      const notification = new Notification('ELSA Test', {
-        body: 'This is a test notification from ELSA',
-        icon: './icons/icon-192x192.png',
-        badge: './icons/icon-96x96.png',
-        tag: 'test-notification'
-      });
-      
-      notification.onclick = () => {
-        console.log('Test notification clicked');
-        window.focus();
-      };
-    }
-  }
-}
-
-// Initialize push notifications
-const pushManager = new PushNotificationManager();
-
-// Add to settings page atau langsung initialize
-function initializePushNotifications() {
-  pushManager.initialize().then(success => {
-    if (success) {
-      console.log('🚀 Push notifications initialized successfully');
-      
-      // Tambahkan UI controls jika belum ada
-      addPushNotificationUI();
-    }
-  });
-}
-
-// Add UI controls untuk push notifications
-function addPushNotificationUI() {
-  // Cek jika UI sudah ada
-  if (document.getElementById('push-notification-section')) {
-    return;
-  }
-  
-  // Tambahkan di settings page atau footer
-  const section = document.createElement('div');
-  section.id = 'push-notification-section';
-  section.innerHTML = `
-    <div style="margin: 20px 0; padding: 15px; background: #2f2f2f; border-radius: 8px;">
-      <h3 style="margin-bottom: 10px;">🔔 Push Notifications</h3>
-      <p id="push-status" style="margin-bottom: 15px; color: #b0b0b0;">
-        ${pushManager.isSubscribed ? '🔔 Enabled' : '🔕 Disabled'}
-      </p>
-      <button id="push-subscribe-btn" class="btn" style="margin-right: 10px;">
-        Enable Notifications
-      </button>
-      <button id="push-unsubscribe-btn" class="btn" style="background: #6c757d; display: none;">
-        Disable Notifications
-      </button>
-      <button id="push-test-btn" class="btn" style="background: #ffc107; color: #000; margin-left: 10px;">
-        Test Notification
-      </button>
-    </div>
-  `;
-  
-  // Tambahkan ke settings page atau tempat lain
-  const settingsSection = document.getElementById('settings-section') || document.querySelector('main');
-  if (settingsSection) {
-    settingsSection.appendChild(section);
-  } else {
-    document.body.appendChild(section);
-  }
-  
-  // Add event listeners
-  document.getElementById('push-subscribe-btn').addEventListener('click', () => {
-    pushManager.subscribe();
-  });
-  
-  document.getElementById('push-unsubscribe-btn').addEventListener('click', () => {
-    pushManager.unsubscribe();
-  });
-  
-  document.getElementById('push-test-btn').addEventListener('click', () => {
-    pushManager.testPushNotification();
-  });
-  
-  // Update UI state
-  pushManager.updateUI();
-}
-
-// Initialize ketika service worker ready
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.ready.then(() => {
-    initializePushNotifications();
-  });
-}
-
-// ======== ✅ OFFLINE SUPPORT MANAGER - COMPATIBLE WITH EXISTING SW ========
-
-class OfflineManager {
-  constructor() {
-    this.isOnline = navigator.onLine;
-    this.offlineIndicator = null;
-    this.init();
-  }
-  
-  init() {
-    this.createOfflineIndicator();
-    this.setupNetworkListeners();
-    this.setupServiceWorkerMessages();
-    this.checkOfflineCapabilities();
-  }
-  
-  createOfflineIndicator() {
-    this.offlineIndicator = document.createElement('div');
-    this.offlineIndicator.id = 'offline-indicator';
-    this.offlineIndicator.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: #ff6b6b;
-      color: white;
-      padding: 10px;
-      text-align: center;
-      font-weight: bold;
-      z-index: 10000;
-      transform: translateY(-100%);
-      transition: transform 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    `;
-    this.offlineIndicator.textContent = '📶 Anda sedang offline - Beberapa fitur terbatas';
-    document.body.appendChild(this.offlineIndicator);
-  }
-  
-  setupNetworkListeners() {
-    window.addEventListener('online', () => {
-      this.handleOnline();
-    });
-    
-    window.addEventListener('offline', () => {
-      this.handleOffline();
-    });
-  }
-  
-  setupServiceWorkerMessages() {
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data.type === 'OFFLINE_STATUS') {
-          if (event.data.isOnline) {
-            this.handleOnline();
-          } else {
-            this.handleOffline();
-          }
-        }
-      });
-    }
-  }
-  
-  handleOnline() {
-    this.isOnline = true;
-    this.hideOfflineIndicator();
-    
-    // Show reconnection message
-    this.showMessage('✅ Koneksi pulih', 'success');
-    
-    // Sync pending data menggunakan background sync yang sudah ada di SW
-    this.syncPendingData();
-  }
-  
-  handleOffline() {
-    this.isOnline = false;
-    this.showOfflineIndicator();
-    
-    // Show offline message
-    this.showMessage('📶 Sedang offline', 'warning');
-    
-    // Disable online-only features
-    this.disableOnlineFeatures();
-  }
-  
-  showOfflineIndicator() {
-    if (this.offlineIndicator) {
-      this.offlineIndicator.style.transform = 'translateY(0)';
-    }
-  }
-  
-  hideOfflineIndicator() {
-    if (this.offlineIndicator) {
-      this.offlineIndicator.style.transform = 'translateY(-100%)';
-    }
-  }
-  
-  showMessage(text, type = 'info') {
-    const messageEl = document.createElement('div');
-    messageEl.style.cssText = `
-      position: fixed;
-      top: 50px;
-      right: 20px;
-      padding: 12px 16px;
-      border-radius: 6px;
-      color: white;
-      z-index: 10000;
-      font-weight: bold;
-      ${type === 'success' ? 'background: #4CAF50;' : ''}
-      ${type === 'warning' ? 'background: #ffc107; color: #000;' : ''}
-      ${type === 'error' ? 'background: #f44336;' : ''}
-    `;
-    messageEl.textContent = text;
-    document.body.appendChild(messageEl);
-    
-    setTimeout(() => {
-      document.body.removeChild(messageEl);
-    }, 3000);
-  }
-  
-  disableOnlineFeatures() {
-    // Disable features yang butuh online
-    const onlineOnlyElements = document.querySelectorAll('[data-online-only]');
-    onlineOnlyElements.forEach(el => {
-      el.style.opacity = '0.5';
-      el.style.pointerEvents = 'none';
-    });
-  }
-  
-  enableOnlineFeatures() {
-    // Enable features yang butuh online
-    const onlineOnlyElements = document.querySelectorAll('[data-online-only]');
-    onlineOnlyElements.forEach(el => {
-      el.style.opacity = '1';
-      el.style.pointerEvents = 'auto';
-    });
-  }
-  
-  async syncPendingData() {
-    if (!this.isOnline) return;
-    
-    try {
-      // Gunakan background sync yang sudah ada di SW
-      if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.ready;
-        
-        // Trigger sync untuk berbagai data yang pending
-        if ('sync' in registration) {
-          await registration.sync.register('sync-pdf-history');
-          await registration.sync.register('sync-user-activity');
-          await registration.sync.register('retry-failed-requests');
-        }
-      }
-      
-      this.enableOnlineFeatures();
-      
-    } catch (error) {
-      console.error('❌ Sync failed:', error);
-    }
-  }
-  
-  async checkOfflineCapabilities() {
-    // Test offline capabilities berdasarkan cache yang sudah ada di SW
-    if ('serviceWorker' in navigator && 'caches' in window) {
-      try {
-        // Test akses ke critical resources
-        const criticalResources = [
-          './',
-          './index.html', 
-          './viewer.html',
-          './pdfjs/pdf.js',
-          './fallback/offline.html'
-        ];
-        
-        let availableCount = 0;
-        for (const resource of criticalResources) {
-          const isAvailable = await this.checkResourceAvailability(resource);
-          if (isAvailable) availableCount++;
-        }
-        
-        console.log(`📦 Offline capability: ${availableCount}/${criticalResources.length} resources available`);
-        
-        if (availableCount === criticalResources.length) {
-          this.showMessage('✅ Aplikasi siap digunakan offline', 'success');
-        }
-        
-      } catch (error) {
-        console.log('❌ Offline check failed:', error);
-      }
-    }
-  }
-  
-  async checkResourceAvailability(url) {
-    try {
-      if (this.isOnline) {
-        const response = await fetch(url, { cache: 'no-cache' });
-        return response.ok;
-      } else {
-        // Check cache melalui service worker
-        const cache = await caches.open('elsa-pwa-v3.2-debug');
-        const cached = await cache.match(url);
-        return !!cached;
-      }
-    } catch (error) {
-      return false;
-    }
-  }
-  
-  // Enhanced error handling untuk offline scenarios
-  setupOfflineErrorHandling() {
-    // Global error handler untuk network requests
-    window.addEventListener('error', (event) => {
-      if (event.target.tagName === 'IMG' || event.target.tagName === 'SCRIPT') {
-        console.log('❌ Resource failed to load:', event.target.src);
-        
-        // Try to serve from cache menggunakan SW cache strategy
-        if ('caches' in window) {
-          caches.match(event.target.src).then(response => {
-            if (response) {
-              console.log('✅ Serving failed resource from cache');
-            }
-          });
-        }
-      }
-    });
-    
-    // Handle PDF loading errors
-    window.addEventListener('unhandledrejection', (event) => {
-      if (event.reason && event.reason.message && event.reason.message.includes('PDF')) {
-        console.log('❌ PDF loading error:', event.reason);
-        this.showMessage('❌ Gagal memuat PDF', 'error');
-      }
-    });
-  }
-}
-
-// Initialize offline manager
-const offlineManager = new OfflineManager();
-
-// Test offline functionality - compatible dengan integrity checker yang ada
-async function testOfflineFunctionality() {
-  const tests = {
-    'App Shell': await offlineManager.checkResourceAvailability('./index.html'),
-    'PDF Viewer': await offlineManager.checkResourceAvailability('./viewer.html'),
-    'Main JS': await offlineManager.checkResourceAvailability('./pdfjs/pdf.js'),
-    'Offline Fallback': await offlineManager.checkResourceAvailability('./fallback/offline.html'),
-    'Icons': await offlineManager.checkResourceAvailability('./icons/icon-192x192.png')
-  };
-  
-  console.log('🧪 Offline Capability Test:', tests);
-  
-  const allPassed = Object.values(tests).every(Boolean);
-  if (allPassed) {
-    offlineManager.showMessage('✅ Semua fitur utama tersedia offline', 'success');
-  } else {
-    const passedCount = Object.values(tests).filter(Boolean).length;
-    offlineManager.showMessage(`✅ ${passedCount}/5 fitur utama tersedia offline`, 'info');
-  }
-  
-  return tests;
-}
-
-// Enhanced network status monitoring
-function setupEnhancedNetworkMonitoring() {
-  // Periodic network check
-  setInterval(() => {
-    if (!navigator.onLine) {
-      // Update UI untuk menunjukkan offline status
-      const offlineElements = document.querySelectorAll('[data-online-only]');
-      offlineElements.forEach(el => {
-        if (!el.hasAttribute('data-offline-notified')) {
-          el.setAttribute('data-offline-notified', 'true');
-          el.title = 'Fitur ini membutuhkan koneksi internet';
-        }
-      });
-    }
-  }, 10000);
-}
-
-// Initialize ketika DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-  offlineManager.setupOfflineErrorHandling();
-  setupEnhancedNetworkMonitoring();
-  
-  // Test offline capabilities setelah load
-  setTimeout(() => {
-    testOfflineFunctionality();
-  }, 3000);
-  
-  // Add offline info to settings jika ada
-  addOfflineInfoToSettings();
-});
-
-// Add offline information to settings page
-function addOfflineInfoToSettings() {
-  // Cari settings section atau buat jika tidak ada
-  let settingsSection = document.getElementById('settings-section');
-  
-  if (!settingsSection) {
-    // Coba cari di existing content
-    settingsSection = document.querySelector('[data-target="settings-section"]');
-  }
-  
-  if (settingsSection) {
-    const offlineInfo = document.createElement('div');
-    offlineInfo.style.cssText = `
-      background: #2f2f2f;
-      padding: 15px;
-      border-radius: 8px;
-      margin: 15px 0;
-    `;
-    offlineInfo.innerHTML = `
-      <h3 style="margin-bottom: 10px;">📶 Status Offline</h3>
-      <p style="color: #b0b0b0; margin-bottom: 10px;">
-        Status: <span id="network-status">${navigator.onLine ? '✅ Online' : '📶 Offline'}</span>
-      </p>
-      <p style="color: #b0b0b0; margin-bottom: 10px;">
-        Cache: <span id="cache-status">Memeriksa...</span>
-      </p>
-      <button onclick="testOfflineFunctionality()" class="btn" style="background: #17a2b8;">
-        Test Offline Capability
-      </button>
-    `;
-    
-    settingsSection.appendChild(offlineInfo);
-    
-    // Update cache status
-    updateCacheStatus();
-  }
-}
-
-async function updateCacheStatus() {
-  if ('caches' in window) {
-    try {
-      const cache = await caches.open('elsa-pwa-v3.2-debug');
-      const keys = await cache.keys();
-      const statusEl = document.getElementById('cache-status');
-      if (statusEl) {
-        statusEl.textContent = `${keys.length} resources cached`;
-        statusEl.style.color = keys.length > 0 ? '#4CAF50' : '#ff6b6b';
-      }
-    } catch (error) {
-      console.log('Cache status check failed:', error);
-    }
-  }
-}
-
-// Export untuk testing
-window.offlineManager = offlineManager;
-window.testOfflineFunctionality = testOfflineFunctionality;
-
-// Coba register SW offline version
-async function registerOfflineSW() {
-  if ('serviceWorker' in navigator) {
-    try {
-      await navigator.serviceWorker.register('./sw-offline.js');
-      console.log('✅ Offline SW registered');
-    } catch (error) {
-      console.log('❌ Offline SW failed, using existing SW');
-    }
-  }
-}
-
-// DI main.js - dalam DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Notifikasi random untuk testing (5-10 detik)
-    setInterval(() => {
-        const messages = ["Pengingat ELSA", "Cek konten baru", "Lanjutkan membaca"];
-        const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-        
-        triggerPushNotification("ELSA Reminder", randomMsg);
-    }, Math.random() * 5000 + 5000); // 5-10 detik
-});
-
-
-// DI main.js - TAMBAHKAN di akhir script:
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize push notifications automatically
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then(() => {
-            initializePushNotifications();
+    // Initialize Service Worker
+    initializeServiceWorker().then(registration => {
+        if (registration) {
+            // Setup layout
+            ensureNavbarPosition();
+            adjustCardSizes();
             
-            // Juga initialize push manager
-            pushManager.initialize().then(success => {
-                if (success) {
-                    console.log('🚀 Push notifications initialized successfully');
-                }
-            });
-        });
-    }
+            // Test offline capability dengan retry mechanism
+            setTimeout(() => {
+                testOfflineCapabilityWithRetry().then(results => {
+                    if (results) {
+                        const availableCount = Object.values(results).filter(Boolean).length;
+                        console.log(`🎉 Final offline capability: ${availableCount}/4`);
+                        
+                        // ✅ TAMPILKAN HASIL DI UI
+                        updateOfflineCapabilityDisplay(availableCount, 4);
+                    }
+                });
+            }, 3000);
+        }
+    }).catch(error => {
+        console.error('❌ Initialization failed:', error);
+    });
 });
 
-
-// DI main.js - TAMBAHKAN function untuk trigger push:
-function triggerPushNotification(title, body, data = {}) {
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-            type: 'SHOW_PUSH_NOTIFICATION',
-            notification: {
-                title: title,
-                body: body,
-                data: data,
-                timestamp: Date.now()
-            }
-        });
+// ✅ FUNGSI BARU: Update tampilan offline capability
+function updateOfflineCapabilityDisplay(available, total) {
+    // Cari atau buat elemen untuk menampilkan status
+    let statusElement = document.getElementById('offline-capability-status');
+    
+    if (!statusElement) {
+        statusElement = document.createElement('div');
+        statusElement.id = 'offline-capability-status';
+        statusElement.style.cssText = `
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+        `;
+        document.body.appendChild(statusElement);
+    }
+    
+    const percentage = (available / total) * 100;
+    statusElement.innerHTML = `📦 Offline: ${available}/${total} (${Math.round(percentage)}%)`;
+    
+    // Update warna berdasarkan status
+    if (percentage >= 75) {
+        statusElement.style.background = '#4CAF50';
+    } else if (percentage >= 50) {
+        statusElement.style.background = '#ff9800';
     } else {
-        // Fallback ke browser notification
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(title, {
-                body: body,
-                icon: './icons/icon-192x192.png',
-                data: data
-            });
-        }
+        statusElement.style.background = '#f44336';
     }
 }
 
-// Contoh penggunaan:
-function notifyPDFLoaded(pdfName) {
-    triggerPushNotification(
-        'ELSA - PDF Loaded', 
-        `"${pdfName}" berhasil dimuat`,
-        { type: 'pdf_loaded', pdfName: pdfName }
-    );
+    // Handle resize and scroll events
+    window.addEventListener('resize', () => {
+        adjustCardSizes();
+        ensureNavbarPosition();
+    });
+
+    window.addEventListener('scroll', ensureNavbarPosition);
+
+    // Online/offline detection
+    function checkOnlineStatus() {
+        if (!navigator.onLine) {
+            console.log('📴 Aplikasi sedang offline');
+        }
+    }
+
+    window.addEventListener('online', checkOnlineStatus);
+    window.addEventListener('offline', checkOnlineStatus);
+    checkOnlineStatus();
+
+    // ✅ ERROR HANDLING
+    window.addEventListener('error', (event) => {
+        if (event.target.tagName === 'IMG' || event.target.tagName === 'SCRIPT') {
+            console.log('❌ Resource failed to load:', event.target.src);
+        }
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+        if (event.reason && event.reason.message && event.reason.message.includes('PDF')) {
+            console.log('❌ PDF loading error:', event.reason);
+            offlineManager.showMessage('❌ Gagal memuat PDF', 'error');
+        }
+    });
+
+    // ✅ EXPORT FOR DEBUGGING
+    window.elsaApp = {
+        readingSession,
+        offlineManager,
+        testOfflineCapability,
+        initializeServiceWorker,
+        showUpdateNotification
+    };
+
+    console.log('✅ ELSA App JavaScript loaded successfully');
+    
+    // ✅ FUNGSI BARU: Test offline capability dengan retry
+async function testOfflineCapabilityWithRetry(maxRetries = 5, delay = 1000) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        console.log(`🔄 Offline test attempt ${attempt}/${maxRetries}...`);
+        
+        const results = await testOfflineCapability();
+        const availableCount = Object.values(results).filter(Boolean).length;
+        
+        if (availableCount >= 3) { // Minimal 3/4 resource cached
+            console.log(`✅ Offline capability sufficient: ${availableCount}/4`);
+            return results;
+        }
+        
+        if (attempt < maxRetries) {
+            console.log(`⏳ Retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    
+    console.log('❌ Offline capability insufficient after all retries');
+    return null;
 }
-
-function notifySyncCompleted(result) {
-    triggerPushNotification(
-        'ELSA - Sync Completed',
-        `Data berhasil disinkronisasi: ${result}`,
-        { type: 'sync_completed', result: result }
-    );
-}
-
-
-
-registerOfflineSW();
-
-    </script>
+    
+</script>
 </body>
 </html>
