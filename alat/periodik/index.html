@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabel Periodik Unsur</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Gaya CSS */
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --header-bg: #2c3e50;
+            --header-text: #ffffff;
+
+            --color-alkali: #ffcdd2;
+            --color-alkali-earth: #ffeb3b;
+            --color-transition-metal: #c8e6c9;
+            --color-post-transition: #b3e5fc;
+            --color-metalloid: #d1c4e9;
+            --color-nonmetal: #b2dfdb;
+            --color-halogen: #e1bee7;
+            --color-noble-gas: #c5cae9;
+            --color-lanthanide: #ffecb3;
+            --color-actinide: #e0f2f1;
+            --color-unknown: #bdbdbd;
+        }
+
+        .dark-mode {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --border-color: #444444;
+            --header-bg: #1e2a36;
+            --header-text: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .filter-btn.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8em;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+
+        .periodic-table-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, 55px);
+            grid-template-rows: repeat(10, 55px);
+            gap: 5px;
+            width: min-content;
+            margin: 0 auto;
+        }
+
+        .element {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--card-bg);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .element:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .element.hidden {
+            display: none;
+        }
+
+        .element.filtered-out {
+            opacity: 0.3;
+        }
+
+        .element .atomic-number {
+            font-size: 0.7em;
+            align-self: flex-start;
+            margin-bottom: 2px;
+        }
+
+        .element .symbol {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .element .name {
+            font-size: 0.6em;
+            margin-top: 2px;
+        }
+
+        .element[data-number="57"], .element[data-number="89"] {
+            grid-row: 6 / 7;
+            grid-column: 3 / 4;
+        }
+
+        .lanthanide:not([data-number="57"]) {
+            grid-row: 9;
+        }
+        
+        .actinide:not([data-number="89"]) {
+            grid-row: 10;
+        }
+
+        .alkali-metal { background-color: var(--color-alkali); }
+        .alkaline-earth-metal { background-color: var(--color-alkali-earth); }
+        .transition-metal { background-color: var(--color-transition-metal); }
+        .post-transition-metal { background-color: var(--color-post-transition); }
+        .metalloid { background-color: var(--color-metalloid); }
+        .nonmetal { background-color: var(--color-nonmetal); }
+        .halogen { background-color: var(--color-halogen); }
+        .noble-gas { background-color: var(--color-noble-gas); }
+        .lanthanide { background-color: var(--color-lanthanide); }
+        .actinide { background-color: var(--color-actinide); }
+        .unknown { background-color: var(--color-unknown); }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #999;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            line-height: 1;
+        }
+
+        .close-button:hover {
+            color: var(--text-color);
+        }
+
+        .modal-info h2 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        .modal-info p {
+            font-size: 1em;
+            margin-bottom: 8px;
+        }
+        .modal-info strong {
+            color: #007bff;
+        }
+        
+        .header-back {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .header-back a {
+            color: #007bff;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            text-decoration: none;
+            padding: 5px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header-back h1 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+        
+        .icon-svg {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            color: currentColor;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: #999;
+            display: none;
+        }
+
+        /* Responsivitas */
+        @media (max-width: 1200px) {
+            .periodic-table {
+                grid-template-columns: repeat(18, 50px);
+                grid-template-rows: repeat(10, 50px);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .periodic-table {
+                grid-template-columns: repeat(18, 45px);
+                grid-template-rows: repeat(10, 45px);
+            }
+            
+            .element .symbol {
+                font-size: 1.3em;
+            }
+            
+            .element .name {
+                font-size: 0.55em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .periodic-table {
+                grid-template-columns: repeat(18, 40px);
+                grid-template-rows: repeat(10, 40px);
+                gap: 3px;
+            }
+            
+            .element .symbol {
+                font-size: 1.2em;
+            }
+            
+            .element .name {
+                font-size: 0.5em;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .search-container {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .periodic-table {
+                grid-template-columns: repeat(18, 30px);
+                grid-template-rows: repeat(10, 30px);
+                gap: 2px;
+            }
+            
+            .element .symbol {
+                font-size: 1em;
+            }
+            
+            .element .name {
+                display: none;
+            }
+            
+            .element .atomic-number {
+                font-size: 0.6em;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .modal-info h2 {
+                font-size: 1.5em;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .periodic-table {
+                grid-template-columns: repeat(18, 25px);
+                grid-template-rows: repeat(10, 25px);
+            }
+            
+            .element .symbol {
+                font-size: 0.8em;
+            }
+            
+            .element .atomic-number {
+                font-size: 0.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-toggle" id="theme-toggle">
+        <svg class="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+    </div>
+
+    <header class="header-back">
+        <a href="./../../index.html" title="Kembali">
+            <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </a>
+        <h1>Kembali</h1>
+    </header>
+
+    <div class="header">
+        <h1>Tabel Periodik Unsur</h1>
+        <p>Proyek HTML, CSS & JavaScript</p>
+        
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" id="search-input" class="search-input" placeholder="Cari unsur (nama atau simbol)...">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </div>
+        </div>
+        
+        <div class="filter-container" id="filter-container">
+            <!-- Filter buttons akan diisi oleh JavaScript -->
+        </div>
+    </div>
+
+    <div class="legend" id="legend">
+        <!-- Legend items akan diisi oleh JavaScript -->
+    </div>
+
+    <div class="periodic-table-container">
+        <div id="periodic-table" class="periodic-table"></div>
+        <div id="no-results" class="no-results">Tidak ada unsur yang sesuai dengan pencarian Anda.</div>
+    </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="close-modal" class="close-button">&times;</button>
+            <div id="modal-info"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data Unsur
+        const elementsData = [
+            {
+                "number": 1, "symbol": "H", "name": "Hidrogen", "atomic_mass": "1.008",
+                "category": "nonmetal", "electron_config": "1s¹", "boiling_point": -252.87,
+                "melting_point": -259.16, "category_id": "nonmetal", "xpos": 1, "ypos": 1
+            },
+            {
+                "number": 2, "symbol": "He", "name": "Helium", "atomic_mass": "4.002602(2)",
+                "category": "noble-gas", "electron_config": "1s²", "boiling_point": -268.93,
+                "melting_point": -272.2, "category_id": "noble-gas", "xpos": 18, "ypos": 1
+            },
+            {
+                "number": 3, "symbol": "Li", "name": "Litium", "atomic_mass": "6.94",
+                "category": "alkali-metal", "electron_config": "[He] 2s¹", "boiling_point": 1342,
+                "melting_point": 180.5, "category_id": "alkali-metal", "xpos": 1, "ypos": 2
+            },
+            {
+                "number": 4, "symbol": "Be", "name": "Berilium", "atomic_mass": "9.0121831(5)",
+                "category": "alkaline-earth-metal", "electron_config": "[He] 2s²", "boiling_point": 2471,
+                "melting_point": 1287, "category_id": "alkaline-earth-metal", "xpos": 2, "ypos": 2
+            },
+            {
+                "number": 5, "symbol": "B", "name": "Boron", "atomic_mass": "10.81",
+                "category": "metalloid", "electron_config": "[He] 2s² 2p¹", "boiling_point": 3927,
+                "melting_point": 2076, "category_id": "metalloid", "xpos": 13, "ypos": 2
+            },
+            {
+                "number": 6, "symbol": "C", "name": "Karbon", "atomic_mass": "12.011",
+                "category": "nonmetal", "electron_config": "[He] 2s² 2p²", "boiling_point": 4027,
+                "melting_point": 3550, "category_id": "nonmetal", "xpos": 14, "ypos": 2
+            },
+            {
+                "number": 7, "symbol": "N", "name": "Nitrogen", "atomic_mass": "14.007",
+                "category": "nonmetal", "electron_config": "[He] 2s² 2p³", "boiling_point": -195.8,
+                "melting_point": -210.0, "category_id": "nonmetal", "xpos": 15, "ypos": 2
+            },
+            {
+                "number": 8, "symbol": "O", "name": "Oksigen", "atomic_mass": "15.999",
+                "category": "nonmetal", "electron_config": "[He] 2s² 2p⁴", "boiling_point": -183.0,
+                "melting_point": -218.8, "category_id": "nonmetal", "xpos": 16, "ypos": 2
+            },
+            {
+                "number": 9, "symbol": "F", "name": "Fluorin", "atomic_mass": "18.998403163(6)",
+                "category": "halogen", "electron_config": "[He] 2s² 2p⁵", "boiling_point": -188.1,
+                "melting_point": -219.6, "category_id": "halogen", "xpos": 17, "ypos": 2
+            },
+            {
+                "number": 10, "symbol": "Ne", "name": "Neon", "atomic_mass": "20.1797(6)",
+                "category": "noble-gas", "electron_config": "[He] 2s² 2p⁶", "boiling_point": -246.08,
+                "melting_point": -248.59, "category_id": "noble-gas", "xpos": 18, "ypos": 2
+            },
+            {
+                "number": 11, "symbol": "Na", "name": "Natrium", "atomic_mass": "22.98976928(2)",
+                "category": "alkali-metal", "electron_config": "[Ne] 3s¹", "boiling_point": 883,
+                "melting_point": 97.8, "category_id": "alkali-metal", "xpos": 1, "ypos": 3
+            },
+            {
+                "number": 12, "symbol": "Mg", "name": "Magnesium", "atomic_mass": "24.305",
+                "category": "alkaline-earth-metal", "electron_config": "[Ne] 3s²", "boiling_point": 1090,
+                "melting_point": 650, "category_id": "alkaline-earth-metal", "xpos": 2, "ypos": 3
+            },
+            {
+                "number": 13, "symbol": "Al", "name": "Aluminium", "atomic_mass": "26.9815385(7)",
+                "category": "post-transition-metal", "electron_config": "[Ne] 3s² 3p¹", "boiling_point": 2519,
+                "melting_point": 660.3, "category_id": "post-transition-metal", "xpos": 13, "ypos": 3
+            },
+            {
+                "number": 14, "symbol": "Si", "name": "Silikon", "atomic_mass": "28.085",
+                "category": "metalloid", "electron_config": "[Ne] 3s² 3p²", "boiling_point": 3265,
+                "melting_point": 1414, "category_id": "metalloid", "xpos": 14, "ypos": 3
+            },
+            {
+                "number": 15, "symbol": "P", "name": "Fosfor", "atomic_mass": "30.973761998(5)",
+                "category": "nonmetal", "electron_config": "[Ne] 3s² 3p³", "boiling_point": 280.5,
+                "melting_point": 44.2, "category_id": "nonmetal", "xpos": 15, "ypos": 3
+            },
+            {
+                "number": 16, "symbol": "S", "name": "Belerang", "atomic_mass": "32.06",
+                "category": "nonmetal", "electron_config": "[Ne] 3s² 3p⁴", "boiling_point": 444.6,
+                "melting_point": 115.2, "category_id": "nonmetal", "xpos": 16, "ypos": 3
+            },
+            {
+                "number": 17, "symbol": "Cl", "name": "Klorin", "atomic_mass": "35.45",
+                "category": "halogen", "electron_config": "[Ne] 3s² 3p⁵", "boiling_point": -34.04,
+                "melting_point": -101.5, "category_id": "halogen", "xpos": 17, "ypos": 3
+            },
+            {
+                "number": 18, "symbol": "Ar", "name": "Argon", "atomic_mass": "39.948(1)",
+                "category": "noble-gas", "electron_config": "[Ne] 3s² 3p⁶", "boiling_point": -185.8,
+                "melting_point": -189.4, "category_id": "noble-gas", "xpos": 18, "ypos": 3
+            },
+            {
+                "number": 19, "symbol": "K", "name": "Kalium", "atomic_mass": "39.0983(1)",
+                "category": "alkali-metal", "electron_config": "[Ar] 4s¹", "boiling_point": 759,
+                "melting_point": 63.5, "category_id": "alkali-metal", "xpos": 1, "ypos": 4
+            },
+            {
+                "number": 20, "symbol": "Ca", "name": "Kalsium", "atomic_mass": "40.078(4)",
+                "category": "alkaline-earth-metal", "electron_config": "[Ar] 4s²", "boiling_point": 1484,
+                "melting_point": 842, "category_id": "alkaline-earth-metal", "xpos": 2, "ypos": 4
+            },
+            {
+                "number": 21, "symbol": "Sc", "name": "Skandium", "atomic_mass": "44.955908(5)",
+                "category": "transition-metal", "electron_config": "[Ar] 3d¹ 4s²", "boiling_point": 2836,
+                "melting_point": 1541, "category_id": "transition-metal", "xpos": 3, "ypos": 4
+            },
+            {
+                "number": 22, "symbol": "Ti", "name": "Titanium", "atomic_mass": "47.867(1)",
+                "category": "transition-metal", "electron_config": "[Ar] 3d² 4s²", "boiling_point": 3287,
+                "melting_point": 1668, "category_id": "transition-metal", "xpos": 4, "ypos": 4
+            },
+            {
+                "number": 23, "symbol": "V", "name": "Vanadium", "atomic_mass": "50.9415(1)",
+                "category": "transition-metal", "electron_config": "[Ar] 3d³ 4s²", "boiling_point": 3407,
+                "melting_point": 1910, "category_id": "transition-metal", "xpos": 5, "ypos": 4
+            },
+            {
+                "number": 24, "symbol": "Cr", "name": "Kromium", "atomic_mass": "51.9961(6)",
+                "category": "transition-metal", "electron_config": "[Ar] 3d⁵ 4s¹", "boiling_point": 2671,
+                "melting_point": 1857, "category_id": "transition-metal", "xpos": 6, "ypos": 4
+            },
+            {
+                "number": 25, "symbol": "Mn", "name": "Mangan", "atomic_mass": "54.938044(3)",
+                "category": "transition-metal", "electron_config": "[Ar] 3d⁵ 4s²", "boiling_point": 2061,
+                "melting_point": 1246, "category_id": "transition-metal", "xpos": 7, "ypos": 4
+            },
+            {
+                "number": 26, "symbol": "Fe", "name": "Besi", "atomic_mass": "55.845(2)",
+                "category": "transition-metal", "electron_config": "[Ar] 3d⁶ 4s²", "boiling_point": 2861,
+                "melting_point": 1538, "category_id": "transition-metal", "xpos": 8, "ypos": 4
+            },
+            {
+                "number": 27, "symbol": "Co", "name": "Kobalt", "atomic_mass": "58.933194(3)",
+                "category": "transition-metal", "electron_config": "[Ar] 3d⁷ 4s²", "boiling_point": 2927,
+                "melting_point": 1495, "category_id": "transition-metal", "xpos": 9, "ypos": 4
+            },
+            {
+                "number": 28, "symbol": "Ni", "name": "Nikel", "atomic_mass": "58.6934(4)",
+                "category": "transition-metal", "electron_config": "[Ar] 3d⁸ 4s²", "boiling_point": 2913,
+                "melting_point": 1455, "category_id": "transition-metal", "xpos": 10, "ypos": 4
+            },
+            {
+                "number": 29, "symbol": "Cu", "name": "Tembaga", "atomic_mass": "63.546(3)",
+                "category": "transition-metal", "electron_config": "[Ar] 3d¹⁰ 4s¹", "boiling_point": 2562,
+                "melting_point": 1085, "category_id": "transition-metal", "xpos": 11, "ypos": 4
+            },
+            {
+                "number": 30, "symbol": "Zn", "name": "Seng", "atomic_mass": "65.38(2)",
+                "category": "transition-metal", "electron_config": "[Ar] 3d¹⁰ 4s²", "boiling_point": 907,
+                "melting_point": 419.5, "category_id": "transition-metal", "xpos": 12, "ypos": 4
+            },
+            {
+                "number": 31, "symbol": "Ga", "name": "Galium", "atomic_mass": "69.723(1)",
+                "category": "post-transition-metal", "electron_config": "[Ar] 3d¹⁰ 4s² 4p¹", "boiling_point": 2204,
+                "melting_point": 29.76, "category_id": "post-transition-metal", "xpos": 13, "ypos": 4
+            },
+            {
+                "number": 32, "symbol": "Ge", "name": "Germanium", "atomic_mass": "72.630(8)",
+                "category": "metalloid", "electron_config": "[Ar] 3d¹⁰ 4s² 4p²", "boiling_point": 2833,
+                "melting_point": 938.2, "category_id": "metalloid", "xpos": 14, "ypos": 4
+            },
+            {
+                "number": 33, "symbol": "As", "name": "Arsen", "atomic_mass": "74.921595(6)",
+                "category": "metalloid", "electron_config": "[Ar] 3d¹⁰ 4s² 4p³", "boiling_point": 614,
+                "melting_point": 817, "category_id": "metalloid", "xpos": 15, "ypos": 4
+            },
+            {
+                "number": 34, "symbol": "Se", "name": "Selenium", "atomic_mass": "78.971(8)",
+                "category": "nonmetal", "electron_config": "[Ar] 3d¹⁰ 4s² 4p⁴", "boiling_point": 685,
+                "melting_point": 221, "category_id": "nonmetal", "xpos": 16, "ypos": 4
+            },
+            {
+                "number": 35, "symbol": "Br", "name": "Bromin", "atomic_mass": "79.904",
+                "category": "halogen", "electron_config": "[Ar] 3d¹⁰ 4s² 4p⁵", "boiling_point": 58.8,
+                "melting_point": -7.2, "category_id": "halogen", "xpos": 17, "ypos": 4
+            },
+            {
+                "number": 36, "symbol": "Kr", "name": "Kripton", "atomic_mass": "83.798(2)",
+                "category": "noble-gas", "electron_config": "[Ar] 3d¹⁰ 4s² 4p⁶", "boiling_point": -153.2,
+                "melting_point": -157.4, "category_id": "noble-gas", "xpos": 18, "ypos": 4
+            },
+            {
+                "number": 37, "symbol": "Rb", "name": "Rubidium", "atomic_mass": "85.4678(3)",
+                "category": "alkali-metal", "electron_config": "[Kr] 5s¹", "boiling_point": 688,
+                "melting_point": 39.3, "category_id": "alkali-metal", "xpos": 1, "ypos": 5
+            },
+            {
+                "number": 38, "symbol": "Sr", "name": "Stronsium", "atomic_mass": "87.62(1)",
+                "category": "alkaline-earth-metal", "electron_config": "[Kr] 5s²", "boiling_point": 1382,
+                "melting_point": 777, "category_id": "alkaline-earth-metal", "xpos": 2, "ypos": 5
+            },
+            {
+                "number": 39, "symbol": "Y", "name": "Itrium", "atomic_mass": "88.90584(2)",
+                "category": "transition-metal", "electron_config": "[Kr] 4d¹ 5s²", "boiling_point": 3338,
+                "melting_point": 1522, "category_id": "transition-metal", "xpos": 3, "ypos": 5
+            },
+            {
+                "number": 40, "symbol": "Zr", "name": "Zirkonium", "atomic_mass": "91.224(2)",
+                "category": "transition-metal", "electron_config": "[Kr] 4d² 5s²", "boiling_point": 4409,
+                "melting_point": 1855, "category_id": "transition-metal", "xpos": 4, "ypos": 5
+            },
+            {
+                "number": 41, "symbol": "Nb", "name": "Niobium", "atomic_mass": "92.90637(2)",
+                "category": "transition-metal", "electron_config": "[Kr] 4d⁴ 5s¹", "boiling_point": 4744,
+                "melting_point": 2477, "category_id": "transition-metal", "xpos": 5, "ypos": 5
+            },
+            {
+                "number": 42, "symbol": "Mo", "name": "Molibdenum", "atomic_mass": "95.95(1)",
+                "category": "transition-metal", "electron_config": "[Kr] 4d⁵ 5s¹", "boiling_point": 4639,
+                "melting_point": 2623, "category_id": "transition-metal", "xpos": 6, "ypos": 5
+            },
+            {
+                "number": 43, "symbol": "Tc", "name": "Teknesium", "atomic_mass": "98",
+                "category": "transition-metal", "electron_config": "[Kr] 4d⁵ 5s²", "boiling_point": 4265,
+                "melting_point": 2157, "category_id": "transition-metal", "xpos": 7, "ypos": 5
+            },
+            {
+                "number": 44, "symbol": "Ru", "name": "Rutenium", "atomic_mass": "101.07(2)",
+                "category": "transition-metal", "electron_config": "[Kr] 4d⁷ 5s¹", "boiling_point": 4150,
+                "melting_point": 2334, "category_id": "transition-metal", "xpos": 8, "ypos": 5
+            },
+            {
+                "number": 45, "symbol": "Rh", "name": "Rodium", "atomic_mass": "102.90550(2)",
+                "category": "transition-metal", "electron_config": "[Kr] 4d⁸ 5s¹", "boiling_point": 3695,
+                "melting_point": 1964, "category_id": "transition-metal", "xpos": 9, "ypos": 5
+            },
+            {
+                "number": 46, "symbol": "Pd", "name": "Paladium", "atomic_mass": "106.42(1)",
+                "category": "transition-metal", "electron_config": "[Kr] 4d¹⁰", "boiling_point": 2963,
+                "melting_point": 1555, "category_id": "transition-metal", "xpos": 10, "ypos": 5
+            },
+            {
+                "number": 47, "symbol": "Ag", "name": "Perak", "atomic_mass": "107.8682(2)",
+                "category": "transition-metal", "electron_config": "[Kr] 4d¹⁰ 5s¹", "boiling_point": 2162,
+                "melting_point": 961.8, "category_id": "transition-metal", "xpos": 11, "ypos": 5
+            },
+            {
+                "number": 48, "symbol": "Cd", "name": "Kadmium", "atomic_mass": "112.414(4)",
+                "category": "transition-metal", "electron_config": "[Kr] 4d¹⁰ 5s²", "boiling_point": 767,
+                "melting_point": 321.1, "category_id": "transition-metal", "xpos": 12, "ypos": 5
+            },
+            {
+                "number": 49, "symbol": "In", "name": "Indium", "atomic_mass": "114.818(1)",
+                "category": "post-transition-metal", "electron_config": "[Kr] 4d¹⁰ 5s² 5p¹", "boiling_point": 2072,
+                "melting_point": 156.6, "category_id": "post-transition-metal", "xpos": 13, "ypos": 5
+            },
+            {
+                "number": 50, "symbol": "Sn", "name": "Timah", "atomic_mass": "118.710(7)",
+                "category": "post-transition-metal", "electron_config": "[Kr] 4d¹⁰ 5s² 5p²", "boiling_point": 2602,
+                "melting_point": 232, "category_id": "post-transition-metal", "xpos": 14, "ypos": 5
+            },
+            {
+                "number": 51, "symbol": "Sb", "name": "Antimon", "atomic_mass": "121.760(1)",
+                "category": "metalloid", "electron_config": "[Kr] 4d¹⁰ 5s² 5p³", "boiling_point": 1587,
+                "melting_point": 630.6, "category_id": "metalloid", "xpos": 15, "ypos": 5
+            },
+            {
+                "number": 52, "symbol": "Te", "name": "Telurium", "atomic_mass": "127.60(3)",
+                "category": "metalloid", "electron_config": "[Kr] 4d¹⁰ 5s² 5p⁴", "boiling_point": 988,
+                "melting_point": 449.6, "category_id": "metalloid", "xpos": 16, "ypos": 5
+            },
+            {
+                "number": 53, "symbol": "I", "name": "Iodin", "atomic_mass": "126.90447(3)",
+                "category": "halogen", "electron_config": "[Kr] 4d¹⁰ 5s² 5p⁵", "boiling_point": 184.3,
+                "melting_point": 113.7, "category_id": "halogen", "xpos": 17, "ypos": 5
+            },
+            {
+                "number": 54, "symbol": "Xe", "name": "Xenon", "atomic_mass": "131.293(6)",
+                "category": "noble-gas", "electron_config": "[Kr] 4d¹⁰ 5s² 5p⁶", "boiling_point": -108.1,
+                "melting_point": -111.8, "category_id": "noble-gas", "xpos": 18, "ypos": 5
+            },
+            {
+                "number": 55, "symbol": "Cs", "name": "Sesium", "atomic_mass": "132.90545196(6)",
+                "category": "alkali-metal", "electron_config": "[Xe] 6s¹", "boiling_point": 671,
+                "melting_point": 28.4, "category_id": "alkali-metal", "xpos": 1, "ypos": 6
+            },
+            {
+                "number": 56, "symbol": "Ba", "name": "Barium", "atomic_mass": "137.327(7)",
+                "category": "alkaline-earth-metal", "electron_config": "[Xe] 6s²", "boiling_point": 1897,
+                "melting_point": 727, "category_id": "alkaline-earth-metal", "xpos": 2, "ypos": 6
+            },
+            {
+                "number": 57, "symbol": "La", "name": "Lantanum", "atomic_mass": "138.90547(7)",
+                "category": "lanthanide", "electron_config": "[Xe] 5d¹ 6s²", "boiling_point": 3464,
+                "melting_point": 920, "category_id": "lanthanide", "xpos": 3, "ypos": 6
+            },
+            {
+                "number": 58, "symbol": "Ce", "name": "Serium", "atomic_mass": "140.116(1)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f¹ 5d¹ 6s²", "boiling_point": 3443,
+                "melting_point": 795, "category_id": "lanthanide", "xpos": 4, "ypos": 9
+            },
+            {
+                "number": 59, "symbol": "Pr", "name": "Praseodimium", "atomic_mass": "140.90766(2)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f³ 6s²", "boiling_point": 3563,
+                "melting_point": 935, "category_id": "lanthanide", "xpos": 5, "ypos": 9
+            },
+            {
+                "number": 60, "symbol": "Nd", "name": "Neodimium", "atomic_mass": "144.242(3)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f⁴ 6s²", "boiling_point": 3074,
+                "melting_point": 1021, "category_id": "lanthanide", "xpos": 6, "ypos": 9
+            },
+            {
+                "number": 61, "symbol": "Pm", "name": "Prometium", "atomic_mass": "145",
+                "category": "lanthanide", "electron_config": "[Xe] 4f⁵ 6s²", "boiling_point": 3000,
+                "melting_point": 1042, "category_id": "lanthanide", "xpos": 7, "ypos": 9
+            },
+            {
+                "number": 62, "symbol": "Sm", "name": "Samarium", "atomic_mass": "150.36(2)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f⁶ 6s²", "boiling_point": 1794,
+                "melting_point": 1072, "category_id": "lanthanide", "xpos": 8, "ypos": 9
+            },
+            {
+                "number": 63, "symbol": "Eu", "name": "Europium", "atomic_mass": "151.964(1)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f⁷ 6s²", "boiling_point": 1529,
+                "melting_point": 822, "category_id": "lanthanide", "xpos": 9, "ypos": 9
+            },
+            {
+                "number": 64, "symbol": "Gd", "name": "Gadolinium", "atomic_mass": "157.25(3)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f⁷ 5d¹ 6s²", "boiling_point": 3273,
+                "melting_point": 1312, "category_id": "lanthanide", "xpos": 10, "ypos": 9
+            },
+            {
+                "number": 65, "symbol": "Tb", "name": "Terbium", "atomic_mass": "158.92535(2)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f⁹ 6s²", "boiling_point": 3230,
+                "melting_point": 1359, "category_id": "lanthanide", "xpos": 11, "ypos": 9
+            },
+            {
+                "number": 66, "symbol": "Dy", "name": "Disprosium", "atomic_mass": "162.500(1)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f¹⁰ 6s²", "boiling_point": 2567,
+                "melting_point": 1412, "category_id": "lanthanide", "xpos": 12, "ypos": 9
+            },
+            {
+                "number": 67, "symbol": "Ho", "name": "Holmium", "atomic_mass": "164.93033(2)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f¹¹ 6s²", "boiling_point": 2720,
+                "melting_point": 1474, "category_id": "lanthanide", "xpos": 13, "ypos": 9
+            },
+            {
+                "number": 68, "symbol": "Er", "name": "Erbium", "atomic_mass": "167.259(3)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f¹² 6s²", "boiling_point": 2868,
+                "melting_point": 1529, "category_id": "lanthanide", "xpos": 14, "ypos": 9
+            },
+            {
+                "number": 69, "symbol": "Tm", "name": "Tulium", "atomic_mass": "168.93422(2)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f¹³ 6s²", "boiling_point": 1950,
+                "melting_point": 1545, "category_id": "lanthanide", "xpos": 15, "ypos": 9
+            },
+            {
+                "number": 70, "symbol": "Yb", "name": "Yterbium", "atomic_mass": "173.045(1)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f¹⁴ 6s²", "boiling_point": 1196,
+                "melting_point": 819, "category_id": "lanthanide", "xpos": 16, "ypos": 9
+            },
+            {
+                "number": 71, "symbol": "Lu", "name": "Lutetium", "atomic_mass": "174.9668(1)",
+                "category": "lanthanide", "electron_config": "[Xe] 4f¹⁴ 5d¹ 6s²", "boiling_point": 3402,
+                "melting_point": 1663, "category_id": "lanthanide", "xpos": 17, "ypos": 9
+            },
+            {
+                "number": 72, "symbol": "Hf", "name": "Hafnium", "atomic_mass": "178.49(2)",
+                "category": "transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d² 6s²", "boiling_point": 4603,
+                "melting_point": 2233, "category_id": "transition-metal", "xpos": 4, "ypos": 6
+            },
+            {
+                "number": 73, "symbol": "Ta", "name": "Tantalum", "atomic_mass": "180.94788(2)",
+                "category": "transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d³ 6s²", "boiling_point": 5458,
+                "melting_point": 3017, "category_id": "transition-metal", "xpos": 5, "ypos": 6
+            },
+            {
+                "number": 74, "symbol": "W", "name": "Wolfram", "atomic_mass": "183.84(1)",
+                "category": "transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d⁴ 6s²", "boiling_point": 5930,
+                "melting_point": 3422, "category_id": "transition-metal", "xpos": 6, "ypos": 6
+            },
+            {
+                "number": 75, "symbol": "Re", "name": "Renium", "atomic_mass": "186.207(1)",
+                "category": "transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d⁵ 6s²", "boiling_point": 5630,
+                "melting_point": 3186, "category_id": "transition-metal", "xpos": 7, "ypos": 6
+            },
+            {
+                "number": 76, "symbol": "Os", "name": "Osmium", "atomic_mass": "190.23(3)",
+                "category": "transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d⁶ 6s²", "boiling_point": 5012,
+                "melting_point": 3033, "category_id": "transition-metal", "xpos": 8, "ypos": 6
+            },
+            {
+                "number": 77, "symbol": "Ir", "name": "Iridium", "atomic_mass": "192.217(3)",
+                "category": "transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d⁷ 6s²", "boiling_point": 4428,
+                "melting_point": 2466, "category_id": "transition-metal", "xpos": 9, "ypos": 6
+            },
+            {
+                "number": 78, "symbol": "Pt", "name": "Platina", "atomic_mass": "195.084(9)",
+                "category": "transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d⁹ 6s¹", "boiling_point": 3825,
+                "melting_point": 1768, "category_id": "transition-metal", "xpos": 10, "ypos": 6
+            },
+            {
+                "number": 79, "symbol": "Au", "name": "Emas", "atomic_mass": "196.966569(5)",
+                "category": "transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d¹⁰ 6s¹", "boiling_point": 2856,
+                "melting_point": 1064.2, "category_id": "transition-metal", "xpos": 11, "ypos": 6
+            },
+            {
+                "number": 80, "symbol": "Hg", "name": "Raksa", "atomic_mass": "200.592(3)",
+                "category": "transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d¹⁰ 6s²", "boiling_point": 356.7,
+                "melting_point": -38.8, "category_id": "transition-metal", "xpos": 12, "ypos": 6
+            },
+            {
+                "number": 81, "symbol": "Tl", "name": "Talium", "atomic_mass": "204.38",
+                "category": "post-transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹", "boiling_point": 1473,
+                "melting_point": 304, "category_id": "post-transition-metal", "xpos": 13, "ypos": 6
+            },
+            {
+                "number": 82, "symbol": "Pb", "name": "Timbal", "atomic_mass": "207.2(1)",
+                "category": "post-transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²", "boiling_point": 1749,
+                "melting_point": 327.5, "category_id": "post-transition-metal", "xpos": 14, "ypos": 6
+            },
+            {
+                "number": 83, "symbol": "Bi", "name": "Bismut", "atomic_mass": "208.98040(1)",
+                "category": "post-transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³", "boiling_point": 1564,
+                "melting_point": 271.4, "category_id": "post-transition-metal", "xpos": 15, "ypos": 6
+            },
+            {
+                "number": 84, "symbol": "Po", "name": "Polonium", "atomic_mass": "209",
+                "category": "post-transition-metal", "electron_config": "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴", "boiling_point": 962,
+                "melting_point": 254, "category_id": "post-transition-metal", "xpos": 16, "ypos": 6
+            },
+            {
+                "number": 85, "symbol": "At", "name": "Astatin", "atomic_mass": "210",
+                "category": "halogen", "electron_config": "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵", "boiling_point": 337,
+                "melting_point": 302, "category_id": "halogen", "xpos": 17, "ypos": 6
+            },
+            {
+                "number": 86, "symbol": "Rn", "name": "Radon", "atomic_mass": "222",
+                "category": "noble-gas", "electron_config": "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶", "boiling_point": -61.7,
+                "melting_point": -71, "category_id": "noble-gas", "xpos": 18, "ypos": 6
+            },
+            {
+                "number": 87, "symbol": "Fr", "name": "Fransium", "atomic_mass": "223",
+                "category": "alkali-metal", "electron_config": "[Rn] 7s¹", "boiling_point": 677,
+                "melting_point": 27, "category_id": "alkali-metal", "xpos": 1, "ypos": 7
+            },
+            {
+                "number": 88, "symbol": "Ra", "name": "Radium", "atomic_mass": "226",
+                "category": "alkaline-earth-metal", "electron_config": "[Rn] 7s²", "boiling_point": 1737,
+                "melting_point": 700, "category_id": "alkaline-earth-metal", "xpos": 2, "ypos": 7
+            },
+            {
+                "number": 89, "symbol": "Ac", "name": "Aktinium", "atomic_mass": "227",
+                "category": "actinide", "electron_config": "[Rn] 6d¹ 7s²", "boiling_point": 3198,
+                "melting_point": 1050, "category_id": "actinide", "xpos": 3, "ypos": 7
+            },
+            {
+                "number": 90, "symbol": "Th", "name": "Torium", "atomic_mass": "232.0377(4)",
+                "category": "actinide", "electron_config": "[Rn] 6d² 7s²", "boiling_point": 4788,
+                "melting_point": 1750, "category_id": "actinide", "xpos": 4, "ypos": 10
+            },
+            {
+                "number": 91, "symbol": "Pa", "name": "Protaktinium", "atomic_mass": "231.03588(2)",
+                "category": "actinide", "electron_config": "[Rn] 5f² 6d¹ 7s²", "boiling_point": 4027,
+                "melting_point": 1568, "category_id": "actinide", "xpos": 5, "ypos": 10
+            },
+            {
+                "number": 92, "symbol": "U", "name": "Uranium", "atomic_mass": "238.02891(3)",
+                "category": "actinide", "electron_config": "[Rn] 5f³ 6d¹ 7s²", "boiling_point": 4131,
+                "melting_point": 1132.3, "category_id": "actinide", "xpos": 6, "ypos": 10
+            },
+            {
+                "number": 93, "symbol": "Np", "name": "Neptunium", "atomic_mass": "237",
+                "category": "actinide", "electron_config": "[Rn] 5f⁴ 6d¹ 7s²", "boiling_point": 3902,
+                "melting_point": 644, "category_id": "actinide", "xpos": 7, "ypos": 10
+            },
+            {
+                "number": 94, "symbol": "Pu", "name": "Plutonium", "atomic_mass": "244",
+                "category": "actinide", "electron_config": "[Rn] 5f⁶ 7s²", "boiling_point": 3228,
+                "melting_point": 640, "category_id": "actinide", "xpos": 8, "ypos": 10
+            },
+            {
+                "number": 95, "symbol": "Am", "name": "Amerisium", "atomic_mass": "243",
+                "category": "actinide", "electron_config": "[Rn] 5f⁷ 7s²", "boiling_point": 2607,
+                "melting_point": 1176, "category_id": "actinide", "xpos": 9, "ypos": 10
+            },
+            {
+                "number": 96, "symbol": "Cm", "name": "Kurium", "atomic_mass": "247",
+                "category": "actinide", "electron_config": "[Rn] 5f⁷ 6d¹ 7s²", "boiling_point": 3100,
+                "melting_point": 1345, "category_id": "actinide", "xpos": 10, "ypos": 10
+            },
+            {
+                "number": 97, "symbol": "Bk", "name": "Berkelium", "atomic_mass": "247",
+                "category": "actinide", "electron_config": "[Rn] 5f⁹ 7s²", "boiling_point": 2627,
+                "melting_point": 986, "category_id": "actinide", "xpos": 11, "ypos": 10
+            },
+            {
+                "number": 98, "symbol": "Cf", "name": "Kalifornium", "atomic_mass": "251",
+                "category": "actinide", "electron_config": "[Rn] 5f¹⁰ 7s²", "boiling_point": 1477,
+                "melting_point": 900, "category_id": "actinide", "xpos": 12, "ypos": 10
+            },
+            {
+                "number": 99, "symbol": "Es", "name": "Einsteinium", "atomic_mass": "252",
+                "category": "actinide", "electron_config": "[Rn] 5f¹¹ 7s²", "boiling_point": 860,
+                "melting_point": 860, "category_id": "actinide", "xpos": 13, "ypos": 10
+            },
+            {
+                "number": 100, "symbol": "Fm", "name": "Fermium", "atomic_mass": "257",
+                "category": "actinide", "electron_config": "[Rn] 5f¹² 7s²", "boiling_point": 1527,
+                "melting_point": 1527, "category_id": "actinide", "xpos": 14, "ypos": 10
+            },
+            {
+                "number": 101, "symbol": "Md", "name": "Mendelevium", "atomic_mass": "258",
+                "category": "actinide", "electron_config": "[Rn] 5f¹³ 7s²", "boiling_point": 1527,
+                "melting_point": 827, "category_id": "actinide", "xpos": 15, "ypos": 10
+            },
+            {
+                "number": 102, "symbol": "No", "name": "Nobelium", "atomic_mass": "259",
+                "category": "actinide", "electron_config": "[Rn] 5f¹⁴ 7s²", "boiling_point": 1527,
+                "melting_point": 827, "category_id": "actinide", "xpos": 16, "ypos": 10
+            },
+            {
+                "number": 103, "symbol": "Lr", "name": "Lawrensium", "atomic_mass": "266",
+                "category": "actinide", "electron_config": "[Rn] 5f¹⁴ 7s² 7p¹", "boiling_point": 1627,
+                "melting_point": 1627, "category_id": "actinide", "xpos": 17, "ypos": 10
+            },
+            {
+                "number": 104, "symbol": "Rf", "name": "Ruterfordium", "atomic_mass": "267",
+                "category": "transition-metal", "electron_config": "[Rn] 5f¹⁴ 6d² 7s²", "boiling_point": 5500,
+                "melting_point": 2100, "category_id": "transition-metal", "xpos": 4, "ypos": 7
+            },
+            {
+                "number": 105, "symbol": "Db", "name": "Dubnium", "atomic_mass": "268",
+                "category": "transition-metal", "electron_config": "[Rn] 5f¹⁴ 6d³ 7s²", "boiling_point": 4000,
+                "melting_point": 1800, "category_id": "transition-metal", "xpos": 5, "ypos": 7
+            },
+            {
+                "number": 106, "symbol": "Sg", "name": "Seaborgium", "atomic_mass": "269",
+                "category": "transition-metal", "electron_config": "[Rn] 5f¹⁴ 6d⁴ 7s²", "boiling_point": 4000,
+                "melting_point": 2200, "category_id": "transition-metal", "xpos": 6, "ypos": 7
+            },
+            {
+                "number": 107, "symbol": "Bh", "name": "Bohrium", "atomic_mass": "270",
+                "category": "transition-metal", "electron_config": "[Rn] 5f¹⁴ 6d⁵ 7s²", "boiling_point": 4000,
+                "melting_point": 2500, "category_id": "transition-metal", "xpos": 7, "ypos": 7
+            },
+            {
+                "number": 108, "symbol": "Hs", "name": "Hassium", "atomic_mass": "277",
+                "category": "transition-metal", "electron_config": "[Rn] 5f¹⁴ 6d⁶ 7s²", "boiling_point": 4000,
+                "melting_point": 2500, "category_id": "transition-metal", "xpos": 8, "ypos": 7
+            },
+            {
+                "number": 109, "symbol": "Mt", "name": "Meitnerium", "atomic_mass": "276",
+                "category": "transition-metal", "electron_config": "[Rn] 5f¹⁴ 6d⁷ 7s²", "boiling_point": 4000,
+                "melting_point": 2500, "category_id": "transition-metal", "xpos": 9, "ypos": 7
+            },
+            {
+                "number": 110, "symbol": "Ds", "name": "Darmstadtium", "atomic_mass": "281",
+                "category": "transition-metal", "electron_config": "[Rn] 5f¹⁴ 6d⁹ 7s¹", "boiling_point": 4000,
+                "melting_point": 2500, "category_id": "transition-metal", "xpos": 10, "ypos": 7
+            },
+            {
+                "number": 111, "symbol": "Rg", "name": "Roentgenium", "atomic_mass": "280",
+                "category": "transition-metal", "electron_config": "[Rn] 5f¹⁴ 6d¹⁰ 7s¹", "boiling_point": 4000,
+                "melting_point": 2500, "category_id": "transition-metal", "xpos": 11, "ypos": 7
+            },
+            {
+                "number": 112, "symbol": "Cn", "name": "Kopernisium", "atomic_mass": "285",
+                "category": "transition-metal", "electron_config": "[Rn] 5f¹⁴ 6d¹⁰ 7s²", "boiling_point": 4000,
+                "melting_point": 2500, "category_id": "transition-metal", "xpos": 12, "ypos": 7
+            },
+            {
+                "number": 113, "symbol": "Nh", "name": "Nihonium", "atomic_mass": "286",
+                "category": "unknown", "electron_config": "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹", "boiling_point": 4000,
+                "melting_point": 2500, "category_id": "unknown", "xpos": 13, "ypos": 7
+            },
+            {
+                "number": 114, "symbol": "Fl", "name": "Flerovium", "atomic_mass": "289",
+                "category": "post-transition-metal", "electron_config": "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²", "boiling_point": 140,
+                "melting_point": 40, "category_id": "post-transition-metal", "xpos": 14, "ypos": 7
+            },
+            {
+                "number": 115, "symbol": "Mc", "name": "Moscovium", "atomic_mass": "288",
+                "category": "unknown", "electron_config": "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³", "boiling_point": 4000,
+                "melting_point": 2500, "category_id": "unknown", "xpos": 15, "ypos": 7
+            },
+            {
+                "number": 116, "symbol": "Lv", "name": "Livermorium", "atomic_mass": "293",
+                "category": "unknown", "electron_config": "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴", "boiling_point": 350,
+                "melting_point": 63, "category_id": "unknown", "xpos": 16, "ypos": 7
+            },
+            {
+                "number": 117, "symbol": "Ts", "name": "Tenesin", "atomic_mass": "294",
+                "category": "unknown", "electron_config": "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵", "boiling_point": 600,
+                "melting_point": 300, "category_id": "unknown", "xpos": 17, "ypos": 7
+            },
+            {
+                "number": 118, "symbol": "Og", "name": "Oganeson", "atomic_mass": "294",
+                "category": "unknown", "electron_config": "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶", "boiling_point": -5,
+                "melting_point": -16, "category_id": "unknown", "xpos": 18, "ypos": 7
+            }
+        ];
+
+        // Logika JavaScript
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableContainer = document.getElementById('periodic-table');
+            const modalOverlay = document.getElementById('modal-overlay');
+            const modalContent = document.getElementById('modal-info');
+            const closeModalBtn = document.getElementById('close-modal');
+            const searchInput = document.getElementById('search-input');
+            const filterContainer = document.getElementById('filter-container');
+            const legendContainer = document.getElementById('legend');
+            const themeToggle = document.getElementById('theme-toggle');
+            const noResults = document.getElementById('no-results');
+
+            let currentFilter = 'all';
+            let currentSearch = '';
+
+            // Kategori untuk filter dan legenda
+            const categories = [
+                { id: 'all', name: 'Semua Unsur', color: 'transparent' },
+                { id: 'alkali-metal', name: 'Logam Alkali', color: 'var(--color-alkali)' },
+                { id: 'alkaline-earth-metal', name: 'Logam Alkali Tanah', color: 'var(--color-alkali-earth)' },
+                { id: 'transition-metal', name: 'Logam Transisi', color: 'var(--color-transition-metal)' },
+                { id: 'post-transition-metal', name: 'Pasca Logam Transisi', color: 'var(--color-post-transition)' },
+                { id: 'metalloid', name: 'Metaloid', color: 'var(--color-metalloid)' },
+                { id: 'nonmetal', name: 'Non Logam', color: 'var(--color-nonmetal)' },
+                { id: 'halogen', name: 'Halogen', color: 'var(--color-halogen)' },
+                { id: 'noble-gas', name: 'Gas Mulia', color: 'var(--color-noble-gas)' },
+                { id: 'lanthanide', name: 'Lantanida', color: 'var(--color-lanthanide)' },
+                { id: 'actinide', name: 'Aktinida', color: 'var(--color-actinide)' },
+                { id: 'unknown', name: 'Tidak Diketahui', color: 'var(--color-unknown)' }
+            ];
+
+            // Inisialisasi filter buttons
+            function initFilters() {
+                categories.forEach(category => {
+                    const button = document.createElement('button');
+                    button.classList.add('filter-btn');
+                    button.dataset.category = category.id;
+                    button.textContent = category.name;
+                    
+                    if (category.id === 'all') {
+                        button.classList.add('active');
+                    }
+                    
+                    button.addEventListener('click', () => {
+                        setActiveFilter(category.id);
+                        filterElements();
+                    });
+                    
+                    filterContainer.appendChild(button);
+                });
+            }
+
+            // Inisialisasi legenda
+            function initLegend() {
+                // Hapus kategori "all" dari legenda
+                const legendCategories = categories.filter(cat => cat.id !== 'all');
+                
+                legendCategories.forEach(category => {
+                    const item = document.createElement('div');
+                    item.classList.add('legend-item');
+                    
+                    const colorBox = document.createElement('div');
+                    colorBox.classList.add('legend-color');
+                    colorBox.style.backgroundColor = category.color;
+                    
+                    const label = document.createElement('span');
+                    label.textContent = category.name;
+                    
+                    item.appendChild(colorBox);
+                    item.appendChild(label);
+                    legendContainer.appendChild(item);
+                });
+            }
+
+            // Set filter aktif
+            function setActiveFilter(categoryId) {
+                currentFilter = categoryId;
+                
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    if (btn.dataset.category === categoryId) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            // Filter dan pencarian unsur
+            function filterElements() {
+                const searchTerm = currentSearch.toLowerCase();
+                let visibleCount = 0;
+                
+                document.querySelectorAll('.element').forEach(element => {
+                    const symbol = element.dataset.symbol.toLowerCase();
+                    const name = element.querySelector('.name').textContent.toLowerCase();
+                    const category = element.classList[1]; // Kategori adalah class kedua
+                    
+                    const matchesSearch = symbol.includes(searchTerm) || name.includes(searchTerm);
+                    const matchesFilter = currentFilter === 'all' || category === currentFilter;
+                    
+                    if (matchesSearch && matchesFilter) {
+                        element.classList.remove('hidden');
+                        element.classList.remove('filtered-out');
+                        visibleCount++;
+                    } else {
+                        element.classList.add('hidden');
+                    }
+                });
+                
+                // Tampilkan pesan jika tidak ada hasil
+                if (visibleCount === 0) {
+                    noResults.style.display = 'block';
+                } else {
+                    noResults.style.display = 'none';
+                }
+            }
+
+            // Buat elemen-elemen tabel periodik
+            function createElements() {
+                elementsData.forEach(element => {
+                    const elDiv = document.createElement('div');
+                    elDiv.classList.add('element', element.category_id);
+                    elDiv.dataset.symbol = element.symbol;
+                    elDiv.dataset.number = element.number;
+                    
+                    // Positioning yang lebih robust
+                    if (element.category_id === 'lanthanide' && element.number !== 57) {
+                        elDiv.style.gridColumn = (element.number - 57 + 4);
+                        elDiv.style.gridRow = 9;
+                    } else if (element.category_id === 'actinide' && element.number !== 89) {
+                        elDiv.style.gridColumn = (element.number - 89 + 4);
+                        elDiv.style.gridRow = 10;
+                    } else {
+                        elDiv.style.gridColumn = element.xpos;
+                        elDiv.style.gridRow = element.ypos;
+                    }
+
+                    elDiv.innerHTML = `
+                        <span class="atomic-number">${element.number}</span>
+                        <span class="symbol">${element.symbol}</span>
+                        <span class="name">${element.name}</span>
+                    `;
+
+                    // Tooltip
+                    elDiv.title = `${element.name} (${element.symbol}) - ${element.atomic_mass}`;
+
+                    tableContainer.appendChild(elDiv);
+                });
+            }
+
+            // Tampilkan modal dengan informasi unsur
+            function showModal(element) {
+                if (!element) {
+                    console.error('Element data not found');
+                    return;
+                }
+                
+                modalContent.innerHTML = `
+                    <h2>${element.name} (${element.symbol})</h2>
+                    <p><strong>Nomor Atom:</strong> ${element.number}</p>
+                    <p><strong>Massa Atom:</strong> ${element.atomic_mass || 'N/A'}</p>
+                    <p><strong>Kategori:</strong> ${element.category ? element.category.replace(/-/g, ' ') : 'N/A'}</p>
+                    <p><strong>Konfigurasi Elektron:</strong> ${element.electron_config || 'N/A'}</p>
+                    <p><strong>Titik Didih:</strong> ${element.boiling_point ? `${element.boiling_point}°C` : 'N/A'}</p>
+                    <p><strong>Titik Lebur:</strong> ${element.melting_point ? `${element.melting_point}°C` : 'N/A'}</p>
+                `;
+                modalOverlay.classList.remove('hidden');
+            }
+
+            // Sembunyikan modal
+            function hideModal() {
+                modalOverlay.classList.add('hidden');
+            }
+
+            // Toggle dark mode
+            function toggleDarkMode() {
+                document.body.classList.toggle('dark-mode');
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                localStorage.setItem('darkMode', isDarkMode);
+                
+                // Update icon theme toggle
+                const themeIcon = themeToggle.querySelector('.theme-icon');
+                if (isDarkMode) {
+                    themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+                } else {
+                    themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+                }
+            }
+
+            // Event Listeners
+            tableContainer.addEventListener('click', (event) => {
+                const targetElement = event.target.closest('.element');
+                if (targetElement && !targetElement.classList.contains('hidden')) {
+                    const symbol = targetElement.dataset.symbol;
+                    const element = elementsData.find(el => el.symbol === symbol);
+                    if (element) {
+                        showModal(element);
+                    }
+                }
+            });
+
+            closeModalBtn.addEventListener('click', hideModal);
+            modalOverlay.addEventListener('click', (event) => {
+                if (event.target === modalOverlay) {
+                    hideModal();
+                }
+            });
+
+            searchInput.addEventListener('input', (event) => {
+                currentSearch = event.target.value;
+                filterElements();
+            });
+
+            themeToggle.addEventListener('click', toggleDarkMode);
+
+            // Inisialisasi
+            function init() {
+                createElements();
+                initFilters();
+                initLegend();
+                
+                // Cek preferensi dark mode
+                const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+                
+                if (savedDarkMode || (!savedDarkMode && prefersDarkMode)) {
+                    document.body.classList.add('dark-mode');
+                    const themeIcon = themeToggle.querySelector('.theme-icon');
+                    themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+                }
+            }
+
+            init();
+        });
+    </script>
+</body>
+</html>
