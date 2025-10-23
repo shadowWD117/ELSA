@@ -604,6 +604,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 detail.querySelector('.details-content').setAttribute('aria-hidden', !isOpen);
             });
         });
+        
+        // === BACK NAVIGATION SOLUTION ===
+function handleBackNavigation() {
+    if (document.referrer.includes(window.location.hostname) && history.length > 1) {
+        history.back();
+    } else {
+        window.location.href = '../index.html';
+    }
+}
+
+// Auto-initialize
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[href="../index.html"], .header-back a').forEach(btn => {
+        btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
+    });
+});
+        
     </script>
 </body>
 </html>
