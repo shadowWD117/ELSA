@@ -454,6 +454,65 @@ initReadingSession();
 
         // Start the application
         loadConfig();
+        
+// === BACK NAVIGATION SOLUTION - REVISED FOR VIEWER ===
+function handleBackNavigation() {
+    // Prioritize PDF viewer's own logic first
+    if (window.pdfViewer && window.pdfViewer.isOpen) {
+        window.pdfViewer.close();
+        return;
+    }
+    
+    // Fallback to enhanced history back
+    if (document.referrer.includes(window.location.hostname) && history.length > 1) {
+        history.back();
+    } else {
+        // Use viewer.html's original fallback path
+        window.location.href = 'index.html';
+    }
+}
+
+// === COMPATIBLE INITIALIZATION ===
+document.addEventListener('DOMContentLoaded', function() {
+    // Only target specific back buttons in viewer
+    const backButtons = document.querySelectorAll('#top-bar a[href="index.html"], .security-alert button');
+    
+    backButtons.forEach(btn => {
+        // Preserve existing handlers while adding fallback
+        const originalClick = btn.onclick;
+        btn.onclick = function(e) {
+            e.preventDefault();
+            
+            // If original handler exists, use it
+            if (typeof originalClick === 'function') {
+                originalClick.call(this, e);
+            } else {
+                // Otherwise use our enhanced back
+                handleBackNavigation();
+            }
+        };
+    });
+    
+    // Also handle the security overlay back button
+    const securityBackBtn = document.querySelector('.security-alert button');
+    if (securityBackBtn) {
+        securityBackBtn.onclick = function(e) {
+            e.preventDefault();
+            handleBackNavigation();
+        };
+    }
+});
+
+// === ENHANCE EXISTING BACK FUNCTIONALITY ===
+// Preserve existing window.history.back() calls but make them smarter
+const originalHistoryBack = window.history.back;
+window.history.back = function() {
+    if (document.referrer.includes(window.location.hostname) && history.length > 1) {
+        originalHistoryBack.call(this);
+    } else {
+        window.location.href = 'index.html';
+    }
+};
     </script>
 </body>
 </html>
