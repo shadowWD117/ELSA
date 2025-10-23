@@ -31,7 +31,6 @@
             max-width: 100%;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
-            /* user-select: none; */ /* Dihilangkan agar teks input bisa dipilih */
         }
 
         .main-container {
@@ -214,64 +213,6 @@
             cursor: default;
         }
 
-        /* SWITCH TOGGLE (untuk Pengaturan) */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 45px;
-            height: 25px;
-            flex-shrink: 0;
-        }
-        .switch input { display: none; }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 25px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 4px;
-            bottom: 3.5px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: var(--primary-color);
-        }
-        input:checked + .slider:before {
-            transform: translateX(19px);
-        }
-
-        /* OFFLINE INDICATOR */
-        #offline-indicator {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #ffc107; /* Kuning Peringatan */
-            color: #1a1a1a;
-            text-align: center;
-            padding: 10px;
-            font-weight: bold;
-            z-index: 1000;
-            display: none; /* Default tersembunyi */
-            animation: fadeIn 0.5s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
         /* Responsive adjustments */
         @media (min-width: 768px) {
             body {
@@ -295,8 +236,6 @@
     </style>
 </head>
 <body>
-    <div id="offline-indicator">⚠️ Anda sedang offline. Perubahan akan disimpan di perangkat lokal.</div>
-
     <div class="main-container">
         <header class="header-back">
             <a href="../index.html" title="Kembali">
@@ -363,29 +302,7 @@
             </section>
 
             <section class="card settings-card">
-                <h2>Pengaturan Umum</h2>
-                <div class="settings-item">
-                    <span class="icon">🌐</span>
-                    <div class="content">
-                        <h3>Mode Offline Default</h3>
-                        <p style="font-size: 0.9rem;">Selalu muat konten dari cache saat tersedia.</p>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" id="settingOfflineMode">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="settings-item">
-                    <span class="icon">🌙</span>
-                    <div class="content">
-                        <h3>Mode Gelap (Dark Mode)</h3>
-                        <p style="font-size: 0.9rem;">Aktifkan tema gelap secara manual.</p>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" id="settingDarkMode">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+                <h2>Pengaturan</h2>
                 <div class="settings-item">
                     <span class="icon">🗑️</span>
                     <div class="content">
@@ -412,30 +329,15 @@
 
     <script>
         const profileFields = ['userName', 'userEmail', 'userStatus'];
-        const settingsFields = ['settingOfflineMode', 'settingDarkMode'];
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. PWA Service Worker Registration
-            registerServiceWorker();
-
-            // 2. Initial Data Load
+            // Initial Data Load
             loadProfileData();
-            loadSettings();
 
-            // 3. Online/Offline Status Check
-            window.addEventListener('online', updateOnlineStatus);
-            window.addEventListener('offline', updateOnlineStatus);
-            updateOnlineStatus();
-
-            // 4. Event listener for Profile Picture
+            // Event listener for Profile Picture
             document.getElementById('profilePicInput').addEventListener('change', handleProfilePicChange);
 
-            // 5. Event listener for Settings (Switches)
-            settingsFields.forEach(field => {
-                document.getElementById(field).addEventListener('change', () => saveSetting(field));
-            });
-
-            // Optional: Auto-save on Enter key in input fields
+            // Auto-save on Enter key in input fields
             profileFields.forEach(field => {
                 const inputElement = document.getElementById(field + 'Input');
                 inputElement.addEventListener('keypress', function(e) {
@@ -444,35 +346,7 @@
                     }
                 });
             });
-
-            // Apply Dark Mode Class if saved
-            if (localStorage.getItem('settingDarkMode') === 'true') {
-                document.body.classList.add('dark-mode-active');
-            }
         });
-
-        // --- PWA & OFFLINE FUNCTIONS ---
-
-        function registerServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('service-worker.js') // Ganti dengan nama file SW Anda
-                        .then(reg => console.log('Service Worker: Registered!', reg))
-                        .catch(err => console.log('Service Worker: Registration failed: ', err));
-                });
-            }
-        }
-
-        function updateOnlineStatus() {
-            const indicator = document.getElementById('offline-indicator');
-            if (navigator.onLine) {
-                indicator.style.display = 'none';
-                console.log('App is online.');
-            } else {
-                indicator.style.display = 'block';
-                console.log('App is offline.');
-            }
-        }
 
         // --- PROFILE FUNCTIONS ---
 
@@ -586,40 +460,11 @@
             
             toggleEdit(field); // Kembali ke mode display
             console.log(`Data ${field} berhasil disimpan: ${newValue}`);
-            // Feedback UX
-            // Tambahkan notifikasi toast/popup di aplikasi nyata
         }
 
         function isValidEmail(email) {
             // Regex sederhana untuk validasi email
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        }
-
-        // --- SETTINGS FUNCTIONS ---
-
-        function loadSettings() {
-            settingsFields.forEach(field => {
-                const isChecked = localStorage.getItem(field) === 'true';
-                document.getElementById(field).checked = isChecked;
-
-                if (field === 'settingDarkMode' && isChecked) {
-                    document.body.classList.add('dark-mode-active');
-                }
-            });
-        }
-
-        function saveSetting(field) {
-            const checkbox = document.getElementById(field);
-            localStorage.setItem(field, checkbox.checked);
-            console.log(`Pengaturan ${field} diubah menjadi: ${checkbox.checked}`);
-
-            if (field === 'settingDarkMode') {
-                if (checkbox.checked) {
-                    document.body.classList.add('dark-mode-active');
-                } else {
-                    document.body.classList.remove('dark-mode-active');
-                }
-            }
         }
         
         // --- ACTION FUNCTIONS ---
@@ -628,15 +473,10 @@
             if (confirm('Apakah Anda yakin ingin menghapus semua data profil dan pengaturan lokal? Tindakan ini tidak dapat dibatalkan.')) {
                 // Hapus item-item spesifik
                 profileFields.forEach(field => localStorage.removeItem(field));
-                settingsFields.forEach(field => localStorage.removeItem(field));
                 localStorage.removeItem('profileImage');
                 
                 // Muat ulang data untuk menampilkan default
                 loadProfileData();
-                loadSettings();
-
-                // Hapus kelas dark mode jika ada
-                document.body.classList.remove('dark-mode-active');
                 
                 alert('Semua data lokal berhasil dihapus. Profil telah direset.');
             }
@@ -644,12 +484,27 @@
 
         function logOut() {
             if (confirm('Apakah Anda yakin ingin keluar?')) {
-                // Dalam aplikasi nyata: panggil API logout, hapus token sesi
-                // Untuk demo offline, kita hanya mereset profil dan mengarahkan ke halaman login/index
-                clearAllData(); // Opsional: reset data lokal saat logout
+                // Untuk demo, kita hanya mengarahkan ke halaman utama
                 window.location.href = '../index.html'; // Arahkan ke halaman utama/login
             }
         }
+        
+        // === BACK NAVIGATION SOLUTION ===
+function handleBackNavigation() {
+    if (document.referrer.includes(window.location.hostname) && history.length > 1) {
+        history.back();
+    } else {
+        window.location.href = '../index.html';
+    }
+}
+
+// Auto-initialize
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[href="../index.html"], .header-back a').forEach(btn => {
+        btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
+    });
+});
+        
     </script>
 </body>
 </html>
