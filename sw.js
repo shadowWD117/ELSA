@@ -2,7 +2,7 @@
    ELSA PWA Service Worker v3.5 - FIXED VERSION
    ============================ */
 
-const APP_VERSION = 'v1-demo1';
+const APP_VERSION = 'v1-demo2-book-feature';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
 const STATIC_CACHE = `static-${APP_VERSION}`;
 const PDF_CACHE = `pdf-cache-${APP_VERSION}`;
@@ -13,7 +13,6 @@ const urlsToCache = [
   './',
   './fallback/offline.html',
   './index.html',
-  './viewer.html', 
   './manifest.json',
   './sw.js',
   './pdfjs/pdf.js',
