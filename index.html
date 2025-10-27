@@ -1044,7 +1044,6 @@ p, span, a {
 }
 
 </style>
-</style>
 </head>
 <body>
     <div id="main-content">
@@ -1449,398 +1448,457 @@ p, span, a {
     <script src="pdfjs/pdf.js"></script>
 <script>
     
-// ==================== SIMPLE BOOK MANAGER ====================
+// ==================== BOOK MANAGER - FIXED VERSION ====================
 class BookManager {
-  constructor() {
-    this.booksMetadata = {};
-    this.init();
-  }
-
-  async init() {
-    console.log('📚 Initializing Book Manager...');
-    try {
-      await this.loadBooksMetadata();
-      this.renderAllBooks();
-    } catch (error) {
-      console.error('❌ Book Manager init failed:', error);
-      this.showErrorState();
-    }
-  }
-
-  async loadBooksMetadata() {
-    try {
-      // Gunakan path absolute untuk GitHub Pages
-      const response = await fetch('./data/books-metadata.json');
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      
-      this.booksMetadata = await response.json();
-      console.log('✅ Metadata loaded:', this.booksMetadata);
-    } catch (error) {
-      console.error('❌ Failed to load metadata:', error);
-      // Fallback ke hardcoded data
-      this.booksMetadata = this.getFallbackMetadata();
-    }
-  }
-
-  getFallbackMetadata() {
-    return {
-      "kelas-10": {
-        "title": "Kelas 10",
-        "books": [
-          {
-            "id": "contoh-1",
-            "title": "Matematika Kelas 10",
-            "filename": "contoh.pdf",
-            "size": "2.1 MB", 
-            "downloadUrl": "https://raw.githubusercontent.com/shadowWD117/Shadow_Portofolio/main/buku/kelas-10/contoh.pdf",
-            "subject": "Matematika"
-          },
-          {
-            "id": "contoh-2",
-            "title": "Fisika Kelas 10",
-            "filename": "contoh.pdf", 
-            "size": "2.1 MB",
-            "downloadUrl": "https://raw.githubusercontent.com/shadowWD117/Shadow_Portofolio/main/buku/kelas-10/contoh.pdf",
-            "subject": "Fisika"
-          }
-        ]
-      }
-    };
-  }
-
-  renderAllBooks() {
-    for (const [classId, classData] of Object.entries(this.booksMetadata)) {
-      this.renderClassBooks(classId, classData);
-    }
-  }
-
-  renderClassBooks(classId, classData) {
-    const container = document.getElementById(`${classId}-books`);
-    if (!container) {
-      console.log(`Container not found: ${classId}-books`);
-      return;
+    constructor() {
+        this.booksMetadata = {};
+        this.basePath = './buku';
+        this.init();
     }
 
-    container.innerHTML = '';
-
-    if (!classData.books || classData.books.length === 0) {
-      container.innerHTML = `
-        <div class="card-item">
-          <div class="icon-wrapper">📚</div>
-          <h3>Belum ada buku</h3>
-          <p>Buku akan segera tersedia</p>
-        </div>
-      `;
-      return;
-    }
-
-    classData.books.forEach(book => {
-      const bookElement = this.createBookElement(book, classId);
-      container.appendChild(bookElement);
-    });
-  }
-
-  createBookElement(book, classId) {
-    const div = document.createElement('div');
-    div.className = 'card-item';
-    div.setAttribute('data-book-id', book.id);
-    
-    // Untuk sekarang, selalu show download button
-    // Nanti kita tambahkan cache detection
-    div.innerHTML = `
-      <div class="icon-wrapper">📚</div>
-      <h3>${book.title}</h3>
-      <p>${book.subject}</p>
-      <p class="file-size">${book.size}</p>
-      <button class="btn-download" onclick="bookManager.downloadBook('${classId}', '${book.id}')">
-        📥 Download & Buka
-      </button>
-      <div class="download-progress" id="progress-${book.id}" style="display: none;"></div>
-    `;
-    
-    return div;
-  }
-
-  async downloadBook(classId, bookId) {
-    const book = this.findBook(classId, bookId);
-    if (!book) {
-      alert('Buku tidak ditemukan!');
-      return;
-    }
-
-    const button = document.querySelector(`[data-book-id="${bookId}"] .btn-download`);
-    const progress = document.getElementById(`progress-${bookId}`);
-    
-    if (button) {
-      button.textContent = '⏳ Downloading...';
-      button.disabled = true;
-    }
-    if (progress) {
-      progress.style.display = 'block';
-      progress.textContent = 'Memulai download...';
-    }
-
-    try {
-      console.log(`📥 Downloading from: ${book.downloadUrl}`);
-      
-      // Test URL langsung
-      const testResponse = await fetch(book.downloadUrl);
-      if (!testResponse.ok) {
-        throw new Error(`URL tidak accessible: ${testResponse.status}`);
-      }
-      
-      // Use your existing bukaPDF function
-      bukaPDF(book.downloadUrl);
-      
-      if (progress) {
-        progress.textContent = '✅ Buku dibuka!';
-      }
-      
-      // Reset button setelah 3 detik
-      setTimeout(() => {
-        if (button) {
-          button.textContent = '📥 Download & Buka';
-          button.disabled = false;
-        }
-        if (progress) {
-          progress.style.display = 'none';
-        }
-      }, 3000);
-      
-    } catch (error) {
-      console.error('❌ Download failed:', error);
-      
-      let errorMessage = 'Download gagal: ';
-      if (error.message.includes('URL tidak accessible')) {
-        errorMessage += 'File tidak ditemukan di server';
-      } else if (error.message.includes('Failed to fetch')) {
-        errorMessage += 'Tidak bisa connect ke server';
-      } else {
-        errorMessage += error.message;
-      }
-      
-      alert(errorMessage);
-      
-      if (button) {
-        button.textContent = '❌ Gagal - Coba Lagi';
-        button.disabled = false;
-      }
-      if (progress) {
-        progress.textContent = '❌ ' + errorMessage;
-      }
-    }
-  }
-
-  findBook(classId, bookId) {
-    const classData = this.booksMetadata[classId];
-    return classData?.books.find(b => b.id === bookId);
-  }
-
-  showErrorState() {
-    const containers = [
-      'kelas-10-books',
-      'kelas-11-ipa-books', 
-      'kelas-11-ips-books'
-    ];
-    
-    containers.forEach(containerId => {
-      const container = document.getElementById(containerId);
-      if (container) {
-        container.innerHTML = `
-          <div class="card-item">
-            <div class="icon-wrapper">⚠️</div>
-            <h3>Error Load Buku</h3>
-            <p>Refresh halaman atau cek koneksi</p>
-            <button class="btn-download" onclick="location.reload()">
-              🔄 Refresh
-            </button>
-          </div>
-        `;
-      }
-    });
-  }
-}
-
-// Initialize Book Manager
-let bookManager;
-
-// Update DOMContentLoaded handler yang sudah ada
-document.addEventListener('DOMContentLoaded', function() {
-  // Existing navigation code...
-  const navItems = document.querySelectorAll('.nav-item');
-  // ... (kode navigation yang existing)
-  
-  // Initialize Book Manager
-  bookManager = new BookManager();
-});
-
-    
-    // NAVIGATION FUNCTIONALITY
-    document.addEventListener('DOMContentLoaded', function() {
-        const navItems = document.querySelectorAll('.nav-item');
-        
-        navItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Remove active class from all nav items
-                navItems.forEach(nav => nav.classList.remove('active'));
-                
-                // Add active class to clicked nav item
-                this.classList.add('active');
-                
-                // Hide all content sections
-                const contentSections = document.querySelectorAll('.content-section');
-                contentSections.forEach(section => section.classList.remove('active'));
-                
-                // Show the target content section
-                const targetId = this.getAttribute('data-target');
-                document.getElementById(targetId).classList.add('active');
-                
-                // Adjust card sizes after navigation
-                setTimeout(adjustCardSizes, 100);
-            });
-        });
-
-        // Initialize card sizes
-        adjustCardSizes();
-    });
-
-    // PDF.JS CONFIGURATION
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs/pdf.worker.js';
-
-    let pdfDoc = null,
-        pageNum = 1,
-        pageIsRendering = false,
-        pageNumIsPending = null;
-
-    const mainContent = document.getElementById('main-content');
-    const pdfViewer = document.getElementById('pdf-viewer');
-    const canvas = document.getElementById("pdf-render");
-    const ctx = canvas.getContext("2d");
-    const pageInfo = document.getElementById("page-info");
-    const pageInput = document.getElementById("page-input");
-    const viewerContainer = document.getElementById("viewer-container");
-    const loading = document.getElementById("loading");
-    const fileNameDisplay = document.getElementById("file-name-display");
-    
-    // PDF VIEWER FUNCTIONS
-    function tampilkanPDFViewer() {
-        mainContent.style.display = 'none';
-        pdfViewer.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-
-    function sembunyikanPDFViewer() {
-        mainContent.style.display = 'block';
-        pdfViewer.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        pdfDoc = null;
-        pageNum = 1;
-        
-        // Track reading session end
-        if (readingSession.currentPDF) {
-            readingSession.scheduleHistorySync();
+    async init() {
+        console.log('📚 Initializing Book Manager...');
+        try {
+            await this.loadBooksMetadata();
+            this.renderAllBooks();
+        } catch (error) {
+            console.error('❌ Book Manager init failed:', error);
+            this.showErrorState();
         }
     }
 
-    const updatePageInfo = num => {
-        if (!pdfDoc) return;
-        pageInfo.textContent = `Halaman ${num} dari ${pdfDoc.numPages}`;
-        document.getElementById("prev").classList.toggle('disabled', pageNum <= 1);
-        document.getElementById("next").classList.toggle('disabled', pageNum >= pdfDoc.numPages);
-    };
-
-    const renderPage = num => {
-        pageIsRendering = true;
-        loading.style.display = 'block';
-        canvas.style.display = 'none';
-        
-        pdfDoc.getPage(num).then(page => {
-            let viewport = page.getViewport({ scale: 1.0 });
-            let scale = (viewerContainer.clientWidth - 40) / viewport.width;
-            scale = Math.max(0.5, Math.min(scale, 3.0));
+    async loadBooksMetadata() {
+        try {
+            // Coba load dari path yang berbeda
+            const paths = [
+                './data/books-metadata.json',
+                './books-metadata.json', 
+                '../data/books-metadata.json'
+            ];
             
-            const scaledViewport = page.getViewport({ scale });
-            const outputScale = window.devicePixelRatio || 1;
+            let response;
+            for (const path of paths) {
+                console.log('Trying path:', path);
+                response = await fetch(path);
+                if (response.ok) break;
+            }
             
-            canvas.width = Math.floor(scaledViewport.width * outputScale);
-            canvas.height = Math.floor(scaledViewport.height * outputScale);
-            canvas.style.width = Math.floor(scaledViewport.width) + "px";
-            canvas.style.height = Math.floor(scaledViewport.height) + "px";
+            if (!response || !response.ok) {
+                throw new Error('Tidak dapat menemukan metadata buku');
+            }
             
-            const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
-            
-            const renderCtx = {
-                canvasContext: ctx,
-                viewport: scaledViewport,
-                transform: transform
-            };
-            
-            page.render(renderCtx).promise.then(() => {
-                pageIsRendering = false;
-                loading.style.display = 'none';
-                canvas.style.display = 'block';
-                
-                if (pageNumIsPending !== null) {
-                    renderPage(pageNumIsPending);
-                    pageNumIsPending = null;
-                }
-            });
-            
-            updatePageInfo(num);
-        }).catch(err => {
-            console.error("Error rendering page:", err);
-            loading.textContent = "Error memuat halaman: " + err.message;
-        });
-    };
-
-    const queueRenderPage = num => {
-        if (pageIsRendering) {
-            pageNumIsPending = num;
-        } else {
-            renderPage(num);
+            this.booksMetadata = await response.json();
+            console.log('✅ Metadata loaded:', Object.keys(this.booksMetadata));
+        } catch (error) {
+            console.error('❌ Failed to load metadata:', error);
+            this.booksMetadata = this.getFallbackMetadata();
         }
-    };
+    }
 
-    function loadPDF(source) {
-        loading.textContent = "Memuat PDF...";
-        tampilkanPDFViewer();
-        
-        let loadingTask;
-        if (typeof source === 'string') {
-            loadingTask = pdfjsLib.getDocument({ url: source });
-            // Track PDF view for background sync
-            trackPDFView(source.split("/").pop());
-        } else {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(event.target.result) });
-                loadingTask.promise.then(pdf => {
-                    pdfDoc = pdf;
-                    renderPage(pageNum);
-                    // Track PDF view for background sync
-                    trackPDFView(source.name);
-                }).catch(err => {
-                    console.error("Error loading PDF from file:", err);
-                    loading.textContent = "Gagal memuat PDF: " + err.message;
-                });
-            };
-            reader.readAsArrayBuffer(source);
+    getFallbackMetadata() {
+        return {
+            "kelas-10": {
+                "title": "Kelas 10",
+                "books": [
+                    {
+                        "id": "math-1",
+                        "title": "Matematika Dasar",
+                        "filename": "matematika.pdf",
+                        "size": "2.1 MB",
+                        "downloadUrl": "./buku/kelas-10/matematika.pdf",
+                        "subject": "Matematika"
+                    },
+                    {
+                        "id": "fisika-1",
+                        "title": "Fisika Dasar", 
+                        "filename": "fisika.pdf",
+                        "size": "1.8 MB",
+                        "downloadUrl": "./buku/kelas-10/fisika.pdf",
+                        "subject": "Fisika"
+                    }
+                ]
+            },
+            "kelas-11-ipa": {
+                "title": "Kelas 11 IPA", 
+                "books": [
+                    {
+                        "id": "kimia-1",
+                        "title": "Kimia Dasar",
+                        "filename": "kimia.pdf",
+                        "size": "2.3 MB",
+                        "downloadUrl": "./buku/kelas-11/kimia.pdf",
+                        "subject": "Kimia"
+                    }
+                ]
+            },
+            "kelas-11-ips": {
+                "title": "Kelas 11 IPS",
+                "books": [
+                    {
+                        "id": "ekonomi-1", 
+                        "title": "Ekonomi Dasar",
+                        "filename": "ekonomi.pdf",
+                        "size": "1.5 MB",
+                        "downloadUrl": "./buku/kelas-11/ekonomi.pdf",
+                        "subject": "Ekonomi"
+                    }
+                ]
+            }
+        };
+    }
+
+    renderAllBooks() {
+        for (const [classId, classData] of Object.entries(this.booksMetadata)) {
+            this.renderClassBooks(classId, classData);
+        }
+    }
+
+    renderClassBooks(classId, classData) {
+        const container = document.getElementById(`${classId}-books`);
+        if (!container) {
+            console.log(`Container not found: ${classId}-books`);
             return;
         }
 
-        loadingTask.promise.then(pdf => {
-            pdfDoc = pdf;
-            renderPage(pageNum);
-        }).catch(err => {
-            console.error("Error loading PDF:", err);
-            loading.textContent = "Gagal memuat PDF: " + err.message;
+        container.innerHTML = '';
+
+        if (!classData.books || classData.books.length === 0) {
+            container.innerHTML = `
+                <div class="card-item">
+                    <div class="icon-wrapper">📚</div>
+                    <h3>Belum ada buku</h3>
+                    <p>Buku akan segera tersedia</p>
+                </div>
+            `;
+            return;
+        }
+
+        classData.books.forEach(book => {
+            const bookElement = this.createBookElement(book, classId);
+            container.appendChild(bookElement);
         });
     }
+
+    createBookElement(book, classId) {
+        const div = document.createElement('div');
+        div.className = 'card-item';
+        div.setAttribute('data-book-id', book.id);
+        
+        div.innerHTML = `
+            <div class="icon-wrapper">📚</div>
+            <h3>${book.title}</h3>
+            <p>${book.subject}</p>
+            <p class="file-size">${book.size}</p>
+            <button class="btn-download" onclick="bookManager.downloadBook('${classId}', '${book.id}')">
+                📥 Download & Buka
+            </button>
+            <div class="download-progress" id="progress-${book.id}" style="display: none;"></div>
+        `;
+        
+        return div;
+    }
+
+    async downloadBook(classId, bookId) {
+        const book = this.findBook(classId, bookId);
+        if (!book) {
+            alert('Buku tidak ditemukan!');
+            return;
+        }
+
+        console.log('🚀 Starting download:', book.downloadUrl);
+
+        const button = document.querySelector(`[data-book-id="${bookId}"] .btn-download`);
+        const progress = document.getElementById(`progress-${bookId}`);
+        
+        if (button) {
+            button.textContent = '⏳ Downloading...';
+            button.disabled = true;
+        }
+        if (progress) {
+            progress.style.display = 'block';
+            progress.textContent = 'Memulai download...';
+        }
+
+        try {
+            // Test if file exists
+            console.log('Testing URL:', book.downloadUrl);
+            const testResponse = await fetch(book.downloadUrl, { method: 'HEAD' });
+            console.log('Test response status:', testResponse.status);
+            
+            if (!testResponse.ok) {
+                throw new Error(`File tidak ditemukan (Error ${testResponse.status})`);
+            }
+            
+            // Load and open PDF
+            await bukaPDF(book.downloadUrl);
+            
+            if (progress) {
+                progress.textContent = '✅ Buku dibuka!';
+            }
+            
+            // Reset button after 3 seconds
+            setTimeout(() => {
+                if (button) {
+                    button.textContent = '📥 Download & Buka';
+                    button.disabled = false;
+                }
+                if (progress) {
+                    progress.style.display = 'none';
+                }
+            }, 3000);
+            
+        } catch (error) {
+            console.error('❌ Download failed:', error);
+            
+            let errorMessage = 'Download gagal: ' + error.message;
+            alert(errorMessage);
+            
+            if (button) {
+                button.textContent = '❌ Gagal - Coba Lagi';
+                button.disabled = false;
+            }
+            if (progress) {
+                progress.textContent = '❌ ' + error.message;
+            }
+        }
+    }
+
+    findBook(classId, bookId) {
+        const classData = this.booksMetadata[classId];
+        return classData?.books.find(b => b.id === bookId);
+    }
+
+    showErrorState() {
+        const containers = ['kelas-10-books', 'kelas-11-ipa-books', 'kelas-11-ips-books'];
+        containers.forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = `
+                    <div class="card-item">
+                        <div class="icon-wrapper">⚠️</div>
+                        <h3>Error Load Buku</h3>
+                        <p>Refresh halaman</p>
+                        <button class="btn-download" onclick="location.reload()">🔄 Refresh</button>
+                    </div>
+                `;
+            }
+        });
+    }
+}
+
+// ==================== PDF.JS CONFIGURATION - FIXED ====================
+let pdfjsLib = window.pdfjsLib || null;
+
+async function loadPDFJS() {
+    if (pdfjsLib && pdfjsLib.getDocument) {
+        return pdfjsLib;
+    }
     
-    // PDF NAVIGATION EVENT LISTENERS
+    return new Promise((resolve, reject) => {
+        // Jika sudah ada di window object
+        if (window.pdfjsLib) {
+            pdfjsLib = window.pdfjsLib;
+            pdfjsLib.GlobalWorkerOptions.workerSrc = './pdfjs/pdf.worker.js';
+            resolve(pdfjsLib);
+            return;
+        }
+        
+        // Fallback: load dari CDN jika local gagal
+        const script = document.createElement('script');
+        script.src = './pdfjs/pdf.js';
+        script.onload = () => {
+            if (window.pdfjsLib) {
+                pdfjsLib = window.pdfjsLib;
+                pdfjsLib.GlobalWorkerOptions.workerSrc = './pdfjs/pdf.worker.js';
+                console.log('✅ PDF.js loaded successfully');
+                resolve(pdfjsLib);
+            } else {
+                reject(new Error('PDF.js not loaded properly'));
+            }
+        };
+        script.onerror = () => {
+            console.error('Failed to load local PDF.js, trying CDN...');
+            // Fallback ke CDN
+            const cdnScript = document.createElement('script');
+            cdnScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
+            cdnScript.onload = () => {
+                pdfjsLib = window.pdfjsLib;
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+                console.log('✅ PDF.js loaded from CDN');
+                resolve(pdfjsLib);
+            };
+            cdnScript.onerror = () => reject(new Error('Failed to load PDF.js from all sources'));
+            document.head.appendChild(cdnScript);
+        };
+        document.head.appendChild(script);
+    });
+}
+
+// ==================== GLOBAL VARIABLES ====================
+let pdfDoc = null,
+    pageNum = 1,
+    pageIsRendering = false,
+    pageNumIsPending = null;
+
+const mainContent = document.getElementById('main-content');
+const pdfViewer = document.getElementById('pdf-viewer');
+const canvas = document.getElementById("pdf-render");
+const ctx = canvas.getContext("2d");
+const pageInfo = document.getElementById("page-info");
+const pageInput = document.getElementById("page-input");
+const viewerContainer = document.getElementById("viewer-container");
+const loading = document.getElementById("loading");
+const fileNameDisplay = document.getElementById("file-name-display");
+
+let bookManager;
+let deferredPrompt;
+
+// ==================== NAVIGATION FUNCTIONALITY ====================
+function setupNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all nav items
+            navItems.forEach(nav => nav.classList.remove('active'));
+            
+            // Add active class to clicked nav item
+            this.classList.add('active');
+            
+            // Hide all content sections
+            const contentSections = document.querySelectorAll('.content-section');
+            contentSections.forEach(section => section.classList.remove('active'));
+            
+            // Show the target content section
+            const targetId = this.getAttribute('data-target');
+            document.getElementById(targetId).classList.add('active');
+            
+            // Adjust card sizes after navigation
+            setTimeout(adjustCardSizes, 100);
+        });
+    });
+}
+
+// ==================== PDF VIEWER FUNCTIONS ====================
+function tampilkanPDFViewer() {
+    mainContent.style.display = 'none';
+    pdfViewer.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function sembunyikanPDFViewer() {
+    mainContent.style.display = 'block';
+    pdfViewer.style.display = 'none';
+    document.body.style.overflow = 'auto';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pdfDoc = null;
+    pageNum = 1;
+    
+    // Track reading session end
+    if (readingSession.currentPDF) {
+        readingSession.scheduleHistorySync();
+    }
+}
+
+const updatePageInfo = num => {
+    if (!pdfDoc) return;
+    pageInfo.textContent = `Halaman ${num} dari ${pdfDoc.numPages}`;
+    document.getElementById("prev").classList.toggle('disabled', pageNum <= 1);
+    document.getElementById("next").classList.toggle('disabled', pageNum >= pdfDoc.numPages);
+};
+
+const renderPage = num => {
+    pageIsRendering = true;
+    loading.style.display = 'block';
+    canvas.style.display = 'none';
+    
+    pdfDoc.getPage(num).then(page => {
+        let viewport = page.getViewport({ scale: 1.0 });
+        let scale = (viewerContainer.clientWidth - 40) / viewport.width;
+        scale = Math.max(0.5, Math.min(scale, 3.0));
+        
+        const scaledViewport = page.getViewport({ scale });
+        const outputScale = window.devicePixelRatio || 1;
+        
+        canvas.width = Math.floor(scaledViewport.width * outputScale);
+        canvas.height = Math.floor(scaledViewport.height * outputScale);
+        canvas.style.width = Math.floor(scaledViewport.width) + "px";
+        canvas.style.height = Math.floor(scaledViewport.height) + "px";
+        
+        const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
+        
+        const renderCtx = {
+            canvasContext: ctx,
+            viewport: scaledViewport,
+            transform: transform
+        };
+        
+        page.render(renderCtx).promise.then(() => {
+            pageIsRendering = false;
+            loading.style.display = 'none';
+            canvas.style.display = 'block';
+            
+            if (pageNumIsPending !== null) {
+                renderPage(pageNumIsPending);
+                pageNumIsPending = null;
+            }
+        });
+        
+        updatePageInfo(num);
+    }).catch(err => {
+        console.error("Error rendering page:", err);
+        loading.textContent = "Error memuat halaman: " + err.message;
+    });
+};
+
+const queueRenderPage = num => {
+    if (pageIsRendering) {
+        pageNumIsPending = num;
+    } else {
+        renderPage(num);
+    }
+};
+
+function loadPDF(source) {
+    loading.textContent = "Memuat PDF...";
+    tampilkanPDFViewer();
+    
+    let loadingTask;
+    if (typeof source === 'string') {
+        loadingTask = pdfjsLib.getDocument({ url: source });
+        // Track PDF view for background sync
+        trackPDFView(source.split("/").pop());
+    } else {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(event.target.result) });
+            loadingTask.promise.then(pdf => {
+                pdfDoc = pdf;
+                renderPage(pageNum);
+                // Track PDF view for background sync
+                trackPDFView(source.name);
+            }).catch(err => {
+                console.error("Error loading PDF from file:", err);
+                loading.textContent = "Gagal memuat PDF: " + err.message;
+            });
+        };
+        reader.readAsArrayBuffer(source);
+        return;
+    }
+
+    loadingTask.promise.then(pdf => {
+        pdfDoc = pdf;
+        renderPage(pageNum);
+    }).catch(err => {
+        console.error("Error loading PDF:", err);
+        loading.textContent = "Gagal memuat PDF: " + err.message;
+    });
+}
+
+// ==================== PDF NAVIGATION EVENT LISTENERS ====================
+function setupPDFNavigation() {
     document.getElementById("prev").addEventListener("click", () => {
         if (pageNum > 1 && !pageIsRendering) {
             pageNum--;
@@ -1878,25 +1936,35 @@ document.addEventListener('DOMContentLoaded', function() {
             pageInfo.style.display = "inline-block";
         }
     });
-    
-    // PDF OPENING FUNCTIONS
-    function bukaPDF(path) {
+}
+
+// ==================== PDF OPENING FUNCTIONS ====================
+async function bukaPDF(path) {
+    try {
+        console.log('Loading PDF:', path);
+        await loadPDFJS();
+        
         const fileName = path.split("/").pop().replace(/%20/g, " ");
         fileNameDisplay.textContent = fileName;
         loadPDF(path);
+    } catch (error) {
+        console.error('PDF.js load error:', error);
+        alert('Error: PDF viewer tidak bisa dimuat. ' + error.message);
     }
-    
-    function bacaPDFUpload() {
-        const fileInput = document.getElementById('pdfUpload');
-        if (fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            fileNameDisplay.textContent = file.name;
-            loadPDF(file);
-        } else {
-            alert('Silakan pilih file PDF terlebih dahulu.');
-        }
-    }
+}
 
+function bacaPDFUpload() {
+    const fileInput = document.getElementById('pdfUpload');
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileNameDisplay.textContent = file.name;
+        loadPDF(file);
+    } else {
+        alert('Silakan pilih file PDF terlebih dahulu.');
+    }
+}
+
+function setupFileUpload() {
     document.getElementById('pdfUpload').addEventListener('change', function() {
         const fileNameSpan = document.getElementById('selectedFileName');
         if (this.files.length > 0) {
@@ -1905,9 +1973,10 @@ document.addEventListener('DOMContentLoaded', function() {
             fileNameSpan.textContent = 'Tidak ada file yang dipilih';
         }
     });
+}
 
-    // PWA INSTALLATION
-    let deferredPrompt;
+// ==================== PWA INSTALLATION ====================
+function setupPWAInstall() {
     const installButton = document.getElementById('installButton');
     
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -1927,43 +1996,44 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show install modal after 2 seconds
         setTimeout(tampilkanModal, 2000);
     });
-    
-    function tampilkanModal() { 
-        document.getElementById('installModal').style.display = 'flex'; 
-    }
-    
-    function sembunyikanModal() { 
-        document.getElementById('installModal').style.display = 'none'; 
-    }
-    
-    function installApp() {
-        if (deferredPrompt) {
-            installButton.style.display = 'none';
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('Pengguna menerima instalasi');
-                }
-                deferredPrompt = null;
-            });
-        }
-        sembunyikanModal();
-    }
+}
 
-    // GREETING SYSTEM
-    document.addEventListener('DOMContentLoaded', () => {
-        const greetingElement = document.getElementById('greetingName');
-        const userName = localStorage.getItem('userName');
+function tampilkanModal() { 
+    document.getElementById('installModal').style.display = 'flex'; 
+}
 
-        if (userName && userName.trim() !== '' && userName !== 'Nama Pengguna') {
-            greetingElement.textContent = 'Halo, ' + userName + '!';
-        } else {
-            greetingElement.textContent = 'Halo!';
-        }
-    });
+function sembunyikanModal() { 
+    document.getElementById('installModal').style.display = 'none'; 
+}
 
-    // ✅ SERVICE WORKER REGISTRATION - PRODUCTION READY
-// ✅ BENAR: Service Worker initialization yang fixed
+function installApp() {
+    if (deferredPrompt) {
+        const installButton = document.getElementById('installButton');
+        installButton.style.display = 'none';
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('Pengguna menerima instalasi');
+            }
+            deferredPrompt = null;
+        });
+    }
+    sembunyikanModal();
+}
+
+// ==================== GREETING SYSTEM ====================
+function setupGreeting() {
+    const greetingElement = document.getElementById('greetingName');
+    const userName = localStorage.getItem('userName');
+
+    if (userName && userName.trim() !== '' && userName !== 'Nama Pengguna') {
+        greetingElement.textContent = 'Halo, ' + userName + '!';
+    } else {
+        greetingElement.textContent = 'Halo!';
+    }
+}
+
+// ==================== SERVICE WORKER REGISTRATION ====================
 async function initializeServiceWorker() {
     if (!('serviceWorker' in navigator)) {
         console.log('❌ Service Worker not supported');
@@ -2070,97 +2140,98 @@ async function initializeServiceWorker() {
     }
 }
 
-    // ✅ BACKGROUND SYNC SETUP
-    async function setupBackgroundSync(registration) {
-        try {
-            // Check if Background Sync is supported
-            if ('sync' in registration) {
-                console.log('✅ Background Sync supported');
-                
-                // Register default sync tags
-                await registration.sync.register('sync-pdf-history');
-                await registration.sync.register('sync-user-activity');
-                await registration.sync.register('retry-failed-requests');
-                
-                console.log('✅ Background Sync tags registered');
-            }
+// ==================== BACKGROUND SYNC SETUP ====================
+async function setupBackgroundSync(registration) {
+    try {
+        // Check if Background Sync is supported
+        if ('sync' in registration) {
+            console.log('✅ Background Sync supported');
             
-            // Check if Periodic Sync is supported
-            if ('periodicSync' in registration) {
-                const status = await navigator.permissions.query({
-                    name: 'periodic-background-sync'
+            // Register default sync tags
+            await registration.sync.register('sync-pdf-history');
+            await registration.sync.register('sync-user-activity');
+            await registration.sync.register('retry-failed-requests');
+            
+            console.log('✅ Background Sync tags registered');
+        }
+        
+        // Check if Periodic Sync is supported
+        if ('periodicSync' in registration) {
+            const status = await navigator.permissions.query({
+                name: 'periodic-background-sync'
+            });
+            
+            console.log('📋 Periodic Sync permission status:', status.state);
+            
+            if (status.state === 'granted') {
+                try {
+                    await registration.periodicSync.register('content-cleanup', {
+                        minInterval: 24 * 60 * 60 * 1000, // 24 hours
+                    });
+                    console.log('✅ Periodic Sync registered');
+                } catch (periodicError) {
+                    console.log('⚠️ Periodic Sync not available:', periodicError);
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.log('⚠️ Background Sync setup failed:', error);
+    }
+}
+
+// ==================== UPDATE NOTIFICATION SYSTEM ====================
+function showUpdateNotification() {
+    let notification = document.getElementById('update-notification');
+    
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'update-notification';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10000;
+            font-family: Arial, sans-serif;
+            display: none;
+        `;
+        document.body.appendChild(notification);
+    }
+
+    notification.innerHTML = '🔄 Update tersedia! <button id="updateRefreshBtn" style="background: white; color: #4CAF50; border: none; padding: 8px 16px; margin-left: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Perbarui Sekarang</button>';
+    notification.style.display = 'block';
+
+    document.getElementById('updateRefreshBtn').addEventListener('click', async () => {
+        // Skip waiting and reload
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (registration && registration.waiting) {
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                
+                // Listen for controller change
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    window.location.reload();
                 });
                 
-                console.log('📋 Periodic Sync permission status:', status.state);
-                
-                if (status.state === 'granted') {
-                    try {
-                        await registration.periodicSync.register('content-cleanup', {
-                            minInterval: 24 * 60 * 60 * 1000, // 24 hours
-                        });
-                        console.log('✅ Periodic Sync registered');
-                    } catch (periodicError) {
-                        console.log('⚠️ Periodic Sync not available:', periodicError);
-                    }
-                }
+                return;
             }
-            
-        } catch (error) {
-            console.log('⚠️ Background Sync setup failed:', error);
         }
-    }
+        window.location.reload();
+    });
 
-    // ✅ UPDATE NOTIFICATION SYSTEM
-    function showUpdateNotification() {
-        let notification = document.getElementById('update-notification');
-        
-        if (!notification) {
-            notification = document.createElement('div');
-            notification.id = 'update-notification';
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #4CAF50;
-                color: white;
-                padding: 12px 16px;
-                border-radius: 6px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                z-index: 10000;
-                font-family: Arial, sans-serif;
-                display: none;
-            `;
-            document.body.appendChild(notification);
-        }
+    // Auto-hide after 10 seconds
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 10000);
+}
 
-        notification.innerHTML = '🔄 Update tersedia! <button id="updateRefreshBtn" style="background: white; color: #4CAF50; border: none; padding: 8px 16px; margin-left: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Perbarui Sekarang</button>';
-        notification.style.display = 'block';
-
-        document.getElementById('updateRefreshBtn').addEventListener('click', async () => {
-            // Skip waiting and reload
-            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                const registration = await navigator.serviceWorker.getRegistration();
-                if (registration && registration.waiting) {
-                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                    
-                    // Listen for controller change
-                    navigator.serviceWorker.addEventListener('controllerchange', () => {
-                        window.location.reload();
-                    });
-                    
-                    return;
-                }
-            }
-            window.location.reload();
-        });
-
-        // Auto-hide after 10 seconds
-        setTimeout(() => {
-            notification.style.display = 'none';
-        }, 10000);
-    }
-
-    // ✅ SERVICE WORKER MESSAGE HANDLER
+// ==================== SERVICE WORKER MESSAGE HANDLER ====================
+function setupServiceWorkerMessages() {
     navigator.serviceWorker.addEventListener('message', event => {
         const data = event.data;
         console.log('📨 Client: Received message from SW:', data);
@@ -2173,7 +2244,6 @@ async function initializeServiceWorker() {
                 
             case 'VERSION_ACTIVATED':
                 console.log('✅ New SW version activated:', data.version);
-                // Optional: Show welcome message for new version
                 break;
                 
             case 'SW_ACTIVATED':
@@ -2181,233 +2251,232 @@ async function initializeServiceWorker() {
                 break;
         }
     });
+}
 
-    // ✅ READING SESSION TRACKER (Background Sync)
-    class ReadingSession {
-        constructor() {
-            this.sessionStart = Date.now();
-            this.pageTurns = 0;
-            this.currentPDF = null;
-        }
+// ==================== READING SESSION TRACKER ====================
+class ReadingSession {
+    constructor() {
+        this.sessionStart = Date.now();
+        this.pageTurns = 0;
+        this.currentPDF = null;
+    }
+    
+    startPDF(pdfName) {
+        this.currentPDF = pdfName;
+        this.sessionStart = Date.now();
+        this.pageTurns = 0;
+        console.log('📖 Reading session started:', pdfName);
+    }
+    
+    trackPageTurn() {
+        this.pageTurns++;
         
-        startPDF(pdfName) {
-            this.currentPDF = pdfName;
-            this.sessionStart = Date.now();
-            this.pageTurns = 0;
-            console.log('📖 Reading session started:', pdfName);
+        // Schedule background sync setelah beberapa page turns
+        if (this.pageTurns % 3 === 0) {
+            this.scheduleHistorySync();
         }
+    }
+    
+    async scheduleHistorySync() {
+        if (!this.currentPDF) return;
         
-        trackPageTurn() {
-            this.pageTurns++;
-            
-            // Schedule background sync setelah beberapa page turns
-            if (this.pageTurns % 3 === 0) {
-                this.scheduleHistorySync();
+        const sessionData = {
+            id: `${this.currentPDF}-${Date.now()}`,
+            pdfName: this.currentPDF,
+            duration: Date.now() - this.sessionStart,
+            pageTurns: this.pageTurns,
+            timestamp: Date.now(),
+            synced: false
+        };
+        
+        // Save to localStorage for background sync
+        const pendingHistory = JSON.parse(localStorage.getItem('pendingPDFHistory') || '[]');
+        pendingHistory.push(sessionData);
+        localStorage.setItem('pendingPDFHistory', JSON.stringify(pendingHistory));
+        
+        console.log('💾 Saved reading session:', sessionData);
+        
+        // Register background sync
+        if ('serviceWorker' in navigator) {
+            const registration = await navigator.serviceWorker.ready;
+            if ('sync' in registration) {
+                await registration.sync.register('sync-pdf-history');
+                this.showSyncIndicator('Progress membaca disimpan');
             }
         }
+    }
+    
+    showSyncIndicator(message) {
+        const indicator = document.createElement('div');
+        indicator.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 10000;
+        `;
+        indicator.textContent = '✓ ' + message;
+        document.body.appendChild(indicator);
         
-        async scheduleHistorySync() {
-            if (!this.currentPDF) return;
-            
-            const sessionData = {
-                id: `${this.currentPDF}-${Date.now()}`,
-                pdfName: this.currentPDF,
-                duration: Date.now() - this.sessionStart,
-                pageTurns: this.pageTurns,
-                timestamp: Date.now(),
-                synced: false
-            };
-            
-            // Save to localStorage for background sync
-            const pendingHistory = JSON.parse(localStorage.getItem('pendingPDFHistory') || '[]');
-            pendingHistory.push(sessionData);
-            localStorage.setItem('pendingPDFHistory', JSON.stringify(pendingHistory));
-            
-            console.log('💾 Saved reading session:', sessionData);
-            
-            // Register background sync
+        setTimeout(() => {
+            if (indicator.parentNode) {
+                document.body.removeChild(indicator);
+            }
+        }, 2000);
+    }
+}
+
+const readingSession = new ReadingSession();
+
+function trackPDFView(pdfName) {
+    readingSession.startPDF(pdfName);
+}
+
+// ==================== OFFLINE MANAGER ====================
+class OfflineManager {
+    constructor() {
+        this.isOnline = navigator.onLine;
+        this.offlineIndicator = null;
+        this.init();
+    }
+    
+    init() {
+        this.createOfflineIndicator();
+        this.setupNetworkListeners();
+        this.checkOfflineCapabilities();
+    }
+    
+    createOfflineIndicator() {
+        this.offlineIndicator = document.createElement('div');
+        this.offlineIndicator.id = 'offline-indicator';
+        this.offlineIndicator.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ff6b6b;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            z-index: 10000;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        `;
+        this.offlineIndicator.textContent = '📶 Anda sedang offline - Beberapa fitur terbatas';
+        document.body.appendChild(this.offlineIndicator);
+    }
+    
+    setupNetworkListeners() {
+        window.addEventListener('online', () => {
+            this.handleOnline();
+        });
+        
+        window.addEventListener('offline', () => {
+            this.handleOffline();
+        });
+    }
+    
+    handleOnline() {
+        this.isOnline = true;
+        this.hideOfflineIndicator();
+        this.showMessage('✅ Koneksi pulih', 'success');
+        this.syncPendingData();
+    }
+    
+    handleOffline() {
+        this.isOnline = false;
+        this.showOfflineIndicator();
+        this.showMessage('📶 Sedang offline', 'warning');
+    }
+    
+    showOfflineIndicator() {
+        if (this.offlineIndicator) {
+            this.offlineIndicator.style.transform = 'translateY(0)';
+        }
+    }
+    
+    hideOfflineIndicator() {
+        if (this.offlineIndicator) {
+            this.offlineIndicator.style.transform = 'translateY(-100%)';
+        }
+    }
+    
+    showMessage(text, type = 'info') {
+        const messageEl = document.createElement('div');
+        messageEl.style.cssText = `
+            position: fixed;
+            top: 50px;
+            right: 20px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            color: white;
+            z-index: 10000;
+            font-weight: bold;
+            ${type === 'success' ? 'background: #4CAF50;' : ''}
+            ${type === 'warning' ? 'background: #ffc107; color: #000;' : ''}
+        `;
+        messageEl.textContent = text;
+        document.body.appendChild(messageEl);
+        
+        setTimeout(() => {
+            if (messageEl.parentNode) {
+                document.body.removeChild(messageEl);
+            }
+        }, 3000);
+    }
+    
+    async syncPendingData() {
+        if (!this.isOnline) return;
+        
+        try {
             if ('serviceWorker' in navigator) {
                 const registration = await navigator.serviceWorker.ready;
+                
                 if ('sync' in registration) {
                     await registration.sync.register('sync-pdf-history');
-                    this.showSyncIndicator('Progress membaca disimpan');
+                    await registration.sync.register('sync-user-activity');
+                    console.log('✅ Background sync triggered for pending data');
                 }
             }
-        }
-        
-        showSyncIndicator(message) {
-            const indicator = document.createElement('div');
-            indicator.style.cssText = `
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                background: #4CAF50;
-                color: white;
-                padding: 5px 10px;
-                border-radius: 4px;
-                font-size: 0.8rem;
-                z-index: 10000;
-            `;
-            indicator.textContent = '✓ ' + message;
-            document.body.appendChild(indicator);
-            
-            setTimeout(() => {
-                if (indicator.parentNode) {
-                    document.body.removeChild(indicator);
-                }
-            }, 2000);
-        }
-    }
-
-    const readingSession = new ReadingSession();
-
-    function trackPDFView(pdfName) {
-        readingSession.startPDF(pdfName);
-    }
-
-    // ✅ OFFLINE MANAGER
-    class OfflineManager {
-        constructor() {
-            this.isOnline = navigator.onLine;
-            this.offlineIndicator = null;
-            this.init();
-        }
-        
-        init() {
-            this.createOfflineIndicator();
-            this.setupNetworkListeners();
-            this.checkOfflineCapabilities();
-        }
-        
-        createOfflineIndicator() {
-            this.offlineIndicator = document.createElement('div');
-            this.offlineIndicator.id = 'offline-indicator';
-            this.offlineIndicator.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                background: #ff6b6b;
-                color: white;
-                padding: 10px;
-                text-align: center;
-                font-weight: bold;
-                z-index: 10000;
-                transform: translateY(-100%);
-                transition: transform 0.3s ease;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            `;
-            this.offlineIndicator.textContent = '📶 Anda sedang offline - Beberapa fitur terbatas';
-            document.body.appendChild(this.offlineIndicator);
-        }
-        
-        setupNetworkListeners() {
-            window.addEventListener('online', () => {
-                this.handleOnline();
-            });
-            
-            window.addEventListener('offline', () => {
-                this.handleOffline();
-            });
-        }
-        
-        handleOnline() {
-            this.isOnline = true;
-            this.hideOfflineIndicator();
-            this.showMessage('✅ Koneksi pulih', 'success');
-            this.syncPendingData();
-        }
-        
-        handleOffline() {
-            this.isOnline = false;
-            this.showOfflineIndicator();
-            this.showMessage('📶 Sedang offline', 'warning');
-        }
-        
-        showOfflineIndicator() {
-            if (this.offlineIndicator) {
-                this.offlineIndicator.style.transform = 'translateY(0)';
-            }
-        }
-        
-        hideOfflineIndicator() {
-            if (this.offlineIndicator) {
-                this.offlineIndicator.style.transform = 'translateY(-100%)';
-            }
-        }
-        
-        showMessage(text, type = 'info') {
-            const messageEl = document.createElement('div');
-            messageEl.style.cssText = `
-                position: fixed;
-                top: 50px;
-                right: 20px;
-                padding: 12px 16px;
-                border-radius: 6px;
-                color: white;
-                z-index: 10000;
-                font-weight: bold;
-                ${type === 'success' ? 'background: #4CAF50;' : ''}
-                ${type === 'warning' ? 'background: #ffc107; color: #000;' : ''}
-            `;
-            messageEl.textContent = text;
-            document.body.appendChild(messageEl);
-            
-            setTimeout(() => {
-                if (messageEl.parentNode) {
-                    document.body.removeChild(messageEl);
-                }
-            }, 3000);
-        }
-        
-        async syncPendingData() {
-            if (!this.isOnline) return;
-            
-            try {
-                if ('serviceWorker' in navigator) {
-                    const registration = await navigator.serviceWorker.ready;
-                    
-                    if ('sync' in registration) {
-                        await registration.sync.register('sync-pdf-history');
-                        await registration.sync.register('sync-user-activity');
-                        console.log('✅ Background sync triggered for pending data');
-                    }
-                }
-            } catch (error) {
-                console.error('❌ Sync failed:', error);
-            }
-        }
-        
-// ✅ PERBAIKI: Fungsi checkOfflineCapabilities di class OfflineManager
-async checkOfflineCapabilities() {
-    if ('serviceWorker' in navigator && 'caches' in window) {
-        try {
-            const testUrls = [
-                './index.html',
-                './manifest.json', 
-                './icons/icon-192x192.png',
-                './fallback/offline.html'
-            ];
-            
-            let availableCount = 0;
-            for (const url of testUrls) {
-                // ✅ GUNAKAN caches.match() langsung, bukan buka cache dengan nama tertentu
-                const cached = await caches.match(url);
-                if (cached) availableCount++;
-            }
-            
-            console.log(`📦 Offline capability: ${availableCount}/${testUrls.length} resources available`);
-            
         } catch (error) {
-            console.log('❌ Offline check failed:', error);
+            console.error('❌ Sync failed:', error);
+        }
+    }
+    
+    async checkOfflineCapabilities() {
+        if ('serviceWorker' in navigator && 'caches' in window) {
+            try {
+                const testUrls = [
+                    './index.html',
+                    './manifest.json', 
+                    './icons/icon-192x192.png',
+                    './fallback/offline.html'
+                ];
+                
+                let availableCount = 0;
+                for (const url of testUrls) {
+                    const cached = await caches.match(url);
+                    if (cached) availableCount++;
+                }
+                
+                console.log(`📦 Offline capability: ${availableCount}/${testUrls.length} resources available`);
+                
+            } catch (error) {
+                console.log('❌ Offline check failed:', error);
+            }
         }
     }
 }
-}
 
-    const offlineManager = new OfflineManager();
+const offlineManager = new OfflineManager();
 
-// ✅ GANTI fungsi testOfflineCapability yang lama dengan ini:
+// ==================== OFFLINE CAPABILITY TESTING ====================
 async function testOfflineCapability() {
     console.log('🧪 Testing Offline Capability...');
     
@@ -2423,7 +2492,6 @@ async function testOfflineCapability() {
     
     for (const url of testUrls) {
         try {
-            // ✅ GUNAKAN CACHE NAME YANG BENAR - langsung match tanpa nama cache
             const response = await caches.match(url);
             results[url] = !!response;
             
@@ -2445,80 +2513,70 @@ async function testOfflineCapability() {
     return results;
 }
 
-    // ✅ LAYOUT AND UI FUNCTIONS
-    function adjustCardSizes() {
-        const cardRows = document.querySelectorAll('.card-row');
+async function testOfflineCapabilityWithRetry(maxRetries = 5, delay = 1000) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        console.log(`🔄 Offline test attempt ${attempt}/${maxRetries}...`);
         
-        cardRows.forEach(row => {
-            const cardItems = row.querySelectorAll('.card-item');
-            const containerWidth = row.offsetWidth;
-            const totalWidth = Array.from(cardItems).reduce((total, card) => {
-                return total + card.offsetWidth + 15;
-            }, 0);
-            
-            if (totalWidth > containerWidth) {
-                const scaleFactor = containerWidth / totalWidth * 0.9;
-                cardItems.forEach(card => {
-                    const currentWidth = card.offsetWidth;
-                    const newWidth = Math.max(100, currentWidth * scaleFactor);
-                    card.style.minWidth = newWidth + 'px';
-                    card.style.maxWidth = newWidth + 'px';
-                });
-            }
-        });
-    }
-
-    // Ensure navbar doesn't hide content
-    function ensureNavbarPosition() {
-        const navbar = document.querySelector('.mobile-navbar');
-        const sections = document.querySelectorAll('.content-section');
+        const results = await testOfflineCapability();
+        const availableCount = Object.values(results).filter(Boolean).length;
         
-        if (navbar) {
-            navbar.style.bottom = '0';
-            navbar.style.transform = 'translateY(0)';
+        if (availableCount >= 3) { // Minimal 3/4 resource cached
+            console.log(`✅ Offline capability sufficient: ${availableCount}/4`);
+            return results;
         }
         
-        sections.forEach(section => {
-            const rect = section.getBoundingClientRect();
-            const navbarHeight = navbar ? navbar.offsetHeight : 0;
-            
-            if (window.innerHeight - rect.bottom < navbarHeight + 10) {
-                section.style.paddingBottom = (navbarHeight + 20) + 'px';
-            }
-        });
+        if (attempt < maxRetries) {
+            console.log(`⏳ Retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
     }
-
-// ✅ PERBAIKI: Initialization sequence
-// ✅ PERBAIKI: Initialization sequence final
-window.addEventListener('load', () => {
-    console.log('🚀 Starting ELSA PWA initialization...');
     
-    // Initialize Service Worker
-    initializeServiceWorker().then(registration => {
-        if (registration) {
-            // Setup layout
-            ensureNavbarPosition();
-            adjustCardSizes();
-            
-            // Test offline capability dengan retry mechanism
-            setTimeout(() => {
-                testOfflineCapabilityWithRetry().then(results => {
-                    if (results) {
-                        const availableCount = Object.values(results).filter(Boolean).length;
-                        console.log(`🎉 Final offline capability: ${availableCount}/4`);
-                        
-                        // ✅ TAMPILKAN HASIL DI UI
-                        updateOfflineCapabilityDisplay(availableCount, 4);
-                    }
-                });
-            }, 3000);
-        }
-    }).catch(error => {
-        console.error('❌ Initialization failed:', error);
-    });
-});
+    console.log('❌ Offline capability insufficient after all retries');
+    return null;
+}
 
-// ✅ FUNGSI BARU: Update tampilan offline capability
+// ==================== LAYOUT AND UI FUNCTIONS ====================
+function adjustCardSizes() {
+    const cardRows = document.querySelectorAll('.card-row');
+    
+    cardRows.forEach(row => {
+        const cardItems = row.querySelectorAll('.card-item');
+        const containerWidth = row.offsetWidth;
+        const totalWidth = Array.from(cardItems).reduce((total, card) => {
+            return total + card.offsetWidth + 15;
+        }, 0);
+        
+        if (totalWidth > containerWidth) {
+            const scaleFactor = containerWidth / totalWidth * 0.9;
+            cardItems.forEach(card => {
+                const currentWidth = card.offsetWidth;
+                const newWidth = Math.max(100, currentWidth * scaleFactor);
+                card.style.minWidth = newWidth + 'px';
+                card.style.maxWidth = newWidth + 'px';
+            });
+        }
+    });
+}
+
+function ensureNavbarPosition() {
+    const navbar = document.querySelector('.mobile-navbar');
+    const sections = document.querySelectorAll('.content-section');
+    
+    if (navbar) {
+        navbar.style.bottom = '0';
+        navbar.style.transform = 'translateY(0)';
+    }
+    
+    sections.forEach(section => {
+        const rect = section.getBoundingClientRect();
+        const navbarHeight = navbar ? navbar.offsetHeight : 0;
+        
+        if (window.innerHeight - rect.bottom < navbarHeight + 10) {
+            section.style.paddingBottom = (navbarHeight + 20) + 'px';
+        }
+    });
+}
+
 function updateOfflineCapabilityDisplay(available, total) {
     // Cari atau buat elemen untuk menampilkan status
     let statusElement = document.getElementById('offline-capability-status');
@@ -2554,72 +2612,95 @@ function updateOfflineCapabilityDisplay(available, total) {
     }
 }
 
-    // Handle resize and scroll events
-    window.addEventListener('resize', () => {
-        adjustCardSizes();
-        ensureNavbarPosition();
-    });
-
-    window.addEventListener('scroll', ensureNavbarPosition);
-
-    // Online/offline detection
-    function checkOnlineStatus() {
-        if (!navigator.onLine) {
-            console.log('📴 Aplikasi sedang offline');
-        }
-    }
-
-    window.addEventListener('online', checkOnlineStatus);
-    window.addEventListener('offline', checkOnlineStatus);
-    checkOnlineStatus();
-
-    // ✅ ERROR HANDLING
-    window.addEventListener('error', (event) => {
-        if (event.target.tagName === 'IMG' || event.target.tagName === 'SCRIPT') {
-            console.log('❌ Resource failed to load:', event.target.src);
-        }
-    });
-
-    window.addEventListener('unhandledrejection', (event) => {
-        if (event.reason && event.reason.message && event.reason.message.includes('PDF')) {
-            console.log('❌ PDF loading error:', event.reason);
-            offlineManager.showMessage('❌ Gagal memuat PDF', 'error');
-        }
-    });
-
-    // ✅ EXPORT FOR DEBUGGING
-    window.elsaApp = {
-        readingSession,
-        offlineManager,
-        testOfflineCapability,
-        initializeServiceWorker,
-        showUpdateNotification
-    };
-
-    console.log('✅ ELSA App JavaScript loaded successfully');
+// ==================== MAIN INITIALIZATION ====================
+function initializeApp() {
+    console.log('🚀 Starting ELSA PWA initialization...');
     
-    // ✅ FUNGSI BARU: Test offline capability dengan retry
-async function testOfflineCapabilityWithRetry(maxRetries = 5, delay = 1000) {
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        console.log(`🔄 Offline test attempt ${attempt}/${maxRetries}...`);
-        
-        const results = await testOfflineCapability();
-        const availableCount = Object.values(results).filter(Boolean).length;
-        
-        if (availableCount >= 3) { // Minimal 3/4 resource cached
-            console.log(`✅ Offline capability sufficient: ${availableCount}/4`);
-            return results;
-        }
-        
-        if (attempt < maxRetries) {
-            console.log(`⏳ Retrying in ${delay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-        }
-    }
+    // Setup basic functionality
+    setupNavigation();
+    setupPDFNavigation();
+    setupFileUpload();
+    setupPWAInstall();
+    setupGreeting();
+    setupServiceWorkerMessages();
     
-    console.log('❌ Offline capability insufficient after all retries');
-    return null;
+    // Initialize Book Manager
+    bookManager = new BookManager();
+    
+    // Setup layout
+    ensureNavbarPosition();
+    adjustCardSizes();
+    
+    // Initialize Service Worker
+    initializeServiceWorker().then(registration => {
+        if (registration) {
+            // Test offline capability dengan retry mechanism
+            setTimeout(() => {
+                testOfflineCapabilityWithRetry().then(results => {
+                    if (results) {
+                        const availableCount = Object.values(results).filter(Boolean).length;
+                        console.log(`🎉 Final offline capability: ${availableCount}/4`);
+                        
+                        // Tampilkan hasil di UI
+                        updateOfflineCapabilityDisplay(availableCount, 4);
+                    }
+                });
+            }, 3000);
+        }
+    }).catch(error => {
+        console.error('❌ Initialization failed:', error);
+    });
 }
+
+// ==================== EVENT LISTENERS ====================
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+// Handle resize and scroll events
+window.addEventListener('resize', () => {
+    adjustCardSizes();
+    ensureNavbarPosition();
+});
+
+window.addEventListener('scroll', ensureNavbarPosition);
+
+// Online/offline detection
+function checkOnlineStatus() {
+    if (!navigator.onLine) {
+        console.log('📴 Aplikasi sedang offline');
+    }
+}
+
+window.addEventListener('online', checkOnlineStatus);
+window.addEventListener('offline', checkOnlineStatus);
+checkOnlineStatus();
+
+// ==================== ERROR HANDLING ====================
+window.addEventListener('error', (event) => {
+    if (event.target.tagName === 'IMG' || event.target.tagName === 'SCRIPT') {
+        console.log('❌ Resource failed to load:', event.target.src);
+    }
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    if (event.reason && event.reason.message && event.reason.message.includes('PDF')) {
+        console.log('❌ PDF loading error:', event.reason);
+        offlineManager.showMessage('❌ Gagal memuat PDF', 'error');
+    }
+});
+
+// ==================== EXPORT FOR DEBUGGING ====================
+window.elsaApp = {
+    readingSession,
+    offlineManager,
+    bookManager,
+    testOfflineCapability,
+    initializeServiceWorker,
+    showUpdateNotification,
+    bukaPDF,
+    bacaPDFUpload
+};
+
+console.log('✅ ELSA App JavaScript loaded successfully');
     
 </script>
 </body>
