@@ -1,0 +1,27 @@
+{
+  "kelas-10": {
+    "title": "Kelas 10",
+    "books": [
+      {
+        "id": "matematika-10",
+        "title": "Matematika Kelas 10",
+        "filename": "matematika.pdf",
+        "cover": "cover-matematika.jpg", 
+        "size": "2.1 MB",
+        "downloadUrl": "https://raw.githubusercontent.com/shadowWD117/Shadow_Portofolio/main/buku/kelas-10/matematika.pdf",
+        "subject": "Matematika",
+        "description": "Buku matematika kelas 10 semester 1"
+      },
+      {
+        "id": "fisika-10", 
+        "title": "Fisika Kelas 10",
+        "filename": "fisika.pdf",
+        "cover": "cover-fisika.jpg",
+        "size": "3.5 MB",
+        "downloadUrl": "https://raw.githubusercontent.com/shadowWD117/Shadow_Portofolio/main/buku/kelas-10/fisika.pdf",
+        "subject": "Fisika",
+        "description": "Buku fisika kelas 10"
+      }
+    ]
+  }
+}
