@@ -2,7 +2,7 @@
    ELSA PWA Service Worker v3.5 - FIXED VERSION
    ============================ */
 
-const APP_VERSION = 'v1-demo2-book-feature';
+const APP_VERSION = 'v1-book-feature';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
 const STATIC_CACHE = `static-${APP_VERSION}`;
 const PDF_CACHE = `pdf-cache-${APP_VERSION}`;
@@ -30,7 +30,8 @@ const urlsToCache = [
   './icons/icon-96x96.png',
   './icons/icon-192x192.png', 
   './icons/icon-512x512.png',
-  './icons/icons.svg'
+  './icons/icons.svg',
+  './books-metadata.json'
 ];
 
 // IndexedDB helper
