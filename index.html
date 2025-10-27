@@ -35,11 +35,11 @@ html, body {
 body { 
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     line-height: 1.6;
-    color: #000000;
-    background-color: #ffffff;
+    background-color: transparent;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     min-height: 100vh;
+    color: #ffffff;
 }
 
 /* WRAPPER UTAMA */
@@ -47,7 +47,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background-color: #ffffff;
+    background-color: #262626;
     padding-top: 80px; /* Space untuk sticky header */
     padding-bottom: 80px; /* Space untuk sticky navbar */
     width: 100%;
@@ -65,7 +65,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
-    background-color: #007bff;
+    background-color: #444444;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     z-index: 1000;
     border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -75,40 +75,54 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex: 1;
+    min-width: 0; /* Untuk mencegah overflow */
 }
 
 .app-logo img {
     height: 28px;
     width: auto;
     vertical-align: middle;
+    flex-shrink: 0;
 }
 
 .app-title {
     display: flex;
     flex-direction: column;
     line-height: 1;
+    min-width: 0; /* Untuk mencegah overflow */
+    overflow: hidden;
 }
 
 .app-title h1 {
-    font-size: 1.2rem;
+    font-size: clamp(1rem, 4vw, 1.2rem);
     margin: 0;
     color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .app-title p {
-    font-size: 0.8rem;
+    font-size: clamp(0.7rem, 3vw, 0.8rem);
     color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .header-icons {
     display: flex;
-    gap: 15px;
+    flex-shrink: 0;
 }
 
 .header-icons a {
     color: #ffffff;
     font-size: 1.3rem;
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* STICKY NAVBAR */
@@ -117,13 +131,13 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: #ffffff;
+    background-color: #444444;
     display: flex;
     justify-content: space-around;
     padding: 12px 0;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
     z-index: 1000;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid rgba(255,255,255,0.1);
 }
 
 .nav-item {
@@ -136,6 +150,8 @@ body {
     border-radius: 8px;
     transition: all 0.2s;
     min-width: 60px;
+    flex: 1;
+    max-width: 100px;
 }
 
 .nav-item.active {
@@ -147,6 +163,11 @@ body {
     font-size: 0.75rem;
     margin-top: 4px;
     font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 /* CONTENT SECTIONS */
@@ -155,18 +176,19 @@ body {
     width: 100%;
     max-width: 100%;
     overflow: hidden;
+    padding: 0 15px;
 }
 
 .content-section.active {
     display: block;
-    padding: 0 15px;
+    animation: fadeIn 0.3s ease-out;
 }
 
 /* MOTO, GREETING, DAN SLIDER */
 .app-moto {
     text-align: center;
     font-style: italic;
-    font-size: 0.9rem;
+    font-size: clamp(0.8rem, 3vw, 0.9rem);
     color: #6c757d;
     margin-bottom: 25px;
     padding: 0 10px;
@@ -174,7 +196,7 @@ body {
 
 #greetingName {
     text-align: center;
-    font-size: 1.5rem;
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
     font-weight: 600;
     color: #007bff;
     margin-bottom: 15px;
@@ -193,7 +215,7 @@ body {
     position: relative;
     white-space: nowrap;
     margin: 0 10px;
-    background-color: #007bff;
+    background-color: transparent;
     border-radius: 12px;
     padding: 15px 0;
     width: calc(100% - 20px);
@@ -221,7 +243,7 @@ body {
 }
 
 .card-item {
-    background: #4a9cff;
+    background: #111111;
     padding: 15px;
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -236,6 +258,7 @@ body {
     align-items: center;
     justify-content: center;
     border: none;
+    color: #ffffff;
 }
 
 .card-item:active {
@@ -248,12 +271,16 @@ body {
     color: #ffffff;
     font-size: 1rem;
     line-height: 1.2;
+    word-break: break-word;
+    text-align: center;
 }
 
 .card-item p {
     color: rgba(255, 255, 255, 0.9);
     font-size: 0.8rem;
     line-height: 1.3;
+    word-break: break-word;
+    text-align: center;
 }
 
 .card-item .icon-wrapper {
@@ -264,8 +291,8 @@ body {
 
 /* SECTION TITLE */
 .section-title {
-    color: #000000;
-    font-size: 1.1rem;
+    color: #fff;
+    font-size: clamp(1rem, 4vw, 1.1rem);
     font-weight: bold;
     margin-bottom: 15px;
     text-align: left;
@@ -294,6 +321,7 @@ body {
     scrollbar-width: none;
     width: 100%;
     max-width: 100%;
+    scroll-behavior: smooth;
 }
 
 .card-row::-webkit-scrollbar {
@@ -301,7 +329,7 @@ body {
 }
 
 .card-row .card-item {
-    background: #4a9cff;
+    background: #111111;
     padding: 12px;
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -334,7 +362,7 @@ body {
 
 .alat-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
     margin: 20px 0;
     padding: 0 5px;
@@ -350,45 +378,43 @@ body {
 
 /* UPLOAD SECTION */
 .upload-section {
-    background-color: #ffffff;
+    background-color: #111111;
     padding: 20px;
-    border: 1px solid #e0e0e0;
     border-radius: 12px;
     margin: 20px 0;
     text-align: left;
-    width: calc(100% - 10px);
-    margin-left: 5px;
-    margin-right: 5px;
+    width: 100%;
 }
 
 .upload-section h2 {
     margin-bottom: 10px;
-    color: #000000;
-    font-size: 1.2rem;
+    color: #535C91;
+    font-size: clamp(1rem, 4vw, 1.2rem);
 }
 
 .upload-section p {
-    color: #000000;
-    font-size: 0.9rem;
+    color: #9290C3;
+    font-size: clamp(0.8rem, 3vw, 0.9rem);
     margin-bottom: 15px;
 }
 
 .custom-file-input {
     display: flex;
     align-items: center;
-    border: 1px solid #dee2e6;
     border-radius: 8px;
     margin-bottom: 15px;
     background-color: #f8f9fa;
     width: 100%;
+    overflow: hidden;
 }
 
 .custom-file-input label {
-    background-color: #007bff;
+    background-color: #262626;
     color: white;
     padding: 10px 15px;
     border-radius: 8px 0 0 8px;
     cursor: pointer;
+    border-right: 1px solid #111111;
     transition: background-color 0.2s;
     font-size: 0.9rem;
     white-space: nowrap;
@@ -396,17 +422,19 @@ body {
 }
 
 .custom-file-input label:active {
-    background-color: #0056b3;
+    background-color: #444444;
 }
 
 .custom-file-input #selectedFileName {
     flex-grow: 1;
     padding: 10px 15px;
     color: #6c757d;
+    background-color: #262626;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     font-size: 0.9rem;
+    min-width: 0;
 }
 
 input[type="file"] {
@@ -417,7 +445,7 @@ input[type="file"] {
     display: block;
     width: 100%;
     padding: 12px;
-    background: #007bff;
+    background: #262626;
     color: white;
     border: none;
     border-radius: 8px;
@@ -445,6 +473,9 @@ input[type="file"] {
     background-color: #28a745;
     border-radius: 8px;
     font-size: 0.9rem;
+    color: white;
+    border: none;
+    cursor: pointer;
 }
 
 #installButton:active {
@@ -463,6 +494,7 @@ input[type="file"] {
     z-index: 2000;
     align-items: center;
     justify-content: center;
+    padding: 20px;
 }
 
 .modal-content {
@@ -474,7 +506,7 @@ input[type="file"] {
     width: 400px;
     text-align: center;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    margin: 20px;
+    margin: 0 auto;
 }
 
 .modal-buttons {
@@ -482,6 +514,7 @@ input[type="file"] {
     justify-content: center;
     gap: 10px;
     margin-top: 20px;
+    flex-wrap: wrap;
 }
 
 .modal-btn {
@@ -492,6 +525,7 @@ input[type="file"] {
     font-size: 0.95rem;
     transition: background-color 0.2s;
     flex: 1;
+    min-width: 120px;
 }
 
 .modal-btn.primary {
@@ -540,10 +574,13 @@ input[type="file"] {
     margin-right: 15px;
     text-decoration: none;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #top-bar #file-name-display {
-    font-size: 1.1rem;
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
     font-weight: bold;
     white-space: nowrap;
     overflow: hidden;
@@ -567,6 +604,7 @@ input[type="file"] {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     border-radius: 4px;
     max-width: 100%;
+    height: auto;
 }
 
 .loading {
@@ -591,12 +629,16 @@ input[type="file"] {
     padding: 15px 10px;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
     z-index: 10;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .control-group {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .control-group button {
@@ -674,7 +716,8 @@ input[type="file"] {
     z-index: 2000;
     display: none;
     font-family: Arial, sans-serif;
-    max-width: 300px;
+    max-width: min(300px, calc(100vw - 30px));
+    word-break: break-word;
 }
 
 #update-notification button {
@@ -723,11 +766,11 @@ input[type="file"] {
     }
     
     .app-title h1 {
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
     
     .app-title p {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
     
     .mobile-navbar {
@@ -773,6 +816,14 @@ input[type="file"] {
     .alat-grid {
         grid-template-columns: 1fr;
         gap: 12px;
+    }
+    
+    .modal-content {
+        padding: 20px 15px;
+    }
+    
+    .modal-btn {
+        min-width: 100px;
     }
 }
 
@@ -832,10 +883,6 @@ input[type="file"] {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.content-section.active {
-    animation: fadeIn 0.3s ease-out;
-}
-
 /* SCROLL BEHAVIOR */
 html {
     scroll-behavior: smooth;
@@ -866,7 +913,175 @@ a:focus,
     .slider-wrapper {
         animation: none;
     }
+    
+    html {
+        scroll-behavior: auto;
+    }
 }
+
+/* IMPROVEMENTS FOR BETTER LAYOUT */
+.container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0 15px;
+    margin: 0 auto;
+}
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.grid-responsive {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+/* IMPROVED RESPONSIVE TYPOGRAPHY */
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
+}
+
+p, span, a {
+    line-height: 1.4;
+}
+
+/* TOUCH-FRIENDLY TARGET SIZES */
+@media (max-width: 768px) {
+    button, 
+    .btn, 
+    .nav-item, 
+    .card-item {
+        min-height: 44px;
+    }
+    
+    .header-icons a {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}
+
+/* DARK MODE SUPPORT */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+    
+    #main-content {
+        background-color: #262626;
+    }
+    
+    .app-header, .mobile-navbar {
+        background-color: #333333;
+    }
+    
+    .card-item, .upload-section {
+        background-color: #1a1a1a;
+    }
+}
+
+/* Book specific styles */
+.book-cover {
+  width: 80px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.btn-download, .btn-read {
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.btn-download {
+  background: #007bff;
+  color: white;
+}
+
+.btn-read {
+  background: #28a745;
+  color: white;
+}
+
+.file-size {
+  font-size: 0.7rem;
+  color: #6c757d;
+  margin: 4px 0;
+}
+
+/* Book specific styles */
+.book-cover {
+  width: 80px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 2px solid #ddd;
+}
+
+.btn-download, .btn-read {
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.btn-download {
+  background: #007bff;
+  color: white;
+}
+
+.btn-download:active {
+  background: #0056b3;
+}
+
+.btn-read {
+  background: #28a745;
+  color: white;
+}
+
+.btn-read:active {
+  background: #1e7e34;
+}
+
+.file-size {
+  font-size: 0.7rem;
+  color: #6c757d;
+  margin: 4px 0;
+}
+
+.download-progress {
+  margin-top: 8px;
+  font-size: 0.7rem;
+  color: #007bff;
+}
+
+</style>
 </style>
 </head>
 <body>
@@ -890,7 +1105,7 @@ a:focus,
         <main>
             <!-- HOME SECTION -->
             <div id="home-section" class="content-section active">
-                <p class="app-moto">"Aplikasi belajar yang membawamu selangkah lebih dekat ke masa depan"</p>
+                <p class="app-moto">"Lorem Ipsum"</p>
 
                 <h2 id="greetingName">Halo!</h2>
 
@@ -1013,102 +1228,30 @@ a:focus,
             </div>
             
             <!-- BUKU SECTION -->
-            <div id="buku-section" class="content-section">
-                <h2 class="section-title">Kelas 10</h2>
-                <section class="card-row">
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/buku1.pdf')">
-                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                        <h3>Fisika</h3>
-                        <p>Kelas 10</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-math"></span></div>
-                        <h3>Matematika</h3>
-                        <p>Kelas 10</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                        <h3>Biologi</h3>
-                        <p>Kelas 10</p>
-                    </div>
-                </section>
-                
-                <h2 class="section-title">Kelas 11 IPA</h2>
-                <section class="card-row">
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                        <h3>Fisika</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-math"></span></div>
-                        <h3>Matematika</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                        <h3>Biologi</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                </section>
-                
-                <h2 class="section-title">Kelas 11 IPS</h2>
-                <section class="card-row">
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                        <h3>Fisika</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-math"></span></div>
-                        <h3>Matematika</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                        <h3>Biologi</h3>
-                        <p>Kelas 11</p>
-                    </div>
-                </section>
-                
-                <h2 class="section-title">Kelas 12 IPA</h2>
-                <section class="card-row">
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                        <h3>Fisika</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-math"></span></div>
-                        <h3>Matematika</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                        <h3>Biologi</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                </section>
-                
-                <h2 class="section-title">Kelas 12 IPS</h2>
-                <section class="card-row">
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/fisika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-chem"></span></div>
-                        <h3>Fisika</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/matematika.pdf')">
-                        <div class="icon-wrapper"><span class="icon-math"></span></div>
-                        <h3>Matematika</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                    <div class="card-item" onclick="bukaPDF('buku/kelas-10/biologi.pdf')">
-                        <div class="icon-wrapper"><span class="icon-bio"></span></div>
-                        <h3>Biologi</h3>
-                        <p>Kelas 12</p>
-                    </div>
-                </section>
-            </div>
+<!-- BUKU SECTION -->
+<div id="buku-section" class="content-section">
+  <h2 class="section-title">Kelas 10</h2>
+  <section class="card-row" id="kelas-10-books">
+    <!-- Dynamic content dari JavaScript -->
+    <div class="card-item">
+      <div class="loading-text">Memuat daftar buku...</div>
+    </div>
+  </section>
+  
+  <h2 class="section-title">Kelas 11 IPA</h2>
+  <section class="card-row" id="kelas-11-ipa-books">
+    <div class="card-item">
+      <div class="loading-text">Memuat daftar buku...</div>
+    </div>
+  </section>
+  
+  <h2 class="section-title">Kelas 11 IPS</h2>
+  <section class="card-row" id="kelas-11-ips-books">
+    <div class="card-item">
+      <div class="loading-text">Memuat daftar buku...</div>
+    </div>
+  </section>
+</div>
             
             <!-- ALAT SECTION -->
             <div id="alat-section" class="content-section">
@@ -1343,6 +1486,211 @@ a:focus,
     
     <script src="pdfjs/pdf.js"></script>
 <script>
+    
+    // ==================== BOOK MANAGER ====================
+class BookManager {
+  constructor() {
+    this.booksMetadata = {};
+    this.init();
+  }
+
+  async init() {
+    console.log('📚 Initializing Book Manager...');
+    await this.loadBooksMetadata();
+    this.renderAllBooks();
+  }
+
+  async loadBooksMetadata() {
+    try {
+      const response = await fetch('./data/books-metadata.json');
+      this.booksMetadata = await response.json();
+      console.log('✅ Metadata loaded:', this.booksMetadata);
+    } catch (error) {
+      console.error('❌ Failed to load metadata:', error);
+      // Fallback metadata
+      this.booksMetadata = {
+        "kelas-10": {
+          "title": "Kelas 10", 
+          "books": []
+        }
+      };
+    }
+  }
+
+  async renderAllBooks() {
+    for (const [classId, classData] of Object.entries(this.booksMetadata)) {
+      await this.renderClassBooks(classId, classData);
+    }
+  }
+
+  async renderClassBooks(classId, classData) {
+    const container = document.getElementById(`${classId}-books`);
+    if (!container) {
+      console.log(`Container not found: ${classId}-books`);
+      return;
+    }
+
+    container.innerHTML = '';
+
+    if (classData.books.length === 0) {
+      container.innerHTML = `
+        <div class="card-item">
+          <div class="icon-wrapper">📚</div>
+          <h3>Belum ada buku</h3>
+          <p>Buku akan segera tersedia</p>
+        </div>
+      `;
+      return;
+    }
+
+    for (const book of classData.books) {
+      const bookElement = await this.createBookElement(book, classId);
+      container.appendChild(bookElement);
+    }
+  }
+
+  async createBookElement(book, classId) {
+    const div = document.createElement('div');
+    div.className = 'card-item';
+    div.setAttribute('data-book-id', book.id);
+    
+    const isDownloaded = await this.isBookDownloaded(book);
+    
+    if (isDownloaded) {
+      // Book is downloaded - show cover and read button
+      div.innerHTML = `
+        <img src="${book.coverUrl || './buku/kelas-10/cover-placeholder.jpg'}" 
+             alt="${book.title}" 
+             class="book-cover"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+        <div class="icon-wrapper" style="display: none">📖</div>
+        <h3>${book.title}</h3>
+        <p>${book.subject}</p>
+        <button class="btn-read" onclick="bookManager.openBook('${book.id}')">
+          📖 Baca
+        </button>
+      `;
+    } else {
+      // Book not downloaded - show download button
+      div.innerHTML = `
+        <div class="icon-wrapper">📚</div>
+        <h3>${book.title}</h3>
+        <p>${book.subject}</p>
+        <p class="file-size">${book.size}</p>
+        <button class="btn-download" onclick="bookManager.downloadBook('${classId}', '${book.id}')">
+          📥 Download
+        </button>
+        <div class="download-progress" id="progress-${book.id}" style="display: none;"></div>
+      `;
+    }
+    
+    return div;
+  }
+
+  async isBookDownloaded(book) {
+    try {
+      // Simple check - try to access the file
+      const response = await fetch(book.downloadUrl, { method: 'HEAD' });
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async downloadBook(classId, bookId) {
+    const book = this.findBook(classId, bookId);
+    if (!book) {
+      alert('Buku tidak ditemukan!');
+      return;
+    }
+
+    const button = document.querySelector(`[data-book-id="${bookId}"] .btn-download`);
+    const progress = document.getElementById(`progress-${bookId}`);
+    
+    if (button) {
+      button.textContent = '⏳ Downloading...';
+      button.disabled = true;
+    }
+    if (progress) {
+      progress.style.display = 'block';
+      progress.textContent = 'Memulai download...';
+    }
+
+    try {
+      console.log(`📥 Downloading: ${book.downloadUrl}`);
+      
+      const response = await fetch(book.downloadUrl);
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      // For now, we'll just mark it as downloaded
+      // In future, we can implement proper caching
+      
+      if (progress) {
+        progress.textContent = '✅ Download berhasil!';
+      }
+      
+      // Refresh display after 1 second
+      setTimeout(() => {
+        this.refreshBookDisplay(bookId);
+      }, 1000);
+      
+    } catch (error) {
+      console.error('❌ Download failed:', error);
+      if (button) {
+        button.textContent = '❌ Gagal - Coba Lagi';
+        button.disabled = false;
+      }
+      if (progress) {
+        progress.textContent = '❌ Download gagal';
+      }
+    }
+  }
+
+  async openBook(bookId) {
+    const book = this.findBookById(bookId);
+    if (!book) {
+      alert('Buku tidak ditemukan!');
+      return;
+    }
+
+    // Use your existing PDF viewer
+    bukaPDF(book.downloadUrl);
+  }
+
+  // Helper functions
+  findBook(classId, bookId) {
+    const classData = this.booksMetadata[classId];
+    return classData?.books.find(b => b.id === bookId);
+  }
+
+  findBookById(bookId) {
+    for (const [classId, classData] of Object.entries(this.booksMetadata)) {
+      const book = classData.books.find(b => b.id === bookId);
+      if (book) {
+        book.classId = classId;
+        return book;
+      }
+    }
+    return null;
+  }
+
+  async refreshBookDisplay(bookId) {
+    const book = this.findBookById(bookId);
+    if (!book) return;
+
+    const classId = book.classId;
+    const classData = this.booksMetadata[classId];
+    await this.renderClassBooks(classId, classData);
+  }
+}
+
+// Initialize Book Manager when page loads
+let bookManager;
+document.addEventListener('DOMContentLoaded', function() {
+  bookManager = new BookManager();
+});
+    
     // NAVIGATION FUNCTIONALITY
     document.addEventListener('DOMContentLoaded', function() {
         const navItems = document.querySelectorAll('.nav-item');
