@@ -7,7 +7,7 @@
         "title": "Matematika Kelas 10",
         "filename": "matematika.pdf",
         "size": "2.1 MB",
-        "downloadUrl": "https://raw.githubusercontent.com/shadowWD117/ELSA/main/buku/kelas-10/matematika.pdf",
+        "downloadUrl": "./buku/kelas-10/matematika.pdf",
         "subject": "Matematika",
         "description": "Buku matematika kelas 10"
       },
@@ -16,10 +16,18 @@
         "title": "Fisika Kelas 10", 
         "filename": "fisika.pdf",
         "size": "1.8 MB",
-        "downloadUrl": "https://raw.githubusercontent.com/shadowWD117/ELSA/main/buku/kelas-10/fisika.pdf",
+        "downloadUrl": "./buku/kelas-10/fisika.pdf",
         "subject": "Fisika",
         "description": "Buku fisika kelas 10"
       }
     ]
+  },
+  "kelas-11-ipa": {
+    "title": "Kelas 11 IPA",
+    "books": []
+  },
+  "kelas-11-ips": {
+    "title": "Kelas 11 IPS", 
+    "books": []
   }
 }
