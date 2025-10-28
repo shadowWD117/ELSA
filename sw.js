@@ -1,13 +1,13 @@
 /* ============================
-   ELSA PWA Service Worker v3.5 - FIXED VERSION
+   ELSA PWA Service Worker v4.0 - OPTIMIZED FOR BOOK FEATURE
    ============================ */
 
-const APP_VERSION = 'v1-book-feature';
+const APP_VERSION = 'v1-book-feature-final';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
 const STATIC_CACHE = `static-${APP_VERSION}`;
 const PDF_CACHE = `pdf-cache-${APP_VERSION}`;
-const MAX_STATIC_ITEMS = 50;
-const MAX_PDF_ITEMS = 20;
+const MAX_STATIC_ITEMS = 100; // Increased for books
+const MAX_PDF_ITEMS = 50; // Increased for book storage
 
 const urlsToCache = [
   './',
@@ -430,13 +430,13 @@ self.addEventListener('install', event => {
   })());
 });
 
-// ✅ IMPROVED: Message handler dengan lebih banyak opsi
+// ✅ IMPROVED: Message handler dengan lebih banyak opsi - FIXED VERSION
 self.addEventListener('message', event => {
   const { type, data } = event.data || {};
   
   if (!type) return;
 
-  console.log('📨 SW: Received message:', type);
+  console.log('📨 SW: Received message:', type, data);
 
   switch (type) {
     case 'SKIP_WAITING':
@@ -468,12 +468,42 @@ self.addEventListener('message', event => {
       });
       break;
       
+    case 'CACHE_BOOK_PDF':
+      console.log('📚 SW: Caching book PDF:', data?.url);
+      event.waitUntil(
+        cacheBookPDF(data.url, data.content)
+          .then(success => {
+            if (event.ports && event.ports[0]) {
+              event.ports[0].postMessage({
+                type: 'BOOK_CACHE_RESULT',
+                success: success,
+                url: data.url
+              });
+            }
+          })
+      );
+      break;
+      
+    case 'GET_CACHED_BOOKS':
+      console.log('📚 SW: Getting cached books list');
+      event.waitUntil(
+        getCachedBooks().then(books => {
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage({
+              type: 'CACHED_BOOKS_LIST',
+              books: books
+            });
+          }
+        })
+      );
+      break;
+      
     default:
       console.log('📨 SW: Unknown message type:', type);
   }
 });
 
-// ✅ IMPROVED: Fetch event handler dengan routing yang lebih clean
+// ✅ IMPROVED: Fetch event handler dengan routing yang lebih clean - FIXED FOR BOOKS
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
@@ -488,13 +518,14 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Route requests berdasarkan type
+  // Route requests berdasarkan type - FIXED: Include book paths
   const router = {
     isFileHandler: url.search.includes('file-handler') || url.pathname.includes('/file-handler'),
     isProtocol: url.protocol === 'web+elsa:' || url.search.includes('web+elsa'),
-    isPDF: url.pathname.endsWith('.pdf'),
+    isPDF: url.pathname.endsWith('.pdf') || url.pathname.includes('/buku/'),
     isNavigation: request.mode === 'navigate',
-    isShareTarget: url.pathname.includes('/share-target.html')
+    isShareTarget: url.pathname.includes('/share-target.html'),
+    isBookMetadata: url.pathname.endsWith('books-metadata.json')
   };
 
   try {
@@ -502,7 +533,7 @@ self.addEventListener('fetch', event => {
       event.respondWith(handleFileHandlerRequest(event));
     } else if (router.isProtocol) {
       event.respondWith(handleProtocolRequest(event));
-    } else if (router.isPDF) {
+    } else if (router.isPDF || router.isBookMetadata) {
       event.respondWith(handlePDFRequest(event));
     } else if (router.isNavigation) {
       event.respondWith(handleNavigationRequest(event));
@@ -517,9 +548,10 @@ self.addEventListener('fetch', event => {
   }
 });
 
-// ✅ IMPROVED: PDF handler dengan stale-while-revalidate
+// ✅ IMPROVED: PDF handler dengan stale-while-revalidate - FIXED FOR BOOKS
 async function handlePDFRequest(event) {
   const { request } = event;
+  const url = new URL(request.url);
   const fileName = getFileNameFromUrl(request.url);
 
   try {
@@ -835,18 +867,17 @@ self.addEventListener('sync', event => {
   }
 });
 
-// ✅ IMPROVED: File handler (tetap sama, sudah baik)
+// ✅ IMPROVED: File handler 
 async function handleFileHandlerRequest(event) {
-  // ... (implementation tetap sama seperti sebelumnya)
   return handleGenericHandler(event, 'file-handler', 'File Handler');
 }
 
-// ✅ IMPROVED: Protocol handler (tetap sama, sudah baik)  
+// ✅ IMPROVED: Protocol handler  
 async function handleProtocolRequest(event) {
-  // ... (implementation tetap sama seperti sebelumnya)
+  return handleGenericHandler(event, 'protocol-handler', 'Protocol Handler');
 }
 
-// ✅ IMPROVED: Share target handler (tetap sama, sudah baik)
+// ✅ IMPROVED: Share target handler
 async function handleShareTargetRequest(event) {
   return handleGenericHandler(event, 'share-target', 'Share Target');
 }
@@ -971,7 +1002,7 @@ self.addEventListener('activate', event => {
       const cacheNames = await caches.keys();
       await Promise.all(
         cacheNames.map(name => {
-          if (name !== STATIC_CACHE && name !== PDF_CACHE) {
+          if (name !== STATIC_CACHE && name !== PDF_CACHE && name.includes('elsa-pwa')) {
             console.log('🗑️ Deleting old cache:', name);
             return caches.delete(name);
           }
@@ -1008,4 +1039,67 @@ function getFileNameFromUrl(url) {
   }
 }
 
+// ✅ FIXED: Book caching functions - IMPROVED VERSION
+async function cacheBookPDF(url, content) {
+  try {
+    const pdfCache = await caches.open(PDF_CACHE);
+    
+    // Create response dengan proper headers
+    const response = new Response(content, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Length': content.byteLength.toString(),
+        'X-Cached-At': Date.now().toString(),
+        'X-Book-Type': 'downloaded',
+        'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
+      }
+    });
+    
+    await pdfCache.put(url, response);
+    console.log('✅ Book PDF cached:', url);
+    
+    // Update cache size limits
+    await CacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS);
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Book caching failed:', error);
+    return false;
+  }
+}
+
+// ✅ FIXED: Get cached books function
+async function getCachedBooks() {
+  try {
+    const pdfCache = await caches.open(PDF_CACHE);
+    const requests = await pdfCache.keys();
+    const books = [];
+    
+    for (const request of requests) {
+      const response = await pdfCache.match(request);
+      if (response) {
+        const cachedAt = response.headers.get('X-Cached-At');
+        const bookType = response.headers.get('X-Book-Type');
+        
+        // Include both downloaded books and regular PDFs
+        if (!bookType || bookType === 'downloaded') {
+          books.push({
+            url: request.url,
+            cachedAt: cachedAt ? parseInt(cachedAt) : Date.now(),
+            filename: getFileNameFromUrl(request.url),
+            type: bookType || 'regular'
+          });
+        }
+      }
+    }
+    
+    console.log(`📚 Found ${books.length} cached books`);
+    return books;
+  } catch (error) {
+    console.error('Error getting cached books:', error);
+    return [];
+  }
+}
+
 console.log(`✅ ELSA Service Worker ${APP_VERSION} loaded successfully`);
+
