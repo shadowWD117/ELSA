@@ -1,13 +1,13 @@
 /* ============================
-   ELSA PWA Service Worker v4.0 - OPTIMIZED FOR BOOK FEATURE
+   ELSA PWA Service Worker v5.0 - ENHANCED BOOK MANAGEMENT
    ============================ */
 
-const APP_VERSION = 'v1-book-feature-final';
+const APP_VERSION = 'v2-book-management-finalV1';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
 const STATIC_CACHE = `static-${APP_VERSION}`;
 const PDF_CACHE = `pdf-cache-${APP_VERSION}`;
-const MAX_STATIC_ITEMS = 100; // Increased for books
-const MAX_PDF_ITEMS = 50; // Increased for book storage
+const MAX_STATIC_ITEMS = 100;
+const MAX_PDF_ITEMS = 50;
 
 const urlsToCache = [
   './',
@@ -31,118 +31,338 @@ const urlsToCache = [
   './icons/icon-192x192.png', 
   './icons/icon-512x512.png',
   './icons/icons.svg',
-  './books-metadata.json'
+  './data/books-metadata.json'
 ];
 
-// IndexedDB helper
-const DB_NAME = 'elsa-sw-db';
-const DB_VERSION = 1;
-const STORE_MAP = {
-  userData: 'userData',
-  pdfProgress: 'pdfProgress',
-  pendingPDFHistory: 'pendingPDFHistory',
-  pendingUserActivity: 'pendingUserActivity',
-  failedRequests: 'failedRequests'
+// ==================== STORAGE MANAGEMENT ====================
+const STORAGE_KEYS = {
+  LOCKED_BOOKS: 'elsa-locked-books',
+  BOOK_PREFERENCES: 'elsa-book-preferences',
+  READING_HISTORY: 'pendingPDFHistory'
 };
 
-// ✅ FIXED: Proper Promise wrapper dengan error handling yang lebih baik
-function openDB() {
-  return new Promise((resolve, reject) => {
-    if (!('indexedDB' in self)) {
-      reject(new Error('IndexedDB not supported'));
-      return;
+// ==================== ENHANCED CACHE MANAGER ====================
+class EnhancedCacheManager {
+  static async getLockedBookUrls(lockedBookIds) {
+    try {
+        const booksMetadata = await this.getBooksMetadata();
+        const lockedUrls = [];
+        
+        if (!booksMetadata || typeof booksMetadata !== 'object') {
+            console.warn('No books metadata available');
+            return lockedUrls;
+        }
+        
+        for (const classData of Object.values(booksMetadata)) {
+            if (classData && classData.books) {
+                for (const book of classData.books) {
+                    if (lockedBookIds.includes(book.id) && book.downloadUrl) {
+                        lockedUrls.push(book.downloadUrl);
+                    }
+                }
+            }
+        }
+        return lockedUrls;
+    } catch (error) {
+        console.warn('Failed to get locked book URLs:', error);
+        return [];
     }
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      for (const store of Object.values(STORE_MAP)) {
-        if (!db.objectStoreNames.contains(store)) {
-          db.createObjectStore(store, { keyPath: 'id' });
+}
+
+// Tambahkan di EnhancedCacheManager di sw.js
+static async getLockedBooks() {
+  try {
+    const lockedBooks = await this.getFromStorage(STORAGE_KEYS.LOCKED_BOOKS);
+    return Array.isArray(lockedBooks) ? lockedBooks : [];
+  } catch (error) {
+    console.warn('Failed to get locked books:', error);
+    return [];
+  }
+}
+
+  static async getFromStorage(key) {
+    return new Promise((resolve) => {
+      // Try to get from clients first
+      self.clients.matchAll().then(clients => {
+        if (clients.length > 0) {
+          const channel = new MessageChannel();
+          channel.port1.onmessage = (event) => {
+            if (event.data.type === 'STORAGE_RESPONSE') {
+              resolve(event.data.value);
+            }
+          };
+          
+          clients[0].postMessage({
+            type: 'GET_STORAGE',
+            key: key
+          }, [channel.port2]);
+        } else {
+          // Fallback to default value
+          resolve(this.getDefaultValue(key));
+        }
+      }).catch(() => {
+        resolve(this.getDefaultValue(key));
+      });
+    });
+  }
+
+  static getDefaultValue(key) {
+    const defaults = {
+      [STORAGE_KEYS.LOCKED_BOOKS]: [],
+      [STORAGE_KEYS.BOOK_PREFERENCES]: {},
+      [STORAGE_KEYS.READING_HISTORY]: []
+    };
+    return defaults[key] || null;
+  }
+
+  static async limitCacheSize(cacheName, maxItems, strategy = 'auto_manage') {
+    try {
+      const cache = await caches.open(cacheName);
+      const keys = await cache.keys();
+      
+      if (strategy === 'keep_all_books') {
+        console.log('🛡️ Cache protection active - keeping all books');
+        return { deleted: 0, kept: keys.length };
+      }
+      
+      if (keys.length > maxItems) {
+        const lockedBooks = await this.getLockedBooks();
+        const cleanupResult = await this.safeCacheCleanup(cacheName, maxItems, lockedBooks);
+        console.log(`📊 Cache ${cacheName} limited: ${keys.length} → ${cleanupResult.kept}`);
+        return cleanupResult;
+      }
+      
+      return { deleted: 0, kept: keys.length };
+    } catch (error) {
+      console.warn('Error limiting cache:', error);
+      return { deleted: 0, kept: 0 };
+    }
+  }
+
+  static async safeCacheCleanup(cacheName, maxItems, lockedBookIds = []) {
+    try {
+      const cache = await caches.open(cacheName);
+      const keys = await cache.keys();
+      
+      // Get locked book URLs
+      const lockedBookUrls = await this.getLockedBookUrls(lockedBookIds);
+      
+      const unlockedItems = keys.filter(key => !this.isLockedUrl(key.url, lockedBookUrls));
+      const lockedItems = keys.filter(key => this.isLockedUrl(key.url, lockedBookUrls));
+      
+      console.log(`🔒 Locked items: ${lockedItems.length}, Unlocked: ${unlockedItems.length}`);
+      
+      if (unlockedItems.length > maxItems - lockedItems.length) {
+        const itemsToDelete = unlockedItems.slice(0, unlockedItems.length - (maxItems - lockedItems.length));
+        
+        await Promise.all(itemsToDelete.map(key => {
+          console.log(`🗑️ Deleting unlocked item: ${this.getFileNameFromUrl(key.url)}`);
+          return cache.delete(key);
+        }));
+        
+        console.log(`🧹 Deleted ${itemsToDelete.length} unlocked items, kept ${lockedItems.length} locked books`);
+        return { deleted: itemsToDelete.length, kept: lockedItems.length };
+      }
+      
+      return { deleted: 0, kept: keys.length };
+    } catch (error) {
+      console.error('Safe cache cleanup error:', error);
+      return { deleted: 0, kept: 0 };
+    }
+  }
+
+  // DI EnhancedCacheManager - Perbaiki error handling
+static async getLockedBookUrls(lockedBookIds) {
+    try {
+        const booksMetadata = await this.getBooksMetadata();
+        const lockedUrls = [];
+        
+        // ✅ PERBAIKAN: Validasi booksMetadata
+        if (!booksMetadata || typeof booksMetadata !== 'object') {
+            console.warn('No books metadata available for locked URLs');
+            return lockedUrls;
+        }
+        
+        for (const classData of Object.values(booksMetadata)) {
+            if (classData && Array.isArray(classData.books)) {
+                for (const book of classData.books) {
+                    if (book && book.id && lockedBookIds.includes(book.id) && book.downloadUrl) {
+                        lockedUrls.push(book.downloadUrl);
+                    }
+                }
+            }
+        }
+        
+        console.log(`🔒 Found ${lockedUrls.length} locked book URLs`);
+        return lockedUrls;
+    } catch (error) {
+        console.warn('Failed to get locked book URLs:', error);
+        return [];
+    }
+}
+
+  static async getBooksMetadata() {
+    try {
+      const cache = await caches.open(STATIC_CACHE);
+      const response = await cache.match('./data/books-metadata.json');
+      if (response) {
+        return await response.json();
+      }
+    } catch (error) {
+      console.warn('Failed to get books metadata:', error);
+    }
+    return {};
+  }
+
+  static isLockedUrl(url, lockedUrls) {
+    return lockedUrls.some(lockedUrl => {
+      try {
+        const urlObj = new URL(url);
+        const lockedUrlObj = new URL(lockedUrl);
+        return urlObj.pathname === lockedUrlObj.pathname;
+      } catch {
+        return url.includes(lockedUrl);
+      }
+    });
+  }
+
+  static async deleteCachedBook(bookUrl) {
+    try {
+      const pdfCache = await caches.open(PDF_CACHE);
+      const result = await pdfCache.delete(bookUrl);
+      console.log(`🗑️ Book cache deleted: ${this.getFileNameFromUrl(bookUrl)}`, result);
+      
+      // Also try to delete from static cache if it exists there
+      const staticCache = await caches.open(STATIC_CACHE);
+      await staticCache.delete(bookUrl);
+      
+      return result;
+    } catch (error) {
+      console.error('Error deleting cached book:', error);
+      return false;
+    }
+  }
+
+  static async clearAllCaches() {
+    try {
+      const cacheNames = await caches.keys();
+      const deletePromises = cacheNames.map(name => caches.delete(name));
+      await Promise.all(deletePromises);
+      console.log('✅ All caches cleared');
+      
+      // Notify clients
+      const clients = await self.clients.matchAll();
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'CACHE_CLEARED',
+          timestamp: Date.now()
+        });
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Error clearing caches:', error);
+      return false;
+    }
+  }
+
+  static getFileNameFromUrl(url) {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.pathname.split('/').pop() || 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  }
+}
+
+// ==================== BOOK MANAGER INTEGRATION ====================
+class BookManagerIntegration {
+  static async handleBookCache(request, data) {
+    try {
+      console.log('📚 Caching book PDF:', data?.url);
+      
+      const pdfCache = await caches.open(PDF_CACHE);
+      const response = new Response(data.content, {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Length': data.content.byteLength.toString(),
+          'X-Cached-At': Date.now().toString(),
+          'X-Book-Type': 'downloaded',
+          'Cache-Control': 'public, max-age=31536000'
+        }
+      });
+      
+      await pdfCache.put(data.url, response);
+      console.log('✅ Book PDF cached successfully:', data.url);
+      
+      // Limit cache size after adding new book
+      await EnhancedCacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS, 'auto_manage');
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Book caching failed:', error);
+      return false;
+    }
+  }
+
+  static async getCachedBooks() {
+    try {
+      const pdfCache = await caches.open(PDF_CACHE);
+      const requests = await pdfCache.keys();
+      const books = [];
+      
+      for (const request of requests) {
+        try {
+          const response = await pdfCache.match(request);
+          if (response) {
+            const cachedAt = response.headers.get('X-Cached-At');
+            const bookType = response.headers.get('X-Book-Type');
+            
+            books.push({
+              url: request.url,
+              cachedAt: cachedAt ? parseInt(cachedAt) : Date.now(),
+              filename: EnhancedCacheManager.getFileNameFromUrl(request.url),
+              type: bookType || 'regular',
+              size: (await response.clone().arrayBuffer()).byteLength
+            });
+          }
+        } catch (bookError) {
+          console.warn('Error processing book:', bookError);
         }
       }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-    req.onblocked = () => reject(new Error('Database blocked'));
-  });
-}
-
-// ✅ IMPROVED: Generic IDB operations dengan better error handling
-async function idbOperation(storeName, operation, data = null) {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(storeName, operation.includes('read') ? 'readonly' : 'readwrite');
-      const store = tx.objectStore(storeName);
       
-      let req;
-      switch (operation) {
-        case 'getAll':
-          req = store.getAll();
-          break;
-        case 'put':
-          req = store.put(data);
-          break;
-        case 'delete':
-          req = store.delete(data);
-          break;
-        case 'clear':
-          req = store.clear();
-          break;
-        default:
-          reject(new Error(`Unknown operation: ${operation}`));
-          return;
+      console.log(`📚 Found ${books.length} cached books`);
+      return books;
+    } catch (error) {
+      console.error('Error getting cached books:', error);
+      return [];
+    }
+  }
+
+  static async isBookLocked(bookUrl) {
+    try {
+      const lockedBooks = await EnhancedCacheManager.getLockedBooks();
+      const booksMetadata = await EnhancedCacheManager.getBooksMetadata();
+      
+      // Find book ID from URL
+      for (const classData of Object.values(booksMetadata)) {
+        for (const book of classData.books || []) {
+          if (book.downloadUrl === bookUrl && lockedBooks.includes(book.id)) {
+            return true;
+          }
+        }
       }
       
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => reject(req.error);
-      tx.onerror = () => reject(tx.error);
-    });
-  } catch (error) {
-    console.warn(`IDB ${operation} error:`, error);
-    return operation === 'getAll' ? [] : null;
+      return false;
+    } catch (error) {
+      console.warn('Error checking if book is locked:', error);
+      return false;
+    }
   }
 }
 
-// Simplified IDB helpers
-async function idbGetAll(storeName) {
-  return idbOperation(storeName, 'getAll');
-}
-
-async function idbPut(storeName, value) {
-  return idbOperation(storeName, 'put', value);
-}
-
-async function idbDelete(storeName, id) {
-  return idbOperation(storeName, 'delete', id);
-}
-
-async function idbClear(storeName) {
-  return idbOperation(storeName, 'clear');
-}
-
-// ✅ IMPROVED: isOnline() function yang lebih reliable dengan multiple fallbacks
-async function isOnline() {
-  try {
-    // Try HEAD request first
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
-    
-    const response = await fetch(`${self.location.origin}/icons/icon-96x96.png`, {
-      method: 'HEAD',
-      cache: 'no-store',
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    return response && response.ok;
-  } catch (error) {
-    // Fallback to navigator.onLine if available
-    return typeof navigator !== 'undefined' ? navigator.onLine : false;
-  }
-}
-
-// ✅ FIXED: Complete Integrity Checker dengan semua method yang diperlukan
+// ==================== INTEGRITY CHECKER ====================
 class StartupIntegrityChecker {
   constructor() {
     this.checked = false;
@@ -155,7 +375,7 @@ class StartupIntegrityChecker {
   async checkAllCachedAssets() {
     console.log('🎯 CHECKER: Starting integrity check...');
     
-    if (this.checked || !(await isOnline())) {
+    if (this.checked || !(await this.isOnline())) {
       console.log('⏩ CHECKER: Skip - already checked or offline');
       return [];
     }
@@ -213,13 +433,10 @@ class StartupIntegrityChecker {
     return changes;
   }
   
-  // ✅ FIXED: Complete isAssetChanged implementation
   async isAssetChanged(url, cacheName = STATIC_CACHE) {
     try {
-      // Skip external URLs
       if (!url.startsWith(self.location.origin)) return false;
 
-      // Check cache first
       const cache = await caches.open(cacheName);
       const cachedResponse = await cache.match(url);
       
@@ -228,7 +445,6 @@ class StartupIntegrityChecker {
         return true;
       }
 
-      // Try HEAD request for ETag/Last-Modified comparison
       const headResponse = await fetch(url, { 
         method: 'HEAD', 
         cache: 'no-store' 
@@ -241,14 +457,12 @@ class StartupIntegrityChecker {
         const cachedETag = cachedResponse.headers.get('ETag');
         const cachedLastModified = cachedResponse.headers.get('Last-Modified');
 
-        // Compare ETag if available
         if (remoteETag && cachedETag && remoteETag !== cachedETag) {
           console.log(`🔄 CHECKER: ETag changed for ${url}`);
           await this.updateCachedAsset(url, cacheName);
           return true;
         }
 
-        // Compare Last-Modified if available
         if (remoteLastModified && cachedLastModified && remoteLastModified !== cachedLastModified) {
           console.log(`🔄 CHECKER: Last-Modified changed for ${url}`);
           await this.updateCachedAsset(url, cacheName);
@@ -256,7 +470,6 @@ class StartupIntegrityChecker {
         }
       }
 
-      // Fallback to content hash comparison
       const isContentChanged = await this.isContentChanged(url, cachedResponse, cacheName);
       if (isContentChanged) {
         await this.updateCachedAsset(url, cacheName);
@@ -340,51 +553,105 @@ class StartupIntegrityChecker {
       console.error('❌ CHECKER: Error matching clients:', error);
     });
   }
-}
 
-const integrityChecker = new StartupIntegrityChecker();
-
-// ✅ IMPROVED: Cache management dengan better error handling
-class CacheManager {
-  static async limitCacheSize(cacheName, maxItems) {
+  async isOnline() {
     try {
-      const cache = await caches.open(cacheName);
-      const keys = await cache.keys();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
       
-      if (keys.length > maxItems) {
-        const itemsToDelete = keys.slice(0, keys.length - maxItems);
-        await Promise.all(itemsToDelete.map(key => cache.delete(key)));
-        console.log(`📊 Cache ${cacheName} limited: ${keys.length} → ${maxItems}`);
-      }
-    } catch (error) {
-      console.warn('Error limiting cache:', error);
-    }
-  }
-  
-  static async clearAllCaches() {
-    try {
-      const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map(name => caches.delete(name)));
-      console.log('✅ All caches cleared');
-      
-      // Notify clients
-      const clients = await self.clients.matchAll();
-      clients.forEach(client => {
-        client.postMessage({
-          type: 'CACHE_CLEARED',
-          timestamp: Date.now()
-        });
+      const response = await fetch(`${self.location.origin}/icons/icon-96x96.png`, {
+        method: 'HEAD',
+        cache: 'no-store',
+        signal: controller.signal
       });
       
-      return true;
+      clearTimeout(timeoutId);
+      return response && response.ok;
     } catch (error) {
-      console.error('❌ Error clearing caches:', error);
       return false;
     }
   }
 }
 
-// ✅ IMPROVED: Install event dengan better caching strategy
+const integrityChecker = new StartupIntegrityChecker();
+
+// ==================== BACKGROUND SYNC MANAGER ====================
+class BackgroundSyncManager {
+  static async syncPDFHistory() {
+    try {
+      console.log('🔄 Starting PDF history sync...');
+      
+      // Get pending history from storage
+      const pendingHistory = await EnhancedCacheManager.getFromStorage(STORAGE_KEYS.READING_HISTORY);
+      if (!pendingHistory || pendingHistory.length === 0) {
+        console.log('✅ No pending PDF history to sync');
+        return;
+      }
+      
+      console.log(`📚 Syncing ${pendingHistory.length} history items`);
+      const success = await this.sendToServer('/api/history/sync', {
+        type: 'pdf_history',
+        items: pendingHistory
+      });
+      
+      if (success) {
+        // Clear pending history after successful sync
+        await this.clearPendingHistory();
+        console.log('✅ PDF history synced successfully');
+        this.notifySyncSuccess('PDF history');
+      } else {
+        throw new Error('Server rejected sync');
+      }
+      
+    } catch (error) {
+      console.error('❌ PDF history sync failed:', error);
+      throw error;
+    }
+  }
+  
+  static async clearPendingHistory() {
+    // Notify client to clear pending history
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+      client.postMessage({
+        type: 'CLEAR_PENDING_HISTORY',
+        timestamp: Date.now()
+      });
+    });
+  }
+  
+  static async sendToServer(endpoint, data) {
+    try {
+      // Simulate server sync - in real implementation, this would be actual API call
+      console.log('📤 Simulating server sync:', endpoint, data);
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Simulate successful sync 90% of the time
+      return Math.random() > 0.1;
+    } catch (error) {
+      console.error('❌ Server sync error:', error);
+      return false;
+    }
+  }
+  
+  static notifySyncSuccess(type) {
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'SYNC_COMPLETED',
+          syncType: type,
+          timestamp: Date.now()
+        });
+      });
+    });
+  }
+}
+
+// ==================== SERVICE WORKER EVENTS ====================
+
+// Install Event
 self.addEventListener('install', event => {
   console.log(`🟢 [SW ${APP_VERSION}] install - caching critical assets...`);
 
@@ -393,7 +660,6 @@ self.addEventListener('install', event => {
       const cache = await caches.open(STATIC_CACHE);
       const results = [];
 
-      // Cache critical assets dengan prioritas
       for (const url of urlsToCache) {
         try {
           const response = await fetch(url, { 
@@ -425,12 +691,48 @@ self.addEventListener('install', event => {
       
     } catch (error) {
       console.error('❌ Cache installation failed:', error);
-      // Don't fail installation - SW will still work with network
     }
   })());
 });
 
-// ✅ IMPROVED: Message handler dengan lebih banyak opsi - FIXED VERSION
+// Activate Event
+self.addEventListener('activate', event => {
+  console.log(`🟢 [SW ${APP_VERSION}] activating...`);
+  
+  event.waitUntil((async () => {
+    try {
+      // Clean up old caches
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames.map(name => {
+          if (name !== STATIC_CACHE && name !== PDF_CACHE && name.includes('elsa-pwa')) {
+            console.log('🗑️ Deleting old cache:', name);
+            return caches.delete(name);
+          }
+        })
+      );
+
+      // Take control immediately
+      await self.clients.claim();
+      console.log('✅ SW activated and claimed clients');
+
+      // Verify cache health
+      await this.verifyCacheHealth();
+
+      // Run initial integrity check
+      if (await integrityChecker.isOnline()) {
+        setTimeout(() => {
+          integrityChecker.checkAllCachedAssets().catch(console.error);
+        }, 5000);
+      }
+      
+    } catch (error) {
+      console.error('❌ Activation failed:', error);
+    }
+  })());
+});
+
+// Message Event Handler
 self.addEventListener('message', event => {
   const { type, data } = event.data || {};
   
@@ -455,7 +757,7 @@ self.addEventListener('message', event => {
       
     case 'CLEAR_CACHE':
       console.log('🗑️ SW: Clearing cache requested');
-      event.waitUntil(CacheManager.clearAllCaches());
+      event.waitUntil(EnhancedCacheManager.clearAllCaches());
       break;
       
     case 'GET_CACHE_STATUS':
@@ -471,7 +773,7 @@ self.addEventListener('message', event => {
     case 'CACHE_BOOK_PDF':
       console.log('📚 SW: Caching book PDF:', data?.url);
       event.waitUntil(
-        cacheBookPDF(data.url, data.content)
+        BookManagerIntegration.handleBookCache(event.request, data)
           .then(success => {
             if (event.ports && event.ports[0]) {
               event.ports[0].postMessage({
@@ -487,7 +789,7 @@ self.addEventListener('message', event => {
     case 'GET_CACHED_BOOKS':
       console.log('📚 SW: Getting cached books list');
       event.waitUntil(
-        getCachedBooks().then(books => {
+        BookManagerIntegration.getCachedBooks().then(books => {
           if (event.ports && event.ports[0]) {
             event.ports[0].postMessage({
               type: 'CACHED_BOOKS_LIST',
@@ -497,13 +799,42 @@ self.addEventListener('message', event => {
         })
       );
       break;
+
+    case 'DELETE_CACHED_BOOK':
+      console.log('🗑️ SW: Deleting cached book:', data?.url);
+      event.waitUntil(
+        EnhancedCacheManager.deleteCachedBook(data.url).then(success => {
+          if (event.ports && event.ports[0]) {
+            event.ports[0].postMessage({
+              type: 'BOOK_DELETE_RESULT',
+              success: success,
+              url: data.url
+            });
+          }
+        })
+      );
+      break;
+
+    case 'GET_STORAGE':
+      console.log('💾 SW: Getting storage value:', data?.key);
+      // Forward to client for response
+      self.clients.matchAll().then(clients => {
+        if (clients.length > 0 && event.ports && event.ports[0]) {
+          clients[0].postMessage({
+            type: 'GET_STORAGE_FOR_SW',
+            key: data.key,
+            port: event.ports[0]
+          });
+        }
+      });
+      break;
       
     default:
       console.log('📨 SW: Unknown message type:', type);
   }
 });
 
-// ✅ IMPROVED: Fetch event handler dengan routing yang lebih clean - FIXED FOR BOOKS
+// Fetch Event Handler
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
@@ -518,7 +849,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Route requests berdasarkan type - FIXED: Include book paths
+  // Route requests berdasarkan type
   const router = {
     isFileHandler: url.search.includes('file-handler') || url.pathname.includes('/file-handler'),
     isProtocol: url.protocol === 'web+elsa:' || url.search.includes('web+elsa'),
@@ -548,22 +879,30 @@ self.addEventListener('fetch', event => {
   }
 });
 
-// ✅ IMPROVED: PDF handler dengan stale-while-revalidate - FIXED FOR BOOKS
+// PDF Request Handler dengan Lock Protection
 async function handlePDFRequest(event) {
   const { request } = event;
   const url = new URL(request.url);
-  const fileName = getFileNameFromUrl(request.url);
+  const fileName = EnhancedCacheManager.getFileNameFromUrl(request.url);
 
   try {
+    // Check if this is a locked book
+    const isLocked = await BookManagerIntegration.isBookLocked(request.url);
+    if (isLocked) {
+      console.log(`🛡️ Serving locked book: ${fileName}`);
+    }
+
     // Try cache first for immediate response
     const pdfCache = await caches.open(PDF_CACHE);
     const cachedResponse = await pdfCache.match(request);
     
     if (cachedResponse) {
       // Update cache in background (stale-while-revalidate)
-      event.waitUntil(
-        updatePDFCache(request, pdfCache, fileName)
-      );
+      if (!isLocked) { // Only update non-locked books
+        event.waitUntil(
+          updatePDFCache(request, pdfCache, fileName)
+        );
+      }
       return cachedResponse;
     }
 
@@ -572,7 +911,10 @@ async function handlePDFRequest(event) {
     if (networkResponse && networkResponse.ok) {
       // Cache the response for future use
       await pdfCache.put(request, networkResponse.clone());
-      await CacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS);
+      
+      // Limit cache size (respecting locked books)
+      await EnhancedCacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS, 'auto_manage');
+      
       return networkResponse;
     }
 
@@ -584,7 +926,7 @@ async function handlePDFRequest(event) {
       error: 'PDF_UNAVAILABLE',
       message: 'PDF tidak dapat diakses',
       fileName,
-      offline: !(await isOnline())
+      offline: !(await integrityChecker.isOnline())
     }), {
       status: 503,
       headers: { 'Content-Type': 'application/json' }
@@ -604,7 +946,7 @@ async function updatePDFCache(request, cache, fileName) {
   }
 }
 
-// ✅ IMPROVED: Navigation handler dengan network-first strategy
+// Navigation Request Handler
 async function handleNavigationRequest(event) {
   const { request } = event;
   
@@ -635,7 +977,7 @@ async function handleNavigationRequest(event) {
   return getOfflineFallback();
 }
 
-// ✅ IMPROVED: Static assets handler dengan cache-first strategy
+// Static Assets Handler
 async function handleStaticRequest(event) {
   const { request } = event;
   
@@ -653,7 +995,7 @@ async function handleStaticRequest(event) {
       const clone = networkResponse.clone();
       caches.open(STATIC_CACHE)
         .then(cache => cache.put(request, clone))
-        .then(() => CacheManager.limitCacheSize(STATIC_CACHE, MAX_STATIC_ITEMS))
+        .then(() => EnhancedCacheManager.limitCacheSize(STATIC_CACHE, MAX_STATIC_ITEMS, 'auto_manage'))
         .catch(console.warn);
     }
     
@@ -665,224 +1007,19 @@ async function handleStaticRequest(event) {
   }
 }
 
-// ✅ NEW: Unified fallback response handler
-async function handleFallbackResponse(request) {
-  const url = request.url.toLowerCase();
-  
-  // Content-type specific fallbacks
-  if (url.endsWith('.css')) {
-    return new Response('/* CSS unavailable offline */', {
-      status: 200,
-      headers: { 'Content-Type': 'text/css' }
-    });
-  }
-  
-  if (url.endsWith('.js')) {
-    return new Response('// JS unavailable offline', {
-      status: 200,
-      headers: { 'Content-Type': 'application/javascript' }
-    });
-  }
-  
-  if (url.match(/\.(png|jpg|jpeg|gif|svg|ico)$/)) {
-    return new Response(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1"><rect width="1" height="1" fill="transparent"/></svg>',
-      { headers: { 'Content-Type': 'image/svg+xml' } }
-    );
-  }
-  
-  return getOfflineFallback();
-}
-
-// ✅ IMPROVED: Offline fallback dengan proper HTML
-async function getOfflineFallback() {
-  try {
-    const offlinePage = await caches.match('./fallback/offline.html');
-    if (offlinePage) {
-      return offlinePage;
-    }
-  } catch (error) {
-    console.warn('Offline page not available in cache');
-  }
-  
-  // Hardcoded fallback
-  return new Response(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Offline - ELSA</title>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <style>
-        body { 
-          font-family: Arial, sans-serif; 
-          padding: 2rem; 
-          text-align: center; 
-          background: #f0f0f0; 
-          margin: 0;
-        }
-        .container { 
-          max-width: 500px; 
-          margin: 50px auto; 
-          background: white; 
-          padding: 2rem; 
-          border-radius: 8px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        button {
-          padding: 10px 20px;
-          background: #007bff;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>📵 Offline</h1>
-        <p>Aplikasi ELSA membutuhkan koneksi internet untuk halaman ini.</p>
-        <button onclick="location.reload()">Coba Lagi</button>
-      </div>
-    </body>
-    </html>
-  `, {
-    status: 200,
-    headers: { 'Content-Type': 'text/html; charset=utf-8' }
-  });
-}
-
-// ✅ IMPROVED: Real background sync implementation
-class BackgroundSyncManager {
-  static async syncPDFHistory() {
-    try {
-      console.log('🔄 Starting PDF history sync...');
-      
-      const pendingHistory = await idbGetAll(STORE_MAP.pendingPDFHistory);
-      if (pendingHistory.length === 0) {
-        console.log('✅ No pending PDF history to sync');
-        return;
-      }
-      
-      console.log(`📚 Syncing ${pendingHistory.length} history items`);
-      const success = await this.sendToServer('/api/history/sync', {
-        type: 'pdf_history',
-        items: pendingHistory.map(item => item.data)
-      });
-      
-      if (success) {
-        await idbClear(STORE_MAP.pendingPDFHistory);
-        console.log('✅ PDF history synced successfully');
-        this.notifySyncSuccess('PDF history');
-      } else {
-        throw new Error('Server rejected sync');
-      }
-      
-    } catch (error) {
-      console.error('❌ PDF history sync failed:', error);
-      throw error;
-    }
-  }
-  
-  static async syncUserActivity() {
-    try {
-      console.log('🔄 Syncing user activity...');
-      
-      const userActivity = await idbGetAll(STORE_MAP.pendingUserActivity);
-      if (userActivity.length === 0) {
-        console.log('✅ No pending user activity to sync');
-        return;
-      }
-      
-      console.log(`📊 Syncing ${userActivity.length} activity items`);
-      const success = await this.sendToServer('/api/activity/sync', {
-        type: 'user_activity',
-        items: userActivity.map(item => item.data)
-      });
-      
-      if (success) {
-        await idbClear(STORE_MAP.pendingUserActivity);
-        console.log('✅ User activity synced successfully');
-        this.notifySyncSuccess('User activity');
-      } else {
-        throw new Error('Server rejected sync');
-      }
-      
-    } catch (error) {
-      console.error('❌ User activity sync failed:', error);
-      throw error;
-    }
-  }
-  
-  static async sendToServer(endpoint, data) {
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-      });
-      
-      return response && response.ok;
-    } catch (error) {
-      console.error('❌ Server sync error:', error);
-      return false;
-    }
-  }
-  
-  static notifySyncSuccess(type) {
-    self.clients.matchAll().then(clients => {
-      clients.forEach(client => {
-        client.postMessage({
-          type: 'SYNC_COMPLETED',
-          syncType: type,
-          timestamp: Date.now()
-        });
-      });
-    });
-  }
-}
-
-// ✅ IMPROVED: Sync event handler
-self.addEventListener('sync', event => {
-  console.log('🔄 Background Sync triggered:', event.tag);
-  
-  switch (event.tag) {
-    case 'sync-pdf-history':
-      event.waitUntil(BackgroundSyncManager.syncPDFHistory());
-      break;
-      
-    case 'sync-user-activity':
-      event.waitUntil(BackgroundSyncManager.syncUserActivity());
-      break;
-      
-    case 'content-cleanup':
-      event.waitUntil(periodicCleanup());
-      break;
-      
-    default:
-      console.log('Unknown sync tag:', event.tag);
-  }
-});
-
-// ✅ IMPROVED: File handler 
+// Generic Handlers
 async function handleFileHandlerRequest(event) {
   return handleGenericHandler(event, 'file-handler', 'File Handler');
 }
 
-// ✅ IMPROVED: Protocol handler  
 async function handleProtocolRequest(event) {
   return handleGenericHandler(event, 'protocol-handler', 'Protocol Handler');
 }
 
-// ✅ IMPROVED: Share target handler
 async function handleShareTargetRequest(event) {
   return handleGenericHandler(event, 'share-target', 'Share Target');
 }
 
-// ✅ NEW: Generic handler untuk mengurangi duplication
 async function handleGenericHandler(event, type, title) {
   try {
     const cachedResponse = await caches.match(`./${type}.html`);
@@ -952,18 +1089,131 @@ async function handleGenericHandler(event, type, title) {
   }
 }
 
-// ✅ IMPROVED: Periodic cleanup
+// Fallback Response Handler
+async function handleFallbackResponse(request) {
+  const url = request.url.toLowerCase();
+  
+  // Content-type specific fallbacks
+  if (url.endsWith('.css')) {
+    return new Response('/* CSS unavailable offline */', {
+      status: 200,
+      headers: { 'Content-Type': 'text/css' }
+    });
+  }
+  
+  if (url.endsWith('.js')) {
+    return new Response('// JS unavailable offline', {
+      status: 200,
+      headers: { 'Content-Type': 'application/javascript' }
+    });
+  }
+  
+  if (url.match(/\.(png|jpg|jpeg|gif|svg|ico)$/)) {
+    return new Response(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1"><rect width="1" height="1" fill="transparent"/></svg>',
+      { headers: { 'Content-Type': 'image/svg+xml' } }
+    );
+  }
+  
+  return getOfflineFallback();
+}
+
+// Offline Fallback
+async function getOfflineFallback() {
+  try {
+    const offlinePage = await caches.match('./fallback/offline.html');
+    if (offlinePage) {
+      return offlinePage;
+    }
+  } catch (error) {
+    console.warn('Offline page not available in cache');
+  }
+  
+  // Hardcoded fallback
+  return new Response(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Offline - ELSA</title>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+        body { 
+          font-family: Arial, sans-serif; 
+          padding: 2rem; 
+          text-align: center; 
+          background: #f0f0f0; 
+          margin: 0;
+        }
+        .container { 
+          max-width: 500px; 
+          margin: 50px auto; 
+          background: white; 
+          padding: 2rem; 
+          border-radius: 8px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+          padding: 10px 20px;
+          background: #007bff;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h1>📵 Offline</h1>
+        <p>Aplikasi ELSA membutuhkan koneksi internet untuk halaman ini.</p>
+        <button onclick="location.reload()">Coba Lagi</button>
+      </div>
+    </body>
+    </html>
+  `, {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+  });
+}
+
+// Sync Event Handler
+self.addEventListener('sync', event => {
+  console.log('🔄 Background Sync triggered:', event.tag);
+  
+  switch (event.tag) {
+    case 'sync-pdf-history':
+      event.waitUntil(BackgroundSyncManager.syncPDFHistory());
+      break;
+      
+    case 'sync-user-activity':
+      event.waitUntil(BackgroundSyncManager.syncPDFHistory()); // Reuse same logic
+      break;
+      
+    case 'content-cleanup':
+      event.waitUntil(periodicCleanup());
+      break;
+      
+    default:
+      console.log('Unknown sync tag:', event.tag);
+  }
+});
+
+// Periodic Cleanup
 async function periodicCleanup() {
   try {
-    await CacheManager.limitCacheSize(STATIC_CACHE, MAX_STATIC_ITEMS);
-    await CacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS);
-    console.log('🧹 Periodic cleanup completed');
+    const cleanupResults = await Promise.all([
+      EnhancedCacheManager.limitCacheSize(STATIC_CACHE, MAX_STATIC_ITEMS, 'auto_manage'),
+      EnhancedCacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS, 'auto_manage')
+    ]);
+    
+    console.log('🧹 Periodic cleanup completed:', cleanupResults);
   } catch (error) {
     console.error('❌ Cleanup error:', error);
   }
 }
 
-// ✅ IMPROVED: Cache health check
+// Cache Health Check
 async function verifyCacheHealth() {
   try {
     const cache = await caches.open(STATIC_CACHE);
@@ -992,114 +1242,4 @@ async function verifyCacheHealth() {
   }
 }
 
-// ✅ IMPROVED: Activate event
-self.addEventListener('activate', event => {
-  console.log(`🟢 [SW ${APP_VERSION}] activating...`);
-  
-  event.waitUntil((async () => {
-    try {
-      // Clean up old caches
-      const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map(name => {
-          if (name !== STATIC_CACHE && name !== PDF_CACHE && name.includes('elsa-pwa')) {
-            console.log('🗑️ Deleting old cache:', name);
-            return caches.delete(name);
-          }
-        })
-      );
-
-      // Take control immediately
-      await self.clients.claim();
-      console.log('✅ SW activated and claimed clients');
-
-      // Verify cache health
-      await verifyCacheHealth();
-
-      // Run initial integrity check
-      if (await isOnline()) {
-        setTimeout(() => {
-          integrityChecker.checkAllCachedAssets().catch(console.error);
-        }, 5000);
-      }
-      
-    } catch (error) {
-      console.error('❌ Activation failed:', error);
-    }
-  })());
-});
-
-// Helper functions
-function getFileNameFromUrl(url) {
-  try {
-    const urlObj = new URL(url);
-    return urlObj.pathname.split('/').pop() || 'unknown';
-  } catch {
-    return 'unknown';
-  }
-}
-
-// ✅ FIXED: Book caching functions - IMPROVED VERSION
-async function cacheBookPDF(url, content) {
-  try {
-    const pdfCache = await caches.open(PDF_CACHE);
-    
-    // Create response dengan proper headers
-    const response = new Response(content, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Length': content.byteLength.toString(),
-        'X-Cached-At': Date.now().toString(),
-        'X-Book-Type': 'downloaded',
-        'Cache-Control': 'public, max-age=31536000' // Cache for 1 year
-      }
-    });
-    
-    await pdfCache.put(url, response);
-    console.log('✅ Book PDF cached:', url);
-    
-    // Update cache size limits
-    await CacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS);
-    
-    return true;
-  } catch (error) {
-    console.error('❌ Book caching failed:', error);
-    return false;
-  }
-}
-
-// ✅ FIXED: Get cached books function
-async function getCachedBooks() {
-  try {
-    const pdfCache = await caches.open(PDF_CACHE);
-    const requests = await pdfCache.keys();
-    const books = [];
-    
-    for (const request of requests) {
-      const response = await pdfCache.match(request);
-      if (response) {
-        const cachedAt = response.headers.get('X-Cached-At');
-        const bookType = response.headers.get('X-Book-Type');
-        
-        // Include both downloaded books and regular PDFs
-        if (!bookType || bookType === 'downloaded') {
-          books.push({
-            url: request.url,
-            cachedAt: cachedAt ? parseInt(cachedAt) : Date.now(),
-            filename: getFileNameFromUrl(request.url),
-            type: bookType || 'regular'
-          });
-        }
-      }
-    }
-    
-    console.log(`📚 Found ${books.length} cached books`);
-    return books;
-  } catch (error) {
-    console.error('Error getting cached books:', error);
-    return [];
-  }
-}
-
-console.log(`✅ ELSA Service Worker ${APP_VERSION} loaded successfully`);
-
+console.log(`✅ ELSA Enhanced Service Worker ${APP_VERSION} loaded successfully`);
