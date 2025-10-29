@@ -10,24 +10,15 @@
         "downloadUrl": "./buku/kelas-10/matematika.pdf",
         "subject": "Matematika",
         "description": "Buku matematika kelas 10"
-      },
-      {
-        "id": "fisika-10",
-        "title": "Fisika Kelas 10", 
-        "filename": "fisika.pdf",
-        "size": "1.8 MB",
-        "downloadUrl": "./buku/kelas-10/fisika.pdf",
-        "subject": "Fisika",
-        "description": "Buku fisika kelas 10"
       }
     ]
   },
   "kelas-11-ipa": {
-    "title": "Kelas 11 IPA",
+    "title": "Kelas 11 IPA", 
     "books": []
   },
   "kelas-11-ips": {
-    "title": "Kelas 11 IPS", 
+    "title": "Kelas 11 IPS",
     "books": []
   }
 }
