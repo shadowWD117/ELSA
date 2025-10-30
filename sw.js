@@ -2,7 +2,7 @@
    ELSA PWA Service Worker v5.1 - ROBUST STATE
    ============================ */
 
-const APP_VERSION = 'v2-book-management-finalV1';
+const APP_VERSION = 'v2-book-management-final-update-testing';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
 const STATIC_CACHE = `static-${APP_VERSION}`;
 const PDF_CACHE = `pdf-cache-${APP_VERSION}`;
