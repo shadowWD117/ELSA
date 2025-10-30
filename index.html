@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="id">
-<!-- GANTI di head -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ELSA: Education Learning Smart App</title>
-    <meta name="theme-color" content="#2F3BA2"> <!-- ✅ SESUAI MANIFEST -->
+    <meta name="theme-color" content="#2F3BA2">
     <meta name="description" content="Aplikasi PWA sederhana untuk membaca PDF dan alat belajar">
     
-    <!-- ✅ PERBAIKI: Gunakan absolute path untuk GitHub Pages -->
+    <!-- Path Manifest dan Ikon -->
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/png" href="./icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
     
-    <!-- ✅ TAMBAHKAN meta tags untuk iOS -->
+    <!-- Meta tags iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ELSA">
@@ -578,6 +577,9 @@ input[type="file"] {
     display: flex;
     align-items: center;
     justify-content: center;
+    background: none; /* Pastikan ini adalah tombol */
+    border: none;
+    cursor: pointer;
 }
 
 #top-bar #file-name-display {
@@ -656,20 +658,21 @@ input[type="file"] {
     min-width: 50px;
 }
 
-
-
 .control-group button:active {
     background-color: rgba(255, 255, 255, 0.2);
     transform: scale(0.95);
 }
 
+/* PERBAIKAN: Menghapus CSS duplikat */
 
-
-.control-group button:active {
-    background-color: rgba(255, 255, 255, 0.2);
-    transform: scale(0.95);
+#page-info {
+    padding: 10px 15px;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 0.9rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
 }
-
 
 #page-info:active {
     background-color: rgba(255, 255, 255, 0.3);
@@ -1027,6 +1030,49 @@ p, span, a {
   text-align: center;
 }
 
+/* Gaya untuk tombol buku yang lebih baik */
+.book-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 8px;
+}
+.book-header h3 {
+    margin-bottom: 0;
+    text-align: left;
+    flex-grow: 1;
+    word-break: break-word; /* Memastikan judul panjang terpotong */
+}
+.lock-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    margin-left: 5px;
+    color: white;
+}
+.lock-btn.locked {
+    color: #ffc107; /* Warna kuning untuk terkunci */
+}
+.book-actions {
+    margin-top: 5px;
+    width: 100%;
+}
+.btn-delete {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    width: 100%;
+}
+.btn-delete:active {
+    background: #c82333;
+}
 </style>
 </head>
 <body>
@@ -1034,7 +1080,7 @@ p, span, a {
         <header class="app-header">
             <div class="app-header-left">
                 <span class="app-logo">
-                    <img src="icons/icon-192x192.png" alt="Logo ELSA">
+                    <img src="./icons/icon-192x192.png" alt="Logo ELSA">
                 </span>
                 <div class="app-title">
                     <h1>ELSA</h1>
@@ -1060,96 +1106,54 @@ p, span, a {
                         <div class="slider-wrapper">
                             <div class="card-row-slider">
                                 <a href="alat/kalkulator/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Kalkulator">
-  <use xlink:href="icons/icons.svg#icon-calculator"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Kalkulator"><use xlink:href="./icons/icons.svg#icon-calculator"></use></svg>
                                     <h3>Kalkulator</h3>
                                     <p>multi</p>
                                 </a>
                                 <a href="alat/konversi/suhu/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Waktu">
-  <use xlink:href="icons/icons.svg#icon-time"></use>
-</svg>
-
-                        
-                                        <h3>Konversi</h3>
+                                    <svg class="icon" aria-label="Waktu"><use xlink:href="./icons/icons.svg#icon-time"></use></svg>
+                                    <h3>Konversi</h3>
                                     <p>suhu</p>
                                 </a>
                                 <a href="alat/konversi/berat/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Berat">
-  <use xlink:href="icons/icons.svg#icon-weight"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Berat"><use xlink:href="./icons/icons.svg#icon-weight"></use></svg>
                                     <h3>Konversi</h3>
                                     <p>berat</p>
                                 </a>
                                 <a href="alat/konversi/jarak/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Penggaris">
-  <use xlink:href="icons/icons.svg#icon-rule"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Penggaris"><use xlink:href="./icons/icons.svg#icon-rule"></use></svg>
                                     <h3>Konversi</h3>
                                     <p>jarak</p>
                                 </a>
                                 <a href="alat/periodik/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Lab">
-  <use xlink:href="icons/icons.svg#icon-lab"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Lab"><use xlink:href="./icons/icons.svg#icon-lab"></use></svg>
                                     <h3>periodik</h3>
                                     <p>unsur</p>
                                 </a>
                             </div>
                             <div class="card-row-slider">
                                 <a href="alat/kalkulator/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Kalkulator">
-  <use xlink:href="icons/icons.svg#icon-calculator"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Kalkulator"><use xlink:href="./icons/icons.svg#icon-calculator"></use></svg>
                                     <h3>Kalkulator</h3>
                                     <p>multi</p>
                                 </a>
                                 <a href="alat/konversi/suhu/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Waktu">
-  <use xlink:href="icons/icons.svg#icon-time"></use>
-</svg>
-
-                        
+                                    <svg class="icon" aria-label="Waktu"><use xlink:href="./icons/icons.svg#icon-time"></use></svg>
                                     <h3>Konversi</h3>
                                     <p>suhu</p>
                                 </a>
                                 <a href="alat/konversi/berat/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Berat">
-  <use xlink:href="icons/icons.svg#icon-weight"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Berat"><use xlink:href="./icons/icons.svg#icon-weight"></use></svg>
                                     <h3>Konversi</h3>
                                     <p>berat</p>
                                 </a>
                                 <a href="alat/konversi/jarak/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Penggaris">
-  <use xlink:href="icons/icons.svg#icon-rule"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Penggaris"><use xlink:href="./icons/icons.svg#icon-rule"></use></svg>
                                     <h3>Konversi</h3>
                                     <p>jarak</p>
                                 </a>
                                 <a href="alat/periodik/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Lab">
-  <use xlink:href="icons/icons.svg#icon-lab"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Lab"><use xlink:href="./icons/icons.svg#icon-lab"></use></svg>
                                     <h3>periodik</h3>
                                     <p>unsur</p>
                                 </a>
@@ -1168,35 +1172,35 @@ p, span, a {
                         <span id="selectedFileName">Tidak ada file yang dipilih</span>
                         <input type="file" id="pdfUpload" accept=".pdf">
                     </div>
-                    <button class="btn" onclick="bacaPDFUpload()">Buka PDF</button>
+                    <!-- PERBAIKAN: onclick dihapus. app.js akan menangani ini -->
+                    <button class="btn">Buka PDF</button>
                 </section>
             </div>
             
             <!-- BUKU SECTION -->
-<!-- BUKU SECTION -->
-<div id="buku-section" class="content-section">
-  <h2 class="section-title">Kelas 10</h2>
-  <section class="card-row" id="kelas-10-books">
-    <!-- Dynamic content dari JavaScript -->
-    <div class="card-item">
-      <div class="loading-text">Memuat daftar buku...</div>
-    </div>
-  </section>
-  
-  <h2 class="section-title">Kelas 11 IPA</h2>
-  <section class="card-row" id="kelas-11-ipa-books">
-    <div class="card-item">
-      <div class="loading-text">Memuat daftar buku...</div>
-    </div>
-  </section>
-  
-  <h2 class="section-title">Kelas 11 IPS</h2>
-  <section class="card-row" id="kelas-11-ips-books">
-    <div class="card-item">
-      <div class="loading-text">Memuat daftar buku...</div>
-    </div>
-  </section>
-</div>
+            <div id="buku-section" class="content-section">
+              <h2 class="section-title">Kelas 10</h2>
+              <section class="card-row" id="kelas-10-books">
+                <!-- Dynamic content dari JavaScript -->
+                <div class="card-item">
+                  <div class="loading-text">Memuat daftar buku...</div>
+                </div>
+              </section>
+              
+              <h2 class="section-title">Kelas 11 IPA</h2>
+              <section class="card-row" id="kelas-11-ipa-books">
+                <div class="card-item">
+                  <div class="loading-text">Memuat daftar buku...</div>
+                </div>
+              </section>
+              
+              <h2 class="section-title">Kelas 11 IPS</h2>
+              <section class="card-row" id="kelas-11-ips-books">
+                <div class="card-item">
+                  <div class="loading-text">Memuat daftar buku...</div>
+                </div>
+              </section>
+            </div>
             
             <!-- ALAT SECTION -->
             <div id="alat-section" class="content-section">
@@ -1206,96 +1210,54 @@ p, span, a {
                         <div class="slider-wrapper">
                             <div class="card-row-slider">
                                 <a href="alat/kalkulator/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Kalkulator">
-  <use xlink:href="icons/icons.svg#icon-calculator"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Kalkulator"><use xlink:href="./icons/icons.svg#icon-calculator"></use></svg>
                                     <h3>Kalkulator</h3>
                                     <p>multi</p>
                                 </a>
                                 <a href="alat/konversi/suhu/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Waktu">
-  <use xlink:href="icons/icons.svg#icon-time"></use>
-</svg>
-
-                        
+                                    <svg class="icon" aria-label="Waktu"><use xlink:href="./icons/icons.svg#icon-time"></use></svg>
                                     <h3>Konversi</h3>
                                     <p>suhu</p>
                                 </a>
                                 <a href="alat/konversi/berat/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Berat">
-  <use xlink:href="icons/icons.svg#icon-weight"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Berat"><use xlink:href="./icons/icons.svg#icon-weight"></use></svg>
                                     <h3>Konversi</h3>
                                     <p>berat</p>
                                 </a>
                                 <a href="alat/konversi/jarak/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Penggaris">
-  <use xlink:href="icons/icons.svg#icon-rule"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Penggaris"><use xlink:href="./icons/icons.svg#icon-rule"></use></svg>
                                     <h3>Konversi</h3>
                                     <p>jarak</p>
                                 </a>
                                 <a href="alat/periodik/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Lab">
-  <use xlink:href="icons/icons.svg#icon-lab"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Lab"><use xlink:href="./icons/icons.svg#icon-lab"></use></svg>
                                     <h3>periodik</h3>
                                     <p>unsur</p>
                                 </a>
                             </div>
                             <div class="card-row-slider">
                                 <a href="alat/kalkulator/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Kalkulator">
-  <use xlink:href="icons/icons.svg#icon-calculator"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Kalkulator"><use xlink:href="./icons/icons.svg#icon-calculator"></use></svg>
                                     <h3>Kalkulator</h3>
                                     <p>multi</p>
                                 </a>
                                 <a href="alat/konversi/suhu/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Waktu">
-  <use xlink:href="icons/icons.svg#icon-time"></use>
-</svg>
-
-                        
+                                    <svg class="icon" aria-label="Waktu"><use xlink:href="./icons/icons.svg#icon-time"></use></svg>
                                     <h3>Konversi</h3>
                                     <p>suhu</p>
                                 </a>
                                 <a href="alat/konversi/berat/index.html" class="card-item">
-                                    
-        <svg class="icon" aria-label="Berat">
-  <use xlink:href="icons/icons.svg#icon-weight"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Berat"><use xlink:href="./icons/icons.svg#icon-weight"></use></svg>
                                     <h3>Konversi</h3>
                                     <p>berat</p>
                                 </a>
                                 <a href="alat/konversi/jarak/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Penggaris">
-  <use xlink:href="icons/icons.svg#icon-rule"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Penggaris"><use xlink:href="./icons/icons.svg#icon-rule"></use></svg>
                                     <h3>Konversi</h3>
                                     <p>jarak</p>
                                 </a>
                                 <a href="alat/periodik/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Lab">
-  <use xlink:href="icons/icons.svg#icon-lab"></use>
-</svg>
-                        
+                                    <svg class="icon" aria-label="Lab"><use xlink:href="./icons/icons.svg#icon-lab"></use></svg>
                                     <h3>periodik</h3>
                                     <p>unsur</p>
                                 </a>
@@ -1307,48 +1269,27 @@ p, span, a {
                 <h2 class="section-title">Semua Alat</h2>
                 <div class="alat-grid">
                     <a href="alat/kalkulator/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Kalkulator">
-  <use xlink:href="icons/icons.svg#icon-calculator"></use>
-</svg>
-                        
+                        <svg class="icon" aria-label="Kalkulator"><use xlink:href="./icons/icons.svg#icon-calculator"></use></svg>
                         <h3>Kalkulator</h3>
                         <p>multi</p>
                     </a>
                     <a href="alat/konversi/suhu/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Waktu">
-  <use xlink:href="icons/icons.svg#icon-time"></use>
-</svg>
-
-                        
+                        <svg class="icon" aria-label="Waktu"><use xlink:href="./icons/icons.svg#icon-time"></use></svg>
                         <h3>Konversi</h3>
                         <p>suhu</p>
                     </a>
                     <a href="alat/konversi/berat/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Berat">
-  <use xlink:href="icons/icons.svg#icon-weight"></use>
-</svg>
-                        
+                        <svg class="icon" aria-label="Berat"><use xlink:href="./icons/icons.svg#icon-weight"></use></svg>
                         <h3>Konversi</h3>
                         <p>berat</p>
                     </a>
                     <a href="alat/konversi/jarak/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Penggaris">
-  <use xlink:href="icons/icons.svg#icon-rule"></use>
-</svg>
-                        
+                        <svg class="icon" aria-label="Penggaris"><use xlink:href="./icons/icons.svg#icon-rule"></use></svg>
                         <h3>Konversi</h3>
                         <p>jarak</p>
                     </a>
                     <a href="alat/periodik/index.html" class="card-item">
-                        
-        <svg class="icon" aria-label="Lab">
-  <use xlink:href="icons/icons.svg#icon-lab"></use>
-</svg>
-                        
+                        <svg class="icon" aria-label="Lab"><use xlink:href="./icons/icons.svg#icon-lab"></use></svg>
                         <h3>periodik</h3>
                         <p>unsur</p>
                     </a>
@@ -1360,27 +1301,15 @@ p, span, a {
         <!-- MOBILE NAVBAR -->
         <nav class="mobile-navbar">
             <a href="#" class="nav-item active" data-target="home-section">
-        
-        <svg class="icon" aria-label="Rumah">
-  <use xlink:href="icons/icons.svg#icon-home"></use>
-</svg>
-        
+                <svg class="icon" aria-label="Rumah"><use xlink:href="./icons/icons.svg#icon-home"></use></svg>
                 <span>Home</span>
             </a>
             <a href="#" class="nav-item" data-target="buku-section">
-                
-        <svg class="icon" aria-label="Buku">
-  <use xlink:href="icons/icons.svg#icon-book"></use>
-</svg>
-                
+                <svg class="icon" aria-label="Buku"><use xlink:href="./icons/icons.svg#icon-book"></use></svg>
                 <span>Buku</span>
             </a>
             <a href="#" class="nav-item" data-target="alat-section">
-                
-        <svg class="icon" aria-label="Alat">
-  <use xlink:href="icons/icons.svg#icon-tools"></use>
-</svg>
-                
+                <svg class="icon" aria-label="Alat"><use xlink:href="./icons/icons.svg#icon-tools"></use></svg>
                 <span>Alat</span>
             </a>
         </nav>
@@ -1392,17 +1321,20 @@ p, span, a {
                 <h2>Install Aplikasi</h2>
                 <p>Install aplikasi PDF Reader untuk pengalaman yang lebih baik dan akses offline.</p>
                 <div class="modal-buttons">
-                    <button class="modal-btn primary" onclick="installApp()">Install</button>
-                    <button class="modal-btn secondary" onclick="sembunyikanModal()">Nanti</button>
+                    <!-- PERBAIKAN: onclick dihapus. app.js akan menangani ini -->
+                    <button class="modal-btn primary">Install</button>
+                    <button class="modal-btn secondary">Nanti</button>
                 </div>
             </div>
         </div>
         
-    </div>
+    </div> <!-- Penutup #main-content -->
     
+    <!-- PDF VIEWER -->
     <div id="pdf-viewer">
         <header id="top-bar">
-            <button class="back-btn" onclick="sembunyikanPDFViewer()">←</button>
+            <!-- PERBAIKAN: onclick dihapus. app.js akan menangani ini -->
+            <button class="back-btn">←</button>
             <span id="file-name-display"></span>
         </header>
 
@@ -1429,1601 +1361,15 @@ p, span, a {
         </div>
     </div>
     
+    <!--
+      PERBAIKAN:
+      - Menghapus semua JavaScript inline.
+      - Memuat pdf.js terlebih dahulu.
+      - Memuat app.js (eksternal) dengan 'defer' agar dieksekusi setelah DOM siap.
+      - app.js (yang Anda buat) akan menangani semua event click.
+    -->
     <script src="pdfjs/pdf.js"></script>
-    <script>
-// ==================== GLOBAL VARIABLES ====================
-let pdfDoc = null;
-let pageNum = 1;
-let pageIsRendering = false;
-let pageNumIsPending = null;
-let deferredPrompt = null;
-let bookManager = null;
+    <script src="app.js" defer></script>
 
-// DOM Elements
-let canvas, ctx, loading, pageInfo, pageInput, fileNameDisplay, mainContent, pdfViewer;
-
-// ==================== CACHE STRATEGIES ====================
-const CACHE_STRATEGIES = {
-    AUTO_MANAGE: 'auto_manage',
-    KEEP_ALL_BOOKS: 'keep_all_books',
-    KEEP_FAVORITES: 'keep_favorites',
-    BY_LAST_READ: 'by_last_read'
-};
-
-// ==================== PDF.JS LOADER ====================
-async function loadPDFJS() {
-    if (typeof pdfjsLib !== 'undefined') {
-        console.log('✅ PDF.js already loaded');
-        return;
-    }
-    
-    return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = './pdfjs/pdf.js';
-        script.onload = () => {
-            console.log('✅ PDF.js loaded successfully');
-            if (typeof pdfjsLib !== 'undefined') {
-                pdfjsLib.GlobalWorkerOptions.workerSrc = './pdfjs/pdf.worker.js';
-                console.log('✅ PDF.js worker configured');
-            }
-            resolve();
-        };
-        script.onerror = () => {
-            console.error('❌ Failed to load PDF.js');
-            reject(new Error('Failed to load PDF.js'));
-        };
-        document.head.appendChild(script);
-    });
-}
-
-// ==================== BOOK LOCK MANAGER ====================
-class BookLockManager {
-    constructor() {
-        this.lockedBooks = new Set(this.loadLockedBooks());
-    }
-
-    loadLockedBooks() {
-        try {
-            return JSON.parse(localStorage.getItem('elsa-locked-books') || '[]');
-        } catch (error) {
-            console.error('Error loading locked books:', error);
-            return [];
-        }
-    }
-
-    saveLockedBooks() {
-        try {
-            localStorage.setItem('elsa-locked-books', JSON.stringify([...this.lockedBooks]));
-        } catch (error) {
-            console.error('Error saving locked books:', error);
-        }
-    }
-
-    lockBook(bookId) {
-        this.lockedBooks.add(bookId);
-        this.saveLockedBooks();
-        console.log(`🔒 Book locked: ${bookId}`);
-        return true;
-    }
-
-    unlockBook(bookId) {
-        const result = this.lockedBooks.delete(bookId);
-        this.saveLockedBooks();
-        if (result) {
-            console.log(`🔓 Book unlocked: ${bookId}`);
-        }
-        return result;
-    }
-
-    isBookLocked(bookId) {
-        return this.lockedBooks.has(bookId);
-    }
-
-    getLockedBooks() {
-        return [...this.lockedBooks];
-    }
-
-    clearAllLocks() {
-        this.lockedBooks.clear();
-        this.saveLockedBooks();
-        console.log('🧹 All book locks cleared');
-    }
-}
-
-// ==================== ENHANCED CACHE MANAGER ====================
-class EnhancedCacheManager {
-    static async limitCacheSize(cacheName, maxItems, strategy = 'auto_manage') {
-        try {
-            const cache = await caches.open(cacheName);
-            const keys = await cache.keys();
-            
-            if (strategy === CACHE_STRATEGIES.KEEP_ALL_BOOKS) {
-                console.log('🛡️ Cache protection active - keeping all books');
-                return { deleted: 0, kept: keys.length };
-            }
-            
-            if (keys.length > maxItems) {
-                const itemsToKeep = await this.getItemsToKeep(keys, strategy, maxItems);
-                const itemsToDelete = keys.filter(key => !itemsToKeep.includes(key.url || key));
-                
-                await Promise.all(itemsToDelete.map(key => cache.delete(key)));
-                console.log(`📊 Cache ${cacheName} limited: ${keys.length} → ${itemsToKeep.length}`);
-                return { deleted: itemsToDelete.length, kept: itemsToKeep.length };
-            }
-            
-            return { deleted: 0, kept: keys.length };
-        } catch (error) {
-            console.warn('Error limiting cache:', error);
-            return { deleted: 0, kept: 0 };
-        }
-    }
-
-    static async getItemsToKeep(keys, strategy, maxItems) {
-        switch (strategy) {
-            case CACHE_STRATEGIES.KEEP_ALL_BOOKS:
-                return keys;
-                
-            case CACHE_STRATEGIES.KEEP_FAVORITES:
-                return await this.prioritizeFavorites(keys, maxItems);
-                
-            case CACHE_STRATEGIES.BY_LAST_READ:
-                return await this.prioritizeLastRead(keys, maxItems);
-                
-            default: // AUTO_MANAGE
-                return keys.slice(-maxItems);
-        }
-    }
-    
-    static async prioritizeFavorites(keys, maxItems) {
-        // Implementation for favorite prioritization
-        return keys.slice(-maxItems);
-    }
-    
-    static async prioritizeLastRead(keys, maxItems) {
-        // Implementation for last-read prioritization  
-        return keys.slice(-maxItems);
-    }
-
-    static async safeCacheCleanup(cacheName, maxItems, lockedBookUrls = []) {
-        try {
-            const cache = await caches.open(cacheName);
-            const keys = await cache.keys();
-            
-            const unlockedItems = keys.filter(key => !this.isLockedUrl(key.url, lockedBookUrls));
-            const lockedItems = keys.filter(key => this.isLockedUrl(key.url, lockedBookUrls));
-            
-            if (unlockedItems.length > maxItems - lockedItems.length) {
-                const itemsToDelete = unlockedItems.slice(0, unlockedItems.length - (maxItems - lockedItems.length));
-                await Promise.all(itemsToDelete.map(key => cache.delete(key)));
-                console.log(`🧹 Deleted ${itemsToDelete.length} unlocked items, kept ${lockedItems.length} locked books`);
-                return { deleted: itemsToDelete.length, kept: lockedItems.length };
-            }
-            
-            return { deleted: 0, kept: keys.length };
-        } catch (error) {
-            console.error('Safe cache cleanup error:', error);
-            return { deleted: 0, kept: 0 };
-        }
-    }
-
-    static isLockedUrl(url, lockedUrls) {
-        return lockedUrls.some(lockedUrl => url.includes(lockedUrl));
-    }
-
-    static async deleteCachedBook(bookUrl) {
-        try {
-            const pdfCache = await caches.open('pdf-cache-v1-book-feature');
-            const result = await pdfCache.delete(bookUrl);
-            console.log(`🗑️ Book cache deleted: ${bookUrl}`, result);
-            return result;
-        } catch (error) {
-            console.error('Error deleting cached book:', error);
-            return false;
-        }
-    }
-}
-
-// ==================== ENHANCED BOOK MANAGER ====================
-// ==================== ENHANCED BOOK MANAGER ====================
-class EnhancedBookManager {
-    constructor() {
-        this.booksMetadata = {};
-        this.basePath = './buku';
-        this.cachedBooks = new Map();
-        this.lockManager = new BookLockManager();
-        this.userPreferences = this.loadUserPreferences();
-        this.init();
-    }
-
-    async init() {
-        console.log('📚 Initializing Enhanced Book Manager...');
-        try {
-            await this.loadBooksMetadata();
-            
-            // ✅ VALIDASI: Pastikan metadata berhasil dimuat
-            if (!this.booksMetadata || Object.keys(this.booksMetadata).length === 0) {
-                throw new Error('Books metadata is empty or failed to load');
-            }
-            
-            console.log('✅ Metadata validation passed:', Object.keys(this.booksMetadata));
-            
-            await this.loadCachedBooks();
-            this.renderAllBooks();
-            this.setupStorageManagement();
-            
-            console.log('✅ Book Manager initialized successfully');
-        } catch (error) {
-            console.error('❌ Book Manager init failed:', error);
-            this.showErrorState();
-        }
-    }
-
-    // ... method lainnya tetap sama
-
-    loadUserPreferences() {
-        try {
-            return JSON.parse(localStorage.getItem('elsa-book-preferences') || '{}');
-        } catch (error) {
-            console.error('Error loading preferences:', error);
-            return {};
-        }
-    }
-
-    saveUserPreferences() {
-        try {
-            localStorage.setItem('elsa-book-preferences', JSON.stringify(this.userPreferences));
-        } catch (error) {
-            console.error('Error saving preferences:', error);
-        }
-    }
-
-    setPreference(key, value) {
-        this.userPreferences[key] = value;
-        this.saveUserPreferences();
-        return true;
-    }
-
-    getPreference(key, defaultValue = null) {
-        return this.userPreferences[key] !== undefined ? this.userPreferences[key] : defaultValue;
-    }
-
-// DI loadBooksMetadata() - PERBAIKI
-async loadBooksMetadata() {
-    try {
-        console.log('📚 Loading books metadata...');
-        // ✅ GUNAKAN PATH ABSOLUT untuk GitHub Pages
-        const response = await fetch('./data/books-metadata.json');
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const metadata = await response.json();
-        this.booksMetadata = metadata;
-        console.log('✅ Metadata loaded successfully');
-        
-    } catch (error) {
-        console.error('❌ Failed to load metadata:', error);
-        // ✅ FALLBACK: Buat metadata default
-        this.booksMetadata = this.getFallbackMetadata();
-    }
-}
-
-    showMetadataError() {
-        const containers = ['kelas-10-books', 'kelas-11-ipa-books', 'kelas-11-ips-books'];
-        containers.forEach(containerId => {
-            const container = document.getElementById(containerId);
-            if (container) {
-                container.innerHTML = `
-                    <div class="card-item">
-                        <div class="icon-wrapper">📚</div>
-                        <h3>Data Buku</h3>
-                        <p>File metadata buku tidak ditemukan</p>
-                        <p style="font-size: 0.7rem; color: #6c757d;">
-                            Pastikan file books-metadata.json ada di folder data
-                        </p>
-                    </div>
-                `;
-            }
-        });
-    }
-
-    async loadCachedBooks() {
-        try {
-            if ('serviceWorker' in navigator) {
-                const registration = await navigator.serviceWorker.ready;
-                
-                return new Promise((resolve) => {
-                    const channel = new MessageChannel();
-                    
-                    channel.port1.onmessage = (event) => {
-                        if (event.data.type === 'CACHED_BOOKS_LIST') {
-                            console.log('📚 Cached books loaded:', event.data.books);
-                            event.data.books.forEach(book => {
-                                this.cachedBooks.set(book.url, book);
-                            });
-                            resolve(event.data.books);
-                        }
-                    };
-                    
-                    registration.active.postMessage({
-                        type: 'GET_CACHED_BOOKS'
-                    }, [channel.port2]);
-                });
-            }
-        } catch (error) {
-            console.warn('Failed to load cached books:', error);
-            return [];
-        }
-    }
-
-// DI downloadAndCacheBook() - PERBAIKI
-async downloadAndCacheBook(classId, bookId) {
-    const book = this.findBook(classId, bookId);
-    if (!book) {
-        this.showMessage('❌ Buku tidak ditemukan!', 'error');
-        return false;
-    }
-
-    console.log('🚀 Starting download:', book.downloadUrl);
-
-    try {
-        // ✅ PERBAIKAN: Handle CORS dan network errors
-        const response = await fetch(book.downloadUrl);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        // ✅ VALIDASI: Pastikan response adalah PDF
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('pdf')) {
-            throw new Error('File bukan format PDF yang valid');
-        }
-        
-        const pdfBlob = await response.blob();
-        const pdfBuffer = await pdfBlob.arrayBuffer();
-        
-        // ✅ LANJUTKAN dengan caching dan rendering
-        await this.cacheBookInSW(book.downloadUrl, pdfBuffer);
-        await bukaPDF(book.downloadUrl);
-        
-        this.showMessage('✅ Buku berhasil diunduh dan dibuka!', 'success');
-        return true;
-        
-    } catch (error) {
-        console.error('❌ Download failed:', error);
-        
-        let errorMessage = 'Download gagal: ';
-        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
-            errorMessage += 'File tidak dapat diakses. Pastikan file PDF tersedia di server.';
-        } else {
-            errorMessage += error.message;
-        }
-        
-        this.showMessage(errorMessage, 'error');
-        return false;
-    }
-}
-
-    async cacheBookInSW(url, pdfBuffer) {
-        return new Promise((resolve, reject) => {
-            if (!('serviceWorker' in navigator)) {
-                resolve(false);
-                return;
-            }
-            
-            navigator.serviceWorker.ready.then(registration => {
-                const channel = new MessageChannel();
-                
-                channel.port1.onmessage = (event) => {
-                    if (event.data.type === 'BOOK_CACHE_RESULT') {
-                        if (event.data.success) {
-                            console.log('✅ Book cached in SW:', url);
-                            this.cachedBooks.set(url, {
-                                url: url,
-                                cachedAt: Date.now()
-                            });
-                            resolve(true);
-                        } else {
-                            reject(new Error('Failed to cache in SW'));
-                        }
-                    }
-                };
-                
-                registration.active.postMessage({
-                    type: 'CACHE_BOOK_PDF',
-                    data: {
-                        url: url,
-                        content: pdfBuffer
-                    }
-                }, [channel.port2]);
-            }).catch(error => {
-                console.error('SW not ready:', error);
-                resolve(false);
-            });
-        });
-    }
-
-    async generateBookCover(pdfUrl, pdfBuffer, bookId) {
-        try {
-            await loadPDFJS();
-            
-            const loadingTask = pdfjsLib.getDocument({ data: pdfBuffer });
-            const pdf = await loadingTask.promise;
-            
-            if (pdf.numPages === 0) {
-                throw new Error('PDF has no pages');
-            }
-            
-            const page = await pdf.getPage(1);
-            const viewport = page.getViewport({ scale: 0.3 });
-            
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            
-            await page.render({
-                canvasContext: context,
-                viewport: viewport
-            }).promise;
-            
-            const coverDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-            localStorage.setItem(`book-cover-${bookId}`, coverDataUrl);
-            
-            console.log('✅ Book cover generated:', bookId);
-            this.updateBookCover(bookId, coverDataUrl);
-            
-        } catch (error) {
-            console.warn('❌ Failed to generate cover:', error);
-        }
-    }
-
-    updateBookCover(bookId, coverDataUrl) {
-        const bookElement = document.querySelector(`[data-book-id="${bookId}"]`);
-        if (bookElement) {
-            const iconWrapper = bookElement.querySelector('.icon-wrapper');
-            if (iconWrapper) {
-                iconWrapper.innerHTML = `<img src="${coverDataUrl}" alt="Cover" style="width: 60px; height: 80px; object-fit: cover; border-radius: 4px;">`;
-            }
-        }
-    }
-
-    updateBookUI(bookId, isCached) {
-        const bookElement = document.querySelector(`[data-book-id="${bookId}"]`);
-        if (bookElement) {
-            const button = bookElement.querySelector('.btn-download');
-            const status = bookElement.querySelector('.book-status');
-            const lockBtn = bookElement.querySelector('.lock-btn');
-            const isLocked = this.lockManager.isBookLocked(bookId);
-            
-            if (button) {
-                button.textContent = isCached ? '📖 Buka Buku' : '📥 Download & Buka';
-                button.className = isCached ? 'btn-read' : 'btn-download';
-            }
-            
-            if (!status && isCached) {
-                const statusEl = document.createElement('div');
-                statusEl.className = 'book-status';
-                statusEl.style.cssText = 'font-size: 0.7rem; color: #28a745; margin-top: 5px;';
-                statusEl.textContent = '✅ Tersimpan offline';
-                bookElement.appendChild(statusEl);
-            } else if (status) {
-                status.textContent = isCached ? '✅ Tersimpan offline' : '';
-            }
-            
-            if (lockBtn) {
-                lockBtn.innerHTML = isLocked ? '🔒' : '🔓';
-                lockBtn.className = `lock-btn ${isLocked ? 'locked' : ''}`;
-            }
-            
-            const savedCover = localStorage.getItem(`book-cover-${bookId}`);
-            if (savedCover) {
-                this.updateBookCover(bookId, savedCover);
-            }
-        }
-    }
-
-    renderAllBooks() {
-        for (const [classId, classData] of Object.entries(this.booksMetadata)) {
-            this.renderClassBooks(classId, classData);
-        }
-    }
-
-    renderClassBooks(classId, classData) {
-        const container = document.getElementById(`${classId}-books`);
-        if (!container) {
-            console.log(`Container not found: ${classId}-books`);
-            return;
-        }
-
-        container.innerHTML = '';
-
-        if (!classData.books || classData.books.length === 0) {
-            container.innerHTML = `
-                <div class="card-item">
-                    <div class="icon-wrapper">📚</div>
-                    <h3>Belum ada buku</h3>
-                    <p>Buku akan segera tersedia</p>
-                </div>
-            `;
-            return;
-        }
-
-        classData.books.forEach(book => {
-            const bookElement = this.createBookElement(book, classId);
-            container.appendChild(bookElement);
-        });
-    }
-
-    createBookElement(book, classId) {
-        const div = document.createElement('div');
-        div.className = 'card-item';
-        div.setAttribute('data-book-id', book.id);
-        
-        const savedCover = localStorage.getItem(`book-cover-${book.id}`);
-        const isCached = this.cachedBooks.has(book.downloadUrl);
-        const isLocked = this.lockManager.isBookLocked(book.id);
-        
-        const coverHtml = savedCover 
-            ? `<img src="${savedCover}" alt="Cover" style="width: 60px; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">`
-            : `<div class="icon-wrapper">📚</div>`;
-        
-        div.innerHTML = `
-            <div class="book-header">
-                <h3>${book.title}</h3>
-                <button class="lock-btn ${isLocked ? 'locked' : ''}" 
-                        onclick="bookManager.toggleBookLock('${book.id}')"
-                        title="${isLocked ? 'Buka kunci buku' : 'Kunci buku'}">
-                    ${isLocked ? '🔒' : '🔓'}
-                </button>
-            </div>
-            ${coverHtml}
-            <p>${book.subject}</p>
-            <p class="file-size">${book.size}</p>
-            <button class="${isCached ? 'btn-read' : 'btn-download'}" 
-                    onclick="bookManager.downloadAndCacheBook('${classId}', '${book.id}')">
-                ${isCached ? '📖 Buka Buku' : '📥 Download & Buka'}
-            </button>
-            ${isCached ? 
-                `<div class="book-actions">
-                    <button class="btn-delete" onclick="bookManager.deleteBook('${classId}', '${book.id}')" title="Hapus buku">
-                        🗑️ Hapus
-                    </button>
-                </div>` : ''
-            }
-            ${isCached ? '<div class="book-status" style="font-size: 0.7rem; color: #28a745; margin-top: 5px;">✅ Tersimpan offline</div>' : ''}
-            ${isLocked ? '<div class="lock-status" style="font-size: 0.7rem; color: #ffc107; margin-top: 3px;">🔒 Terkunci</div>' : ''}
-            <div class="download-progress" id="progress-${book.id}" style="display: none;"></div>
-        `;
-        
-        return div;
-    }
-
-    toggleBookLock(bookId) {
-        if (this.lockManager.isBookLocked(bookId)) {
-            if (this.lockManager.unlockBook(bookId)) {
-                this.showMessage('🔓 Buku dibuka kunci', 'success');
-            }
-        } else {
-            if (this.lockManager.lockBook(bookId)) {
-                this.showMessage('🔒 Buku dikunci - tidak akan terhapus otomatis', 'success');
-            }
-        }
-        this.renderAllBooks();
-    }
-
-    async deleteBook(classId, bookId) {
-        const book = this.findBook(classId, bookId);
-        if (!book) {
-            alert('Buku tidak ditemukan!');
-            return false;
-        }
-
-        const isLocked = this.lockManager.isBookLocked(bookId);
-        if (isLocked) {
-            const confirmUnlock = confirm('Buku ini terkunci. Apakah Anda ingin membuka kunci dan menghapusnya?');
-            if (!confirmUnlock) return false;
-            this.lockManager.unlockBook(bookId);
-        }
-
-        const confirmDelete = confirm(`Apakah Anda yakin ingin menghapus "${book.title}"?`);
-        if (!confirmDelete) return false;
-
-        try {
-            // Hapus dari cache
-            const cacheDeleted = await EnhancedCacheManager.deleteCachedBook(book.downloadUrl);
-            
-            // Hapus dari cached books map
-            this.cachedBooks.delete(book.downloadUrl);
-            
-            // Hapus cover dari localStorage
-            localStorage.removeItem(`book-cover-${bookId}`);
-            
-            if (cacheDeleted) {
-                this.showMessage('🗑️ Buku berhasil dihapus', 'success');
-                this.updateBookUI(bookId, false);
-                return true;
-            } else {
-                throw new Error('Gagal menghapus dari cache');
-            }
-            
-        } catch (error) {
-            console.error('Error deleting book:', error);
-            this.showMessage('❌ Gagal menghapus buku', 'error');
-            return false;
-        }
-    }
-
-    async cleanupAllUnlockedBooks() {
-        const confirmCleanup = confirm('Apakah Anda yakin ingin menghapus semua buku yang tidak terkunci?');
-        if (!confirmCleanup) return false;
-
-        let deletedCount = 0;
-        const lockedBooks = this.lockManager.getLockedBooks();
-
-        for (const [classId, classData] of Object.entries(this.booksMetadata)) {
-            for (const book of classData.books || []) {
-                if (this.cachedBooks.has(book.downloadUrl) && !lockedBooks.includes(book.id)) {
-                    const success = await this.deleteBook(classId, book.id);
-                    if (success) deletedCount++;
-                }
-            }
-        }
-
-        this.showMessage(`🧹 ${deletedCount} buku tidak terkunci berhasil dihapus`, 'success');
-        return deletedCount;
-    }
-
-    showMessage(text, type = 'info') {
-        const messageEl = document.createElement('div');
-        messageEl.style.cssText = `
-            position: fixed;
-            top: 100px;
-            right: 20px;
-            padding: 12px 16px;
-            border-radius: 6px;
-            color: white;
-            z-index: 10000;
-            font-weight: bold;
-            background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        `;
-        messageEl.textContent = text;
-        document.body.appendChild(messageEl);
-        
-        setTimeout(() => {
-            if (messageEl.parentNode) {
-                document.body.removeChild(messageEl);
-            }
-        }, 3000);
-    }
-
-    setupStorageManagement() {
-        // Set default strategy jika belum ada
-        if (!this.getPreference('cache_strategy')) {
-            this.setPreference('cache_strategy', CACHE_STRATEGIES.AUTO_MANAGE);
-        }
-    }
-
-    async estimateStorageUsage() {
-        try {
-            if (!('caches' in window)) {
-                return { totalBooks: 0, totalSize: 0, totalSizeMB: '0' };
-            }
-
-            const pdfCache = await caches.open('pdf-cache-v1-book-feature');
-            const requests = await pdfCache.keys();
-            
-            let totalSize = 0;
-            const sizePromises = requests.map(async (request) => {
-                try {
-                    const response = await pdfCache.match(request);
-                    if (response) {
-                        const content = await response.clone().arrayBuffer();
-                        return content.byteLength;
-                    }
-                } catch (error) {
-                    console.warn('Error calculating book size:', error);
-                }
-                return 0;
-            });
-            
-            const sizes = await Promise.all(sizePromises);
-            totalSize = sizes.reduce((sum, size) => sum + size, 0);
-            
-            return {
-                totalBooks: requests.length,
-                totalSize: totalSize,
-                totalSizeMB: (totalSize / (1024 * 1024)).toFixed(2)
-            };
-        } catch (error) {
-            console.error('Storage estimation failed:', error);
-            return { totalBooks: 0, totalSize: 0, totalSizeMB: '0' };
-        }
-    }
-
-    // Helper functions
-findBook(classId, bookId) {
-    if (!this.booksMetadata || !this.booksMetadata[classId]) {
-        console.warn(`Class ${classId} not found in metadata`);
-        return null;
-    }
-    const classData = this.booksMetadata[classId];
-    return classData.books?.find(b => b.id === bookId) || null;
-}
-
-    getFallbackMetadata() {
-        return {
-            "kelas-10": {
-                "title": "Kelas 10",
-                "books": []
-            },
-            "kelas-11-ipa": {
-                "title": "Kelas 11 IPA", 
-                "books": []
-            },
-            "kelas-11-ips": {
-                "title": "Kelas 11 IPS",
-                "books": []
-            }
-        };
-    }
-
-    showErrorState() {
-        const containers = ['kelas-10-books', 'kelas-11-ipa-books', 'kelas-11-ips-books'];
-        containers.forEach(containerId => {
-            const container = document.getElementById(containerId);
-            if (container) {
-                container.innerHTML = `
-                    <div class="card-item">
-                        <div class="icon-wrapper">⚠️</div>
-                        <h3>Error Load Buku</h3>
-                        <p>Refresh halaman</p>
-                        <button class="btn-download" onclick="location.reload()">🔄 Refresh</button>
-                    </div>
-                `;
-            }
-        });
-    }
-}
-
-// ==================== NAVIGATION FUNCTIONALITY ====================
-function setupNavigation() {
-    const navItems = document.querySelectorAll('.nav-item');
-    
-    navItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            navItems.forEach(nav => nav.classList.remove('active'));
-            this.classList.add('active');
-            
-            const contentSections = document.querySelectorAll('.content-section');
-            contentSections.forEach(section => section.classList.remove('active'));
-            
-            const targetId = this.getAttribute('data-target');
-            const targetSection = document.getElementById(targetId);
-            if (targetSection) {
-                targetSection.classList.add('active');
-            }
-            
-            setTimeout(adjustCardSizes, 100);
-        });
-    });
-}
-
-// ==================== PDF VIEWER FUNCTIONS ====================
-function tampilkanPDFViewer() {
-    if (mainContent && pdfViewer) {
-        mainContent.style.display = 'none';
-        pdfViewer.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-function sembunyikanPDFViewer() {
-    if (mainContent && pdfViewer) {
-        mainContent.style.display = 'block';
-        pdfViewer.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        if (ctx && canvas) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-        pdfDoc = null;
-        pageNum = 1;
-        
-        if (readingSession.currentPDF) {
-            readingSession.scheduleHistorySync();
-        }
-    }
-}
-
-const updatePageInfo = num => {
-    if (!pdfDoc || !pageInfo) return;
-    pageInfo.textContent = `Halaman ${num} dari ${pdfDoc.numPages}`;
-    const prevBtn = document.getElementById("prev");
-    const nextBtn = document.getElementById("next");
-    if (prevBtn) prevBtn.classList.toggle('disabled', pageNum <= 1);
-    if (nextBtn) nextBtn.classList.toggle('disabled', pageNum >= pdfDoc.numPages);
-};
-
-const renderPage = num => {
-    if (!pdfDoc || !canvas || !ctx || !loading) return;
-    
-    pageIsRendering = true;
-    loading.style.display = 'block';
-    canvas.style.display = 'none';
-    
-    pdfDoc.getPage(num).then(page => {
-        const viewerContainer = document.getElementById('viewer-container');
-        if (!viewerContainer) return;
-        
-        let viewport = page.getViewport({ scale: 1.0 });
-        let scale = (viewerContainer.clientWidth - 40) / viewport.width;
-        scale = Math.max(0.5, Math.min(scale, 3.0));
-        
-        const scaledViewport = page.getViewport({ scale });
-        const outputScale = window.devicePixelRatio || 1;
-        
-        canvas.width = Math.floor(scaledViewport.width * outputScale);
-        canvas.height = Math.floor(scaledViewport.height * outputScale);
-        canvas.style.width = Math.floor(scaledViewport.width) + "px";
-        canvas.style.height = Math.floor(scaledViewport.height) + "px";
-        
-        const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
-        
-        const renderCtx = {
-            canvasContext: ctx,
-            viewport: scaledViewport,
-            transform: transform
-        };
-        
-        page.render(renderCtx).promise.then(() => {
-            pageIsRendering = false;
-            loading.style.display = 'none';
-            canvas.style.display = 'block';
-            
-            if (pageNumIsPending !== null) {
-                renderPage(pageNumIsPending);
-                pageNumIsPending = null;
-            }
-        });
-        
-        updatePageInfo(num);
-    }).catch(err => {
-        console.error("Error rendering page:", err);
-        if (loading) {
-            loading.textContent = "Error memuat halaman: " + err.message;
-        }
-    });
-};
-
-const queueRenderPage = num => {
-    if (pageIsRendering) {
-        pageNumIsPending = num;
-    } else {
-        renderPage(num);
-    }
-};
-
-function loadPDF(source) {
-    if (!loading) return;
-    
-    loading.textContent = "Memuat PDF...";
-    tampilkanPDFViewer();
-    
-    let loadingTask;
-    if (typeof source === 'string') {
-        loadingTask = pdfjsLib.getDocument({ url: source });
-        trackPDFView(source.split("/").pop());
-    } else {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(event.target.result) });
-            loadingTask.promise.then(pdf => {
-                pdfDoc = pdf;
-                renderPage(pageNum);
-                trackPDFView(source.name);
-            }).catch(err => {
-                console.error("Error loading PDF from file:", err);
-                if (loading) {
-                    loading.textContent = "Gagal memuat PDF: " + err.message;
-                }
-            });
-        };
-        reader.readAsArrayBuffer(source);
-        return;
-    }
-
-    loadingTask.promise.then(pdf => {
-        pdfDoc = pdf;
-        renderPage(pageNum);
-    }).catch(err => {
-        console.error("Error loading PDF:", err);
-        if (loading) {
-            loading.textContent = "Gagal memuat PDF: " + err.message;
-        }
-    });
-}
-
-// ==================== PDF NAVIGATION EVENT LISTENERS ====================
-function setupPDFNavigation() {
-    const prevBtn = document.getElementById("prev");
-    const nextBtn = document.getElementById("next");
-    
-    if (prevBtn) {
-        prevBtn.addEventListener("click", () => {
-            if (pageNum > 1 && !pageIsRendering) {
-                pageNum--;
-                queueRenderPage(pageNum);
-                readingSession.trackPageTurn();
-            }
-        });
-    }
-    
-    if (nextBtn) {
-        nextBtn.addEventListener("click", () => {
-            if (pdfDoc && pageNum < pdfDoc.numPages && !pageIsRendering) {
-                pageNum++;
-                queueRenderPage(pageNum);
-                readingSession.trackPageTurn();
-            }
-        });
-    }
-
-    if (pageInfo) {
-        pageInfo.addEventListener("click", () => {
-            if (!pageInput) return;
-            pageInfo.style.display = "none";
-            pageInput.style.display = "inline-block";
-            pageInput.value = pageNum;
-            pageInput.focus();
-        });
-    }
-
-    if (pageInput) {
-        pageInput.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                let val = parseInt(pageInput.value, 10);
-                if (isNaN(val) || val < 1 || val > pdfDoc.numPages) {
-                    alert(`Masukkan halaman 1-${pdfDoc.numPages}`);
-                } else {
-                    pageNum = val;
-                    queueRenderPage(pageNum);
-                    readingSession.trackPageTurn();
-                }
-                pageInput.style.display = "none";
-                if (pageInfo) {
-                    pageInfo.style.display = "inline-block";
-                }
-            }
-        });
-    }
-}
-
-// ==================== PDF OPENING FUNCTIONS ====================
-async function bukaPDF(path) {
-    try {
-        console.log('Loading PDF:', path);
-        await loadPDFJS();
-        
-        if (!fileNameDisplay) return;
-        
-        const fileName = path.split("/").pop().replace(/%20/g, " ");
-        fileNameDisplay.textContent = fileName;
-        
-        const isCached = await isPDFCached(path);
-        if (isCached) {
-            console.log('📚 Loading from cache:', path);
-        } else {
-            console.log('🌐 Loading from network:', path);
-        }
-        
-        loadPDF(path);
-    } catch (error) {
-        console.error('PDF.js load error:', error);
-        alert('Error: PDF viewer tidak bisa dimuat. ' + error.message);
-    }
-}
-
-async function isPDFCached(url) {
-    try {
-        if ('caches' in window) {
-            const cache = await caches.open('pdf-cache-v1-book-feature');
-            const response = await cache.match(url);
-            return !!response;
-        }
-        return false;
-    } catch (error) {
-        console.warn('Cache check failed:', error);
-        return false;
-    }
-}
-
-function bacaPDFUpload() {
-    const fileInput = document.getElementById('pdfUpload');
-    if (fileInput && fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        if (fileNameDisplay) {
-            fileNameDisplay.textContent = file.name;
-        }
-        loadPDF(file);
-    } else {
-        alert('Silakan pilih file PDF terlebih dahulu.');
-    }
-}
-
-function setupFileUpload() {
-    const fileInput = document.getElementById('pdfUpload');
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            const fileNameSpan = document.getElementById('selectedFileName');
-            if (fileNameSpan) {
-                if (this.files.length > 0) {
-                    fileNameSpan.textContent = this.files[0].name;
-                } else {
-                    fileNameSpan.textContent = 'Tidak ada file yang dipilih';
-                }
-            }
-        });
-    }
-}
-
-// ==================== PWA INSTALLATION ====================
-function setupPWAInstall() {
-    const installButton = document.getElementById('installButton');
-    if (!installButton) return;
-    
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        installButton.style.display = 'block';
-        installButton.addEventListener('click', () => {
-            installButton.style.display = 'none';
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') { 
-                    console.log('Pengguna menerima instalasi'); 
-                }
-                deferredPrompt = null;
-            });
-        });
-        setTimeout(tampilkanModal, 2000);
-    });
-}
-
-function tampilkanModal() { 
-    const modal = document.getElementById('installModal');
-    if (modal) modal.style.display = 'flex'; 
-}
-
-function sembunyikanModal() { 
-    const modal = document.getElementById('installModal');
-    if (modal) modal.style.display = 'none'; 
-}
-
-function installApp() {
-    if (deferredPrompt) {
-        const installButton = document.getElementById('installButton');
-        if (installButton) installButton.style.display = 'none';
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('Pengguna menerima instalasi');
-            }
-            deferredPrompt = null;
-        });
-    }
-    sembunyikanModal();
-}
-
-// ==================== GREETING SYSTEM ====================
-function setupGreeting() {
-    const greetingElement = document.getElementById('greetingName');
-    if (!greetingElement) return;
-
-    const userName = localStorage.getItem('userName');
-
-    if (userName && userName.trim() !== '' && userName !== 'Nama Pengguna') {
-        greetingElement.textContent = 'Halo, ' + userName + '!';
-    } else {
-        greetingElement.textContent = 'Halo!';
-    }
-}
-
-// ==================== SERVICE WORKER REGISTRATION ====================
-async function initializeServiceWorker() {
-    if (!('serviceWorker' in navigator)) {
-        console.log('❌ Service Worker not supported');
-        return null;
-    }
-
-    try {
-        console.log('🚀 Starting ELSA PWA initialization...');
-        const swUrl = './sw.js';
-
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (let registration of registrations) {
-            console.log('🗑️ Unregistering old SW:', registration.scope);
-            await registration.unregister();
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        try {
-            const response = await fetch(swUrl, { method: 'HEAD' });
-            if (!response.ok) {
-                console.warn('⚠️ SW file not found, skipping registration');
-                return null;
-            }
-            console.log('✅ SW file verified');
-        } catch (fileError) {
-            console.warn('⚠️ SW file not accessible, skipping registration:', fileError);
-            return null;
-        }
-
-        const registration = await navigator.serviceWorker.register(swUrl, {
-            scope: './',
-            updateViaCache: 'none'
-        });
-
-        console.log('✅ Service Worker registered successfully');
-        console.log('🎯 SW Scope:', registration.scope);
-
-        registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            console.log('🔄 New Service Worker installing:', newWorker.state);
-            
-            newWorker.addEventListener('statechange', () => {
-                console.log('📊 SW state changed:', newWorker.state);
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    showUpdateNotification();
-                }
-            });
-        });
-
-        return registration;
-
-    } catch (error) {
-        console.error('❌ Service Worker registration failed:', error);
-        return null;
-    }
-}
-
-// ==================== BACKGROUND SYNC SETUP ====================
-async function setupBackgroundSync(registration) {
-    try {
-        if ('sync' in registration) {
-            console.log('✅ Background Sync supported');
-            await registration.sync.register('sync-pdf-history');
-            await registration.sync.register('sync-user-activity');
-            await registration.sync.register('retry-failed-requests');
-            console.log('✅ Background Sync tags registered');
-        }
-        
-        if ('periodicSync' in registration) {
-            const status = await navigator.permissions.query({
-                name: 'periodic-background-sync'
-            });
-            
-            console.log('📋 Periodic Sync permission status:', status.state);
-            
-            if (status.state === 'granted') {
-                try {
-                    await registration.periodicSync.register('content-cleanup', {
-                        minInterval: 24 * 60 * 60 * 1000,
-                    });
-                    console.log('✅ Periodic Sync registered');
-                } catch (periodicError) {
-                    console.log('⚠️ Periodic Sync not available:', periodicError);
-                }
-            }
-        }
-        
-    } catch (error) {
-        console.log('⚠️ Background Sync setup failed:', error);
-    }
-}
-
-// ==================== UPDATE NOTIFICATION SYSTEM ====================
-function showUpdateNotification() {
-    let notification = document.getElementById('update-notification');
-    
-    if (!notification) {
-        notification = document.createElement('div');
-        notification.id = 'update-notification';
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4CAF50;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 10000;
-            font-family: Arial, sans-serif;
-            display: none;
-        `;
-        document.body.appendChild(notification);
-    }
-
-    notification.innerHTML = '🔄 Update tersedia! <button id="updateRefreshBtn" style="background: white; color: #4CAF50; border: none; padding: 8px 16px; margin-left: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Perbarui Sekarang</button>';
-    notification.style.display = 'block';
-
-    document.getElementById('updateRefreshBtn').addEventListener('click', async () => {
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-            const registration = await navigator.serviceWorker.getRegistration();
-            if (registration && registration.waiting) {
-                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    window.location.reload();
-                });
-                
-                return;
-            }
-        }
-        window.location.reload();
-    });
-
-    setTimeout(() => {
-        notification.style.display = 'none';
-    }, 10000);
-}
-
-// ==================== SERVICE WORKER MESSAGE HANDLER ====================
-function setupServiceWorkerMessages() {
-    if (!('serviceWorker' in navigator)) return;
-    
-    navigator.serviceWorker.addEventListener('message', event => {
-        const data = event.data;
-        console.log('📨 Client: Received message from SW:', data);
-        
-        switch (data.type) {
-            case 'STARTUP_UPDATES_DETECTED':
-                console.log('📢 Updates detected on startup:', data.assets);
-                showUpdateNotification();
-                break;
-                
-            case 'VERSION_ACTIVATED':
-                console.log('✅ New SW version activated:', data.version);
-                break;
-                
-            case 'SW_ACTIVATED':
-                console.log('🎯 SW activated and ready');
-                break;
-        }
-    });
-}
-
-// ==================== READING SESSION TRACKER ====================
-class ReadingSession {
-    constructor() {
-        this.sessionStart = Date.now();
-        this.pageTurns = 0;
-        this.currentPDF = null;
-    }
-    
-    startPDF(pdfName) {
-        this.currentPDF = pdfName;
-        this.sessionStart = Date.now();
-        this.pageTurns = 0;
-        console.log('📖 Reading session started:', pdfName);
-    }
-    
-    trackPageTurn() {
-        this.pageTurns++;
-        
-        if (this.pageTurns % 3 === 0) {
-            this.scheduleHistorySync();
-        }
-    }
-    
-    async scheduleHistorySync() {
-        if (!this.currentPDF) return;
-        
-        const sessionData = {
-            id: `${this.currentPDF}-${Date.now()}`,
-            pdfName: this.currentPDF,
-            duration: Date.now() - this.sessionStart,
-            pageTurns: this.pageTurns,
-            timestamp: Date.now(),
-            synced: false
-        };
-        
-        const pendingHistory = JSON.parse(localStorage.getItem('pendingPDFHistory') || '[]');
-        pendingHistory.push(sessionData);
-        localStorage.setItem('pendingPDFHistory', JSON.stringify(pendingHistory));
-        
-        console.log('💾 Saved reading session:', sessionData);
-        
-        if ('serviceWorker' in navigator) {
-            const registration = await navigator.serviceWorker.ready;
-            if ('sync' in registration) {
-                await registration.sync.register('sync-pdf-history');
-                this.showSyncIndicator('Progress membaca disimpan');
-            }
-        }
-    }
-    
-    showSyncIndicator(message) {
-        const indicator = document.createElement('div');
-        indicator.style.cssText = `
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: #4CAF50;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            z-index: 10000;
-        `;
-        indicator.textContent = '✓ ' + message;
-        document.body.appendChild(indicator);
-        
-        setTimeout(() => {
-            if (indicator.parentNode) {
-                document.body.removeChild(indicator);
-            }
-        }, 2000);
-    }
-}
-
-const readingSession = new ReadingSession();
-
-function trackPDFView(pdfName) {
-    readingSession.startPDF(pdfName);
-}
-
-// ==================== OFFLINE MANAGER ====================
-class OfflineManager {
-    constructor() {
-        this.isOnline = navigator.onLine;
-        this.offlineIndicator = null;
-        this.init();
-    }
-    
-    init() {
-        this.createOfflineIndicator();
-        this.setupNetworkListeners();
-    }
-    
-    createOfflineIndicator() {
-        this.offlineIndicator = document.createElement('div');
-        this.offlineIndicator.id = 'offline-indicator';
-        this.offlineIndicator.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: #ff6b6b;
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-            z-index: 10000;
-            transform: translateY(-100%);
-            transition: transform 0.3s ease;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        `;
-        this.offlineIndicator.textContent = '📶 Anda sedang offline - Beberapa fitur terbatas';
-        document.body.appendChild(this.offlineIndicator);
-    }
-    
-    setupNetworkListeners() {
-        window.addEventListener('online', () => {
-            this.handleOnline();
-        });
-        
-        window.addEventListener('offline', () => {
-            this.handleOffline();
-        });
-    }
-    
-    handleOnline() {
-        this.isOnline = true;
-        this.hideOfflineIndicator();
-        this.showMessage('✅ Koneksi pulih', 'success');
-    }
-    
-    handleOffline() {
-        this.isOnline = false;
-        this.showOfflineIndicator();
-        this.showMessage('📶 Sedang offline', 'warning');
-    }
-    
-    showOfflineIndicator() {
-        if (this.offlineIndicator) {
-            this.offlineIndicator.style.transform = 'translateY(0)';
-        }
-    }
-    
-    hideOfflineIndicator() {
-        if (this.offlineIndicator) {
-            this.offlineIndicator.style.transform = 'translateY(-100%)';
-        }
-    }
-    
-    showMessage(text, type = 'info') {
-        const messageEl = document.createElement('div');
-        messageEl.style.cssText = `
-            position: fixed;
-            top: 50px;
-            right: 20px;
-            padding: 12px 16px;
-            border-radius: 6px;
-            color: white;
-            z-index: 10000;
-            font-weight: bold;
-            ${type === 'success' ? 'background: #4CAF50;' : ''}
-            ${type === 'warning' ? 'background: #ffc107; color: #000;' : ''}
-        `;
-        messageEl.textContent = text;
-        document.body.appendChild(messageEl);
-        
-        setTimeout(() => {
-            if (messageEl.parentNode) {
-                document.body.removeChild(messageEl);
-            }
-        }, 3000);
-    }
-}
-
-const offlineManager = new OfflineManager();
-
-// ==================== LAYOUT AND UI FUNCTIONS ====================
-function adjustCardSizes() {
-    const cardRows = document.querySelectorAll('.card-row');
-    
-    cardRows.forEach(row => {
-        const cardItems = row.querySelectorAll('.card-item');
-        const containerWidth = row.offsetWidth;
-        const totalWidth = Array.from(cardItems).reduce((total, card) => {
-            return total + card.offsetWidth + 15;
-        }, 0);
-        
-        if (totalWidth > containerWidth) {
-            const scaleFactor = containerWidth / totalWidth * 0.9;
-            cardItems.forEach(card => {
-                const currentWidth = card.offsetWidth;
-                const newWidth = Math.max(100, currentWidth * scaleFactor);
-                card.style.minWidth = newWidth + 'px';
-                card.style.maxWidth = newWidth + 'px';
-            });
-        }
-    });
-}
-
-function ensureNavbarPosition() {
-    const navbar = document.querySelector('.mobile-navbar');
-    const sections = document.querySelectorAll('.content-section');
-    
-    if (navbar) {
-        navbar.style.bottom = '0';
-        navbar.style.transform = 'translateY(0)';
-    }
-    
-    sections.forEach(section => {
-        const rect = section.getBoundingClientRect();
-        const navbarHeight = navbar ? navbar.offsetHeight : 0;
-        
-        if (window.innerHeight - rect.bottom < navbarHeight + 10) {
-            section.style.paddingBottom = (navbarHeight + 20) + 'px';
-        }
-    });
-}
-
-// ==================== INITIALIZE DOM ELEMENTS ====================
-function initializeDOMElements() {
-    canvas = document.getElementById('pdf-render');
-    ctx = canvas ? canvas.getContext('2d') : null;
-    loading = document.getElementById('loading');
-    pageInfo = document.getElementById('page-info');
-    pageInput = document.getElementById('page-input');
-    fileNameDisplay = document.getElementById('file-name-display');
-    mainContent = document.getElementById('main-content');
-    pdfViewer = document.getElementById('pdf-viewer');
-    
-    console.log('✅ DOM Elements initialized:', {
-        canvas: !!canvas,
-        ctx: !!ctx,
-        loading: !!loading,
-        pageInfo: !!pageInfo,
-        pageInput: !!pageInput,
-        fileNameDisplay: !!fileNameDisplay,
-        mainContent: !!mainContent,
-        pdfViewer: !!pdfViewer
-    });
-}
-
-// ==================== MAIN INITIALIZATION ====================
-// ==================== MAIN INITIALIZATION ====================
-let isAppInitialized = false;
-
-function initializeApp() {
-    if (isAppInitialized) return;
-    
-    console.log('🚀 Starting ELSA PWA initialization...');
-    
-    initializeDOMElements();
-    
-    setupNavigation();
-    setupPDFNavigation();
-    setupFileUpload();
-    setupPWAInstall();
-    setupGreeting();
-    setupServiceWorkerMessages();
-    
-    bookManager = new EnhancedBookManager();
-
-    ensureNavbarPosition();
-    adjustCardSizes();
-    
-    initializeServiceWorker().then(registration => {
-        if (registration) {
-            console.log('✅ Service Worker initialized successfully');
-        }
-    }).catch(error => {
-        console.error('❌ Initialization failed:', error);
-    });
-    
-    isAppInitialized = true;
-}
-
-// ==================== EVENT LISTENERS ====================
-document.addEventListener('DOMContentLoaded', initializeApp);
-
-window.addEventListener('resize', () => {
-    adjustCardSizes();
-    ensureNavbarPosition();
-});
-
-window.addEventListener('scroll', ensureNavbarPosition);
-
-function checkOnlineStatus() {
-    if (!navigator.onLine) {
-        console.log('📴 Aplikasi sedang offline');
-    }
-}
-
-window.addEventListener('online', checkOnlineStatus);
-window.addEventListener('offline', checkOnlineStatus);
-checkOnlineStatus();
-
-// ==================== ERROR HANDLING ====================
-window.addEventListener('error', (event) => {
-    if (event.target.tagName === 'IMG' || event.target.tagName === 'SCRIPT') {
-        console.log('❌ Resource failed to load:', event.target.src);
-    }
-});
-
-window.addEventListener('unhandledrejection', (event) => {
-    if (event.reason && event.reason.message && event.reason.message.includes('PDF')) {
-        console.log('❌ PDF loading error:', event.reason);
-        if (offlineManager) {
-            offlineManager.showMessage('❌ Gagal memuat PDF', 'error');
-        }
-    }
-});
-
-// ==================== EXPORT FOR DEBUGGING ====================
-window.elsaApp = {
-    readingSession,
-    offlineManager,
-    bookManager,
-    EnhancedCacheManager,
-    CACHE_STRATEGIES,
-    initializeServiceWorker,
-    showUpdateNotification,
-    bukaPDF,
-    bacaPDFUpload
-};
-
-console.log('✅ ELSA Enhanced App JavaScript loaded successfully');
-</script>
 </body>
 </html>
