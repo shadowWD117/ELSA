@@ -18,6 +18,8 @@
             --primary-hover: #0056b3;
             --success-color: #28a745;
             --success-hover: #218838;
+            --danger-color: #dc3545; /* Tambahkan warna danger untuk konsistensi modal */
+            --danger-hover: #c82333;
             --border-color: #3a3a3a;
         }
 
@@ -26,29 +28,36 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
             line-height: 1.6;
             color: var(--text-color);
-            background-color: var(--bg-color);
-            padding: 20px;
+            background-color: #111111;
             max-width: 100%;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
 
-        .main-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
+.main-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding-top: 60px; /* Tambahkan ini */
+}
         /* HEADER BACK BUTTON */
         .header-back {
             display: flex;
+            position: fixed;
             align-items: center;
             margin-bottom: 30px;
+            background-color: #444444;
+            width: 100%;
+            top: 0;
+            left: 0;
+            height: 50px;
+            z-index: 10;
         }
         .header-back a {
             color: var(--primary-color);
             font-size: 1.5rem;
             margin-right: 15px;
             text-decoration: none;
+            margin-left: 15px;
             transition: color 0.2s;
         }
         .header-back a:hover {
@@ -61,7 +70,7 @@
 
         /* CARD STYLES */
         .card {
-            background-color: var(--card-color);
+            background-color: #111111;
             border-radius: 12px;
             padding: 25px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -233,6 +242,76 @@
             vertical-align: middle;
             color: currentColor;
         }
+        
+        section h2 {
+            font-size: 1rem;
+        }
+        
+        /* ============================================== */
+        /* Custom Alert/Modal Styles (BARU DITAMBAH) */
+        /* ============================================== */
+        .custom-modal-backdrop {
+            display: none; /* Default: Sembunyikan */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .custom-modal-content {
+            background-color: var(--card-color);
+            color: var(--text-color);
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .custom-modal-content h3 {
+            margin-bottom: 15px;
+            font-size: 1.25rem;
+        }
+
+        .custom-modal-content p {
+            margin-bottom: 25px;
+            color: var(--secondary-text);
+        }
+
+        .custom-modal-buttons button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .custom-modal-buttons .primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .custom-modal-buttons .primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .custom-modal-buttons .secondary {
+            background-color: var(--border-color);
+            color: var(--text-color);
+        }
+        
+        .custom-modal-buttons .secondary:hover {
+            background-color: #4a4a4a;
+        }
+        
     </style>
 </head>
 <body>
@@ -326,8 +405,42 @@
             </section>
         </main>
     </div>
+    
+    <div id="customAlertModal" class="custom-modal-backdrop">
+        <div class="custom-modal-content">
+            <h3 id="customAlertTitle">Pemberitahuan</h3>
+            <p id="customAlertMessage">Ini adalah pesan custom.</p>
+            <div class="custom-modal-buttons">
+                <button id="customAlertConfirm" class="primary">OK</button>
+                <button id="customAlertCancel" class="secondary" style="display: none;">Batal</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../app.js"></script>
 
     <script>
+        // Wrapper functions for custom alerts
+        // Ini memastikan kustom alert/confirm dapat digunakan, dengan fallback ke fungsi bawaan
+        const customAlert = (title, message, callback) => {
+            if (window.elsaApp && window.elsaApp.customAlert) {
+                window.elsaApp.customAlert(title, message, callback);
+            } else {
+                alert(`${title}: ${message}`);
+                if(callback) callback();
+            }
+        };
+
+        const customConfirm = (title, message) => {
+            return new Promise(resolve => {
+                if (window.elsaApp && window.elsaApp.customConfirm) {
+                    window.elsaApp.customConfirm(title, message).then(resolve);
+                } else {
+                    resolve(confirm(`${title}: ${message}`));
+                }
+            });
+        };
+
         const profileFields = ['userName', 'userEmail', 'userStatus'];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -396,7 +509,8 @@
             if (file) {
                 // Batasan ukuran file (misalnya 2MB)
                 if (file.size > 2 * 1024 * 1024) {
-                    alert('Ukuran gambar maksimal adalah 2MB.');
+                    // MENGGANTI: alert('Ukuran gambar maksimal adalah 2MB.');
+                    customAlert('Gagal Mengubah Foto', 'Ukuran gambar maksimal adalah 2MB.');
                     event.target.value = ''; // Reset input
                     return;
                 }
@@ -412,7 +526,8 @@
                     
                     // Simpan base64 string ke LocalStorage
                     localStorage.setItem('profileImage', imageData);
-                    alert('Foto profil berhasil diubah dan disimpan secara lokal.');
+                    // MENGGANTI: alert('Foto profil berhasil diubah dan disimpan secara lokal.');
+                    customAlert('Berhasil', 'Foto profil berhasil diubah dan disimpan secara lokal.');
                 };
                 reader.readAsDataURL(file);
             }
@@ -450,7 +565,8 @@
             
             // Validasi sederhana untuk email
             if (field === 'userEmail' && newValue !== getDefaultValue('userEmail') && !isValidEmail(newValue)) {
-                alert('Format email tidak valid.');
+                // MENGGANTI: alert('Format email tidak valid.');
+                customAlert('Input Tidak Valid', 'Format email tidak valid.');
                 inputElement.focus();
                 return;
             }
@@ -469,8 +585,11 @@
         
         // --- ACTION FUNCTIONS ---
 
-        function clearAllData() {
-            if (confirm('Apakah Anda yakin ingin menghapus semua data profil dan pengaturan lokal? Tindakan ini tidak dapat dibatalkan.')) {
+        async function clearAllData() {
+            // MENGGANTI: if (confirm('Apakah Anda yakin ingin menghapus...'))
+            const confirmClear = await customConfirm('Konfirmasi Hapus Data', 'Apakah Anda yakin ingin menghapus semua data profil dan pengaturan lokal? Tindakan ini tidak dapat dibatalkan.');
+
+            if (confirmClear) {
                 // Hapus item-item spesifik
                 profileFields.forEach(field => localStorage.removeItem(field));
                 localStorage.removeItem('profileImage');
@@ -478,32 +597,36 @@
                 // Muat ulang data untuk menampilkan default
                 loadProfileData();
                 
-                alert('Semua data lokal berhasil dihapus. Profil telah direset.');
+                // MENGGANTI: alert('Semua data lokal berhasil dihapus. Profil telah direset.');
+                customAlert('Berhasil Dihapus', 'Semua data lokal berhasil dihapus. Profil telah direset.');
             }
         }
 
-        function logOut() {
-            if (confirm('Apakah Anda yakin ingin keluar?')) {
+        async function logOut() {
+            // MENGGANTI: if (confirm('Apakah Anda yakin ingin keluar?'))
+            const confirmLogout = await customConfirm('Konfirmasi Keluar', 'Apakah Anda yakin ingin keluar?');
+
+            if (confirmLogout) {
                 // Untuk demo, kita hanya mengarahkan ke halaman utama
                 window.location.href = '../index.html'; // Arahkan ke halaman utama/login
             }
         }
         
         // === BACK NAVIGATION SOLUTION ===
-function handleBackNavigation() {
-    if (document.referrer.includes(window.location.hostname) && history.length > 1) {
-        history.back();
-    } else {
-        window.location.href = '../index.html';
-    }
-}
+        function handleBackNavigation() {
+            if (document.referrer.includes(window.location.hostname) && history.length > 1) {
+                history.back();
+            } else {
+                window.location.href = '../index.html';
+            }
+        }
 
-// Auto-initialize
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[href="../index.html"], .header-back a').forEach(btn => {
-        btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
-    });
-});
+        // Auto-initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('[href="../index.html"], .header-back a').forEach(btn => {
+                btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
+            });
+        });
         
     </script>
 </body>
