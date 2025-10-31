@@ -37,7 +37,13 @@
         pdfUploadInput: null,
         selectedFileName: null,
         bukuSection: null,
-        body: null
+        body: null,
+        // BARU: Custom Alert UI
+        customAlertModal: null,
+        customAlertTitle: null,
+        customAlertMessage: null,
+        customAlertConfirm: null,
+        customAlertCancel: null
     };
     
     // --- HELPER UNTUK KOMUNIKASI SW ---
@@ -170,10 +176,6 @@
 
     // ==================== ENHANCED CACHE MANAGER ====================
     class EnhancedCacheManager {
-        // ... (Kelas ini tidak perlu ada di app.js, karena sudah ada di sw.js)
-        // ... (Namun, membiarkannya di sini tidak masalah, hanya duplikat)
-        // ... (Kita akan fokus pada BookManager)
-
         // Fungsi deleteCachedBook di app.js harus mengirim pesan ke SW
         static async deleteCachedBook(bookUrl) {
             console.log(`App: Requesting SW to delete ${bookUrl}`);
@@ -331,7 +333,7 @@
                 const cacheSuccess = await this.cacheBookInSW(book.downloadUrl, pdfBuffer);
 
                 if (cacheSuccess) {
-                    this.showMessage('✅ Buku berhasil diunduh', 'success');
+                    // this.showMessage('✅ Buku berhasil diunduh', 'success');
                     this.updateBookUI(book.id, true); // Perbarui UI
                     this.generateBookCover(book.downloadUrl, pdfBuffer, book.id);
                     bukaPDF(book.downloadUrl); // Buka PDF
@@ -425,7 +427,9 @@
                 const isLocked = this.lockManager.isBookLocked(bookId);
 
                 if (button) {
-                    button.textContent = isCached ? '📖 Buka Buku' : '📥 Download & Buka';
+                    // --- PERUBAHAN INI ---
+                    button.textContent = isCached ? 'Buka' : 'Download dan Buka'; 
+                    // ---------------------
                     button.className = isCached ? 'btn-read' : 'btn-download';
                 }
 
@@ -502,8 +506,7 @@
                 <p class="file-size">${book.size}</p>
                 <button class="${isCached ? 'btn-read' : 'btn-download'}" 
                         data-action="download-book" data-class-id="${classId}" data-book-id="${book.id}">
-                    ${isCached ? '📖 Buka Buku' : '📥 Download & Buka'}
-                </button>
+                    ${isCached ? 'Buka' : 'Download dan Buka'} </button>
                 ${isCached ?
                     `<div class="book-actions" style="margin-top: 5px;">
                         <button class="btn-delete" data-action="delete-book" data-class-id="${classId}" data-book-id="${book.id}" title="Hapus buku">
@@ -511,7 +514,7 @@
                         </button>
                     </div>` : ''
                 }
-                ${isCached ? '<div class="book-status" style="font-size: 0.7rem; color: #28a745; margin-top: 5px;">✅ Tersimpan offline</div>' : ''}
+                ${isCached ? '<div class="book-status" style="font-size: 0.7rem; color: #28a745; margin-top: 5px;"> Tersimpan</div>' : ''}
                 ${isLocked ? '<div class="lock-status" style="font-size: 0.7rem; color: #ffc107; margin-top: 3px;">🔒 Terkunci</div>' : ''}
                 <div class="download-progress" id="progress-${book.id}" style="display: none;"></div>
             `;
@@ -521,11 +524,11 @@
         toggleBookLock(bookId) {
             if (this.lockManager.isBookLocked(bookId)) {
                 if (this.lockManager.unlockBook(bookId)) {
-                    this.showMessage('🔓 Buku dibuka kunci', 'success');
+                    //this.showMessage('🔓 Buku dibuka kunci', 'success');
                 }
             } else {
                 if (this.lockManager.lockBook(bookId)) {
-                    this.showMessage('🔒 Buku dikunci - tidak akan terhapus otomatis', 'success');
+                    //this.showMessage('🔒 Buku dikunci - tidak akan terhapus otomatis', 'success');
                 }
             }
             this.renderAllBooks(); // Re-render untuk update UI
@@ -534,18 +537,21 @@
         async deleteBook(classId, bookId) {
             const book = this.findBook(classId, bookId);
             if (!book) {
-                alert('Buku tidak ditemukan!');
+                // MENGGANTI: alert('Buku tidak ditemukan!')
+                customAlert('Error Hapus', 'Buku tidak ditemukan!');
                 return false;
             }
 
             const isLocked = this.lockManager.isBookLocked(bookId);
             if (isLocked) {
-                const confirmUnlock = confirm('Buku ini terkunci. Apakah Anda ingin membuka kunci dan menghapusnya?');
+                // MENGGANTI: confirm('Buku ini terkunci. ...')
+                const confirmUnlock = await customConfirm('Buku Terkunci', 'Buku ini terkunci. Apakah Anda yakin ingin membuka kunci dan menghapusnya?');
                 if (!confirmUnlock) return false;
                 this.lockManager.unlockBook(bookId); // Ini akan memanggil saveLockedBooks() dan updateSWState()
             }
 
-            const confirmDelete = confirm(`Apakah Anda yakin ingin menghapus "${book.title}"?`);
+            // MENGGANTI: confirm(`Apakah Anda yakin ingin menghapus ...`)
+            const confirmDelete = await customConfirm('Konfirmasi Hapus', `Apakah Anda yakin ingin menghapus "${book.title}"?`);
             if (!confirmDelete) return false;
 
             try {
@@ -620,6 +626,96 @@
                 }
             });
         }
+    }
+
+    // ==================== CUSTOM UI ALERT/CONFIRM HANDLER ====================
+    
+    /**
+     * Menampilkan modal alert kustom.
+     * @param {string} title - Judul pesan.
+     * @param {string} message - Isi pesan.
+     * @param {function} [callback] - Fungsi yang dipanggil saat tombol OK diklik.
+     */
+    function customAlert(title, message, callback) {
+        if (!dom.customAlertModal) {
+            console.error('Custom alert DOM not found. Falling back to native alert.');
+            alert(`${title}: ${message}`);
+            if (callback) callback();
+            return;
+        }
+
+        dom.customAlertTitle.textContent = title || 'Pemberitahuan';
+        dom.customAlertMessage.textContent = message || '';
+        dom.customAlertCancel.style.display = 'none'; // Selalu sembunyikan untuk alert
+
+        // Hapus listener lama
+        const oldConfirm = dom.customAlertConfirm.cloneNode(true);
+        dom.customAlertConfirm.parentNode.replaceChild(oldConfirm, dom.customAlertConfirm);
+        dom.customAlertConfirm = oldConfirm;
+
+        dom.customAlertConfirm.textContent = 'OK';
+        dom.customAlertConfirm.classList.remove('secondary');
+        dom.customAlertConfirm.classList.add('primary');
+
+        dom.customAlertConfirm.onclick = () => {
+            dom.customAlertModal.style.display = 'none';
+            if (callback) callback();
+        };
+
+        dom.customAlertModal.style.display = 'flex';
+    }
+
+    /**
+     * Menampilkan modal konfirmasi kustom.
+     * @param {string} title - Judul pesan.
+     * @param {string} message - Isi pesan.
+     * @returns {Promise<boolean>} - Resolves dengan true jika 'Ya', false jika 'Batal'.
+     */
+    function customConfirm(title, message) {
+        return new Promise(resolve => {
+            if (!dom.customAlertModal) {
+                console.error('Custom alert DOM not found. Falling back to native confirm.');
+                resolve(confirm(`${title}: ${message}`));
+                return;
+            }
+
+            dom.customAlertTitle.textContent = title || 'Konfirmasi';
+            dom.customAlertMessage.textContent = message || '';
+            
+            dom.customAlertCancel.style.display = 'inline-block';
+
+            // Hapus listener lama untuk Confirm
+            const oldConfirm = dom.customAlertConfirm.cloneNode(true);
+            dom.customAlertConfirm.parentNode.replaceChild(oldConfirm, dom.customAlertConfirm);
+            dom.customAlertConfirm = oldConfirm;
+            
+            // Hapus listener lama untuk Cancel
+            const oldCancel = dom.customAlertCancel.cloneNode(true);
+            dom.customAlertCancel.parentNode.replaceChild(oldCancel, dom.customAlertCancel);
+            dom.customAlertCancel = oldCancel;
+
+
+            dom.customAlertConfirm.textContent = 'Ya';
+            dom.customAlertConfirm.classList.remove('secondary');
+            dom.customAlertConfirm.classList.add('primary');
+
+            dom.customAlertCancel.textContent = 'Batal';
+            dom.customAlertCancel.classList.remove('primary');
+            dom.customAlertCancel.classList.add('secondary');
+
+
+            dom.customAlertConfirm.onclick = () => {
+                dom.customAlertModal.style.display = 'none';
+                resolve(true);
+            };
+
+            dom.customAlertCancel.onclick = () => {
+                dom.customAlertModal.style.display = 'none';
+                resolve(false);
+            };
+
+            dom.customAlertModal.style.display = 'flex';
+        });
     }
 
     // ==================== NAVIGATION FUNCTIONALITY ====================
@@ -793,7 +889,8 @@
             if (e.key === "Enter") {
                 let val = parseInt(dom.pageInput.value, 10);
                 if (isNaN(val) || val < 1 || val > appState.pdfDoc.numPages) {
-                    alert(`Masukkan halaman 1-${appState.pdfDoc.numPages}`);
+                    // MENGGANTI: alert(`Masukkan halaman 1-${appState.pdfDoc.numPages}`);
+                    customAlert('Halaman Tidak Valid', `Masukkan halaman 1-${appState.pdfDoc.numPages}`);
                 } else {
                     appState.pageNum = val;
                     queueRenderPage(appState.pageNum);
@@ -822,7 +919,8 @@
             loadPDF(path);
         } catch (error) {
             console.error('PDF.js load error:', error);
-            alert('Error: PDF viewer tidak bisa dimuat. ' + error.message);
+            // MENGGANTI: alert('Error: PDF viewer tidak bisa dimuat. ' + error.message);
+            customAlert('Error Memuat PDF', 'PDF viewer tidak bisa dimuat. ' + error.message);
         }
     }
 
@@ -852,7 +950,8 @@
             }
             loadPDF(file);
         } else {
-            alert('Silakan pilih file PDF terlebih dahulu.');
+            // MENGGANTI: alert('Silakan pilih file PDF terlebih dahulu.');
+            customAlert('Peringatan', 'Silakan pilih file PDF terlebih dahulu.');
         }
     }
 
@@ -964,7 +1063,13 @@
         if (!notification) {
             notification = document.createElement('div');
             notification.id = 'update-notification';
-            notification.style.cssText = `...`; // (gaya dari HTML)
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 15px; background: #28a745;
+                color: white; padding: 12px 16px; border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 2000;
+                font-family: Arial, sans-serif; max-width: min(300px, calc(100vw - 30px));
+                word-break: break-word; display: none;
+            `;
             dom.body.appendChild(notification);
         }
         notification.innerHTML = '🔄 Update tersedia! <button id="updateRefreshBtn">Perbarui Sekarang</button>';
@@ -1006,8 +1111,10 @@
                     appState.offlineManager?.showMessage(`Sync ${data.syncType} selesai`, 'success');
                     break;
                 case 'CACHE_CLEARED':
-                    alert('Cache telah dibersihkan. Aplikasi akan dimuat ulang.');
-                    window.location.reload();
+                    // MENGGANTI: alert('Cache telah dibersihkan. Aplikasi akan dimuat ulang.');
+                    customAlert('Cache Dihapus', 'Cache telah dibersihkan. Aplikasi akan dimuat ulang.', () => {
+                        window.location.reload();
+                    });
                     break;
             }
         });
@@ -1095,22 +1202,10 @@
             this.init();
         }
         init() {
-            this.createOfflineIndicator();
             this.setupNetworkListeners();
             this.updateOnlineStatus(); // Panggil saat init
         }
-        createOfflineIndicator() {
-            this.offlineIndicator = document.createElement('div');
-            this.offlineIndicator.id = 'offline-indicator';
-            this.offlineIndicator.style.cssText = `
-                position: fixed; top: 0; left: 0; right: 0; background: #ff6b6b; color: white;
-                padding: 10px; text-align: center; font-weight: bold; z-index: 10000;
-                transform: translateY(-100%); transition: transform 0.3s ease;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            `;
-            this.offlineIndicator.textContent = '📶 Anda sedang offline - Beberapa fitur terbatas';
-            dom.body.appendChild(this.offlineIndicator);
-        }
+
         setupNetworkListeners() {
             window.addEventListener('online', () => this.handleOnline());
             window.addEventListener('offline', () => this.handleOffline());
@@ -1126,13 +1221,13 @@
             this.isOnline = true;
             this.hideOfflineIndicator();
             if (!silent) {
-                this.showMessage('✅ Koneksi pulih', 'success');
+                // this.showMessage('✅ Koneksi pulih', 'success');
             }
         }
         handleOffline() {
             this.isOnline = false;
             this.showOfflineIndicator();
-            this.showMessage('📶 Sedang offline', 'warning');
+            //this.showMessage('📶 Sedang offline', 'warning');
         }
         showOfflineIndicator() {
             if(this.offlineIndicator) this.offlineIndicator.style.transform = 'translateY(0)';
@@ -1252,6 +1347,12 @@
         dom.selectedFileName = document.getElementById('selectedFileName');
         dom.bukuSection = document.getElementById('buku-section');
         dom.body = document.body;
+        // BARU: Custom Alert UI
+        dom.customAlertModal = document.getElementById('customAlertModal');
+        dom.customAlertTitle = document.getElementById('customAlertTitle');
+        dom.customAlertMessage = document.getElementById('customAlertMessage');
+        dom.customAlertConfirm = document.getElementById('customAlertConfirm');
+        dom.customAlertCancel = document.getElementById('customAlertCancel');
     }
 
     function initializeApp() {
@@ -1357,6 +1458,8 @@
         showUpdateNotification,
         bukaPDF,
         bacaPDFUpload,
+        customAlert, // NEW
+        customConfirm, // NEW
         debug: debugAppState,
         // BARU: Tambahkan helper debug
         forceSWUpdate: () => {

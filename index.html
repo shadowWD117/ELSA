@@ -7,12 +7,10 @@
     <meta name="theme-color" content="#2F3BA2">
     <meta name="description" content="Aplikasi PWA sederhana untuk membaca PDF dan alat belajar">
     
-    <!-- Path Manifest dan Ikon -->
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/png" href="./icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
     
-    <!-- Meta tags iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ELSA">
@@ -309,12 +307,15 @@ body {
     max-width: 100%;
 }
 
-/* CARD ROW STYLES */
+/* ================================================= */
+/* MODIFIKASI: CARD BUKU (.card-row) */
+/* ================================================= */
+
 .card-row {
     display: flex;
     overflow-x: auto;
-    gap: 12px;
-    padding: 10px 5px;
+    gap: 16px; /* Jarak antar card sedikit lebih besar */
+    padding: 10px 0; /* Hapus padding horizontal */
     margin-bottom: 20px;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -328,29 +329,86 @@ body {
 }
 
 .card-row .card-item {
-    background: #111111;
-    padding: 12px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    text-align: center;
-    min-width: 140px;
-    max-width: 140px;
+    background: #1a1a1a; /* Warna background lebih gelap */
+    padding: 0; /* Hapus padding agar gambar cover menempel */
+    border-radius: 8px; /* Sudut lebih lembut */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2); /* Bayangan lebih jelas */
+    text-align: left; /* Teks rata kiri */
+    min-width: 130px; 
+    max-width: 130px; /* Lebar card dikurangi agar lebih proporsional */
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column; /* Menggunakan Flexbox untuk tata letak vertikal */
+    overflow: hidden; /* Penting untuk efek border-radius dan gambar */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.card-row .card-item:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* NEW: Container untuk sampul buku dengan rasio aspek 2:3 */
+.book-cover-container {
+    width: 100%;
+    /* Rasio aspek 2:3 (Tinggi = 150% dari Lebar) */
+    padding-top: 150%; 
+    position: relative;
+    overflow: hidden;
+    background-color: #333333; /* Placeholder saat gambar belum dimuat */
+}
+
+.book-cover-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Memastikan gambar mengisi area tanpa distorsi */
+}
+
+/* NEW: Info buku (Judul, Ukuran, Tombol) */
+.book-info-content {
+    padding: 10px; /* Padding untuk konten teks dan tombol */
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; 
+}
+
+/* MODIFIKASI: Judul Buku */
 .card-row .card-item h3 {
-    font-size: 0.95rem;
+    font-size: 0.85rem; 
+    font-weight: 600;
     margin-bottom: 4px;
+    color: #f8f9fa;
+    /* Truncation 2 baris untuk Judul Panjang */
+    white-space: normal; 
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Batasi maksimal 2 baris */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.2em; /* Minimal tinggi 2 baris agar card stabil */
+    text-align: left; /* Pastikan rata kiri */
 }
 
+/* MODIFIKASI: Deskripsi/Icon Wrapper */
 .card-row .card-item p {
-    font-size: 0.75rem;
+    font-size: 0.7rem; 
+    color: #adb5bd; /* Warna abu-abu yang lebih baik */
+    margin-top: auto; /* Mendorong info file size ke bawah */
+    text-align: left; /* Pastikan rata kiri */
 }
 
 .card-row .card-item .icon-wrapper {
+    /* Gaya ini mungkin tidak relevan untuk buku, biarkan saja */
     font-size: 1.8rem;
     margin-bottom: 6px;
 }
+
+/* ================================================= */
+/* AKHIR MODIFIKASI CARD BUKU */
+/* ================================================= */
+
 
 /* ALAT GRID */
 #alat-section {
@@ -544,6 +602,82 @@ input[type="file"] {
 .modal-btn.secondary:active {
     background: #5a6268;
 }
+
+
+/* ===================================================
+   GAYA UNTUK CUSTOM ALERT MODAL
+   =================================================== */
+
+.custom-modal {
+    display: none; 
+    position: fixed;
+    z-index: 3000; /* Di atas PDF viewer (z-index 2000) */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.75); /* Background gelap transparan */
+    animation: fadeIn 0.3s;
+    align-items: center; /* Tambahan untuk memposisikan di tengah */
+    justify-content: center; /* Tambahan untuk memposisikan di tengah */
+}
+
+.custom-modal-content {
+    background-color: #333333; /* Warna gelap konten modal */
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    max-width: 350px;
+    width: 90%;
+    text-align: center;
+    transform: scale(0.9);
+    animation: scaleIn 0.3s forwards;
+}
+
+@keyframes scaleIn {
+    to { transform: scale(1); }
+}
+
+.custom-modal-content .modal-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #007bff; /* Warna Judul Utama */
+}
+
+.custom-modal-content .modal-message {
+    font-size: 1rem;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    color: #f8f9fa;
+}
+
+.custom-modal-content .modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* Tombol Alert Custom (menggunakan gaya modal-btn yang sudah ada) */
+.custom-modal-content .modal-btn {
+    padding: 10px 18px;
+    font-weight: 600;
+    flex: 1;
+    min-width: 100px;
+}
+
+/* Responsif untuk tombol custom alert */
+@media (max-width: 400px) {
+    .custom-modal-content .modal-buttons {
+        flex-direction: column;
+    }
+    .custom-modal-content .modal-btn {
+        width: 100%;
+    }
+}
+
 
 /* PDF VIEWER */
 #pdf-viewer {
@@ -781,7 +915,18 @@ input[type="file"] {
     .card-row .card-item {
         min-width: 120px;
         max-width: 120px;
-        padding: 10px;
+    }
+    
+    .book-info-content {
+        padding: 8px; /* Padding lebih kecil untuk mobile kecil */
+    }
+    
+    .card-row .card-item h3 {
+        font-size: 0.8rem;
+    }
+    
+    .card-row .card-item p {
+        font-size: 0.65rem;
     }
     
     .card-item h3 {
@@ -982,15 +1127,15 @@ p, span, a {
     }
 }
 
-/* Book Manager Styles */
+/* MODIFIKASI: Book Manager Styles */
 .btn-download, .btn-read {
   width: 100%;
-  padding: 10px;
-  margin-top: 8px;
+  padding: 8px; /* Padding dikurangi */
+  margin-top: 6px; /* Margin dikurangi */
   border: none;
-  border-radius: 8px;
+  border-radius: 4px; /* Border radius dikurangi */
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.75rem; /* Ukuran font dikurangi */
   transition: all 0.2s;
   font-weight: 500;
 }
@@ -1011,9 +1156,10 @@ p, span, a {
 }
 
 .file-size {
-  font-size: 0.75rem;
-  color: #6c757d;
-  margin: 5px 0;
+  font-size: 0.7rem; /* Font size dikurangi */
+  color: #adb5bd; /* Warna disesuaikan */
+  margin: 5px 0 0; /* Margin atas ditambahkan */
+  text-align: left;
 }
 
 .download-progress {
@@ -1024,17 +1170,25 @@ p, span, a {
   font-weight: 500;
 }
 
+/* MODIFIKASI: loading-text dalam card-item */
 .loading-text {
   color: #6c757d;
   font-style: italic;
   text-align: center;
+  /* Membuat text loading berada di tengah card */
+  padding: 20px 10px; 
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Gaya untuk tombol buku yang lebih baik */
 .book-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start; /* Ganti dari center ke flex-start */
     width: 100%;
     margin-bottom: 8px;
 }
@@ -1042,23 +1196,26 @@ p, span, a {
     margin-bottom: 0;
     text-align: left;
     flex-grow: 1;
-    word-break: break-word; /* Memastikan judul panjang terpotong */
+    word-break: break-word; 
 }
 .lock-btn {
     background: none;
     border: none;
-    font-size: 1.2rem;
+    font-size: 1rem; /* Ukuran icon dikurangi */
     cursor: pointer;
-    padding: 5px;
+    padding: 3px; /* Padding dikurangi */
     margin-left: 5px;
     color: white;
+    flex-shrink: 0; /* Pastikan tidak mengecil */
+    line-height: 1;
 }
 .lock-btn.locked {
     color: #ffc107; /* Warna kuning untuk terkunci */
 }
 .book-actions {
-    margin-top: 5px;
+    margin-top: auto; /* Mendorong ke bagian bawah card */
     width: 100%;
+    padding-top: 5px;
 }
 .btn-delete {
     background: #dc3545;
@@ -1094,9 +1251,8 @@ p, span, a {
         </header>
         
         <main>
-            <!-- HOME SECTION -->
             <div id="home-section" class="content-section active">
-                <p class="app-moto">"text testing complete"</p>
+                <p class="app-moto">"testing text"</p>
 
                 <h2 id="greetingName">Halo!</h2>
 
@@ -1172,16 +1328,13 @@ p, span, a {
                         <span id="selectedFileName">Tidak ada file yang dipilih</span>
                         <input type="file" id="pdfUpload" accept=".pdf">
                     </div>
-                    <!-- PERBAIKAN: onclick dihapus. app.js akan menangani ini -->
                     <button class="btn">Buka PDF</button>
                 </section>
             </div>
             
-            <!-- BUKU SECTION -->
             <div id="buku-section" class="content-section">
               <h2 class="section-title">Kelas 10</h2>
               <section class="card-row" id="kelas-10-books">
-                <!-- Dynamic content dari JavaScript -->
                 <div class="card-item">
                   <div class="loading-text">Memuat daftar buku...</div>
                 </div>
@@ -1202,7 +1355,6 @@ p, span, a {
               </section>
             </div>
             
-            <!-- ALAT SECTION -->
             <div id="alat-section" class="content-section">
                 <h2 class="section-title">Alat Praktis</h2>
                 <div class="slider-section">
@@ -1298,7 +1450,6 @@ p, span, a {
 
         </main>
         
-        <!-- MOBILE NAVBAR -->
         <nav class="mobile-navbar">
             <a href="#" class="nav-item active" data-target="home-section">
                 <svg class="icon" aria-label="Rumah"><use xlink:href="./icons/icons.svg#icon-home"></use></svg>
@@ -1321,19 +1472,14 @@ p, span, a {
                 <h2>Install Aplikasi</h2>
                 <p>Install aplikasi PDF Reader untuk pengalaman yang lebih baik dan akses offline.</p>
                 <div class="modal-buttons">
-                    <!-- PERBAIKAN: onclick dihapus. app.js akan menangani ini -->
                     <button class="modal-btn primary">Install</button>
                     <button class="modal-btn secondary">Nanti</button>
                 </div>
             </div>
         </div>
         
-    </div> <!-- Penutup #main-content -->
-    
-    <!-- PDF VIEWER -->
-    <div id="pdf-viewer">
+    </div> <div id="pdf-viewer">
         <header id="top-bar">
-            <!-- PERBAIKAN: onclick dihapus. app.js akan menangani ini -->
             <button class="back-btn">←</button>
             <span id="file-name-display"></span>
         </header>
@@ -1361,13 +1507,17 @@ p, span, a {
         </div>
     </div>
     
-    <!--
-      PERBAIKAN:
-      - Menghapus semua JavaScript inline.
-      - Memuat pdf.js terlebih dahulu.
-      - Memuat app.js (eksternal) dengan 'defer' agar dieksekusi setelah DOM siap.
-      - app.js (yang Anda buat) akan menangani semua event click.
-    -->
+    <div id="customAlertModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <h3 id="customAlertTitle" class="modal-title">Pesan</h3>
+            <p id="customAlertMessage" class="modal-message">Ini adalah pesan default.</p>
+            <div class="modal-buttons">
+                <button id="customAlertConfirm" class="modal-btn primary">OK</button>
+                <button id="customAlertCancel" class="modal-btn secondary" style="display: none;">Batal</button>
+            </div>
+        </div>
+    </div>
+    
     <script src="pdfjs/pdf.js"></script>
     <script src="app.js" defer></script>
 

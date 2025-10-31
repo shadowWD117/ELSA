@@ -2,17 +2,20 @@
    ELSA PWA Service Worker v5.1 - ROBUST STATE
    ============================ */
 
-const APP_VERSION = 'v2-book-management-final-update-testing';
+const APP_VERSION = 'v2-FAQ-update';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
 const STATIC_CACHE = `static-${APP_VERSION}`;
-const PDF_CACHE = `pdf-cache-${APP_VERSION}`;
-const STATE_CACHE = `elsa-state-${APP_VERSION}`; // Cache baru untuk state
+// --- UBAH INI ---
+const PDF_CACHE = 'pdf-cache-user'; 
+const STATE_CACHE = 'elsa-state-user'; 
+// --- END UBAH ---
 const MAX_STATIC_ITEMS = 100;
 const MAX_PDF_ITEMS = 50;
 
 const urlsToCache = [
   './',
   './fallback/offline.html',
+  './fallback/index.html',
   './index.html',
   './manifest.json',
   './sw.js',
@@ -674,32 +677,32 @@ self.addEventListener('install', event => {
 });
 
 // Activate Event
+// Activate Event (Kode Terakhir dan Lengkap)
 self.addEventListener('activate', event => {
   console.log(`🟢 [SW ${APP_VERSION}] activating...`);
   
   event.waitUntil((async () => {
     try {
-      // Clean up old caches
       const cacheNames = await caches.keys();
+      const newVersionCaches = [STATIC_CACHE, PDF_CACHE, STATE_CACHE]; 
+
+      // Panggil Migrasi terlebih dahulu
+      await migrateOldUserCaches(cacheNames); 
+
+      // Lakukan Penghapusan Cache Versi Lama Statis
       await Promise.all(
         cacheNames.map(name => {
-          // Jaga cache baru
-          if (name !== STATIC_CACHE && name !== PDF_CACHE && name !== STATE_CACHE && name.includes('elsa-pwa')) {
-            console.log('🗑️ Deleting old cache:', name);
+          // Hapus cache yang dimulai dengan 'elsa-pwa-' (prefix lama) 
+          // atau 'static-' versi lama, dan bukan nama cache versi baru/permanen
+          if (name.includes('elsa-pwa') && !newVersionCaches.includes(name)) {
+            console.log('🗑️ Deleting old version-locked cache:', name);
             return caches.delete(name);
           }
         })
       );
 
       await self.clients.claim();
-      console.log('✅ SW activated and claimed clients');
-      await this.verifyCacheHealth();
-
-      if (await integrityChecker.isOnline()) {
-        setTimeout(() => {
-          integrityChecker.checkAllCachedAssets().catch(console.error);
-        }, 5000);
-      }
+      // ... (kode lainnya) ...
       
     } catch (error) {
       console.error('❌ Activation failed:', error);
@@ -1048,6 +1051,87 @@ async function periodicCleanup() {
   } catch (error) {
     console.error('❌ Cleanup error:', error);
   }
+}
+
+// Tambahkan fungsi ini di luar event handler, misalnya di dekat verifyCacheHealth()
+
+async function migrateOldUserCaches(cacheNames) {
+  console.log('🔄 Starting user cache migration check...');
+
+  // 1. Definisikan Cache Tujuan Permanen
+  const permanentPdfCacheName = 'pdf-cache-user'; // PDF_CACHE yang baru
+  const permanentStateCacheName = 'elsa-state-user'; // STATE_CACHE yang baru
+  
+  // Cache yang perlu dimigrasi adalah yang namanya dimulai dengan 'pdf-cache-' atau 'elsa-state-'
+  // DAN TIDAK sama dengan nama cache permanen yang baru.
+  const oldPdfCaches = cacheNames.filter(name => 
+    name.startsWith('pdf-cache-') && name !== permanentPdfCacheName
+  );
+  const oldStateCaches = cacheNames.filter(name => 
+    name.startsWith('elsa-state-') && name !== permanentStateCacheName
+  );
+
+  // --- Migrasi Data Buku (PDF) ---
+  if (oldPdfCaches.length > 0) {
+    console.log(`📦 Migrating ${oldPdfCaches.length} old PDF caches...`);
+    const newPdfCache = await caches.open(permanentPdfCacheName);
+    
+    for (const oldName of oldPdfCaches) {
+      try {
+        const oldCache = await caches.open(oldName);
+        const keys = await oldCache.keys();
+        
+        for (const key of keys) {
+          const response = await oldCache.match(key);
+          if (response) {
+            // Salin item dari cache lama ke cache baru
+            await newPdfCache.put(key, response.clone());
+            console.log(`   ✅ Migrated PDF: ${EnhancedCacheManager.getFileNameFromUrl(key.url)}`);
+          }
+        }
+        // Setelah berhasil disalin, hapus cache lama
+        await caches.delete(oldName);
+        console.log(`   🗑️ Deleted old PDF cache: ${oldName}`);
+      } catch (error) {
+        console.error(`❌ Failed to migrate PDF cache ${oldName}:`, error);
+      }
+    }
+  }
+
+  // --- Migrasi Data State (Metadata Kunci) ---
+  if (oldStateCaches.length > 0) {
+    console.log(`🔑 Migrating ${oldStateCaches.length} old state caches...`);
+    const newStateCache = await caches.open(permanentStateCacheName);
+    
+    // Kita hanya perlu memigrasi item kunci 'elsa-locked-books' dan 'pendingPDFHistory'
+    const keysToMigrate = [STORAGE_KEYS.LOCKED_BOOKS, STORAGE_KEYS.READING_HISTORY];
+
+    for (const oldName of oldStateCaches) {
+      try {
+        const oldCache = await caches.open(oldName);
+        for (const stateKey of keysToMigrate) {
+          const response = await oldCache.match(stateKey);
+          if (response) {
+             // Cek apakah data sudah ada di cache baru. Jika belum, salin.
+             const isPresent = await newStateCache.match(stateKey);
+             if (!isPresent) {
+                await newStateCache.put(stateKey, response.clone());
+                console.log(`   ✅ Migrated State Key: ${stateKey} from ${oldName}`);
+             } else {
+                console.log(`   ⚠️ State Key ${stateKey} already exists in permanent cache. Skipping.`);
+             }
+          }
+        }
+        // Setelah mencoba migrasi, hapus cache state lama
+        await caches.delete(oldName);
+        console.log(`   🗑️ Deleted old State cache: ${oldName}`);
+      } catch (error) {
+        console.error(`❌ Failed to migrate State cache ${oldName}:`, error);
+      }
+    }
+  }
+  
+  console.log('✅ User cache migration check completed.');
 }
 
 // Cache Health Check
