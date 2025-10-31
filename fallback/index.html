@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id" data-language="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bantuan & FAQ - ELSA</title>
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="description" content="Bantuan dan FAQ untuk aplikasi ELSA - Temukan jawaban dan hubungi developer">
+    <meta name="keywords" content="ELSA, bantuan, FAQ, kontak, belajar, PWA">
+    <meta property="og:title" content="Bantuan & FAQ ELSA">
+    <meta property="og:description" content="Temukan bantuan dan jawaban untuk pertanyaan umum tentang ELSA">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background-color: #262626;
+            max-width: 100%;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: #000;
+            color: white;
+            padding: 8px;
+            z-index: 100;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+.main-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding-top: 60px; /* Tambahkan ini */
+}
+
+.header-back {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    background-color: #444444;
+    width: 100%;
+    top: 0;
+    height: 50px;
+    z-index: 100;
+    position: fixed;
+    padding: 0; /* Tambahkan ini */
+    left: 0; /* Tambahkan ini */
+}
+        
+        .header-back a {
+            color: #007bff;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            text-decoration: none;
+            padding: 5px;
+            border-radius: 4px;
+            margin-left: 15px;
+        }
+        
+        .header-back h1 {
+            font-size: 1.5rem;
+            color: #e0e0e0;
+        }
+
+        /* Styling for details/dropdowns */
+        details {
+            background-color: #111111;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        
+        details:hover {
+            transform: translateY(-2px);
+        }
+        
+        summary {
+            list-style: none; /* Hide default arrow */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 1.1rem;
+            color: #e0e0e0;
+        }
+        
+        summary:hover {
+            background-color: #3a3a3a;
+        }
+        
+        details[open] summary {
+            background-color: #3a3a3a;
+        }
+        
+        summary:focus {
+            outline: 2px solid #007bff;
+            outline-offset: 2px;
+        }
+        
+        summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            transition: transform 0.2s;
+        }
+        
+        details[open] summary::after {
+            content: '-';
+            transform: rotate(180deg);
+        }
+        
+        .details-content {
+            padding: 15px 20px 20px;
+            border-top: 1px solid #444;
+            color: #b0b0b0;
+            line-height: 1.8;
+            font-size: 0.95rem;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .details-content p {
+            margin-bottom: 10px;
+        }
+        
+        .details-content a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .details-content a:hover {
+            text-decoration: underline;
+        }
+        
+        button {
+            background: #444444;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        
+        button:hover {
+            background: #262626;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        button:focus {
+            outline: 2px solid #007bff;
+            outline-offset: 2px;
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            summary {
+                padding: 15px;
+                font-size: 1rem;
+            }
+            
+            .details-content {
+                padding: 10px 15px 15px;
+            }
+            
+            button {
+                padding: 8px 12px;
+                width: 100%;
+            }
+        }
+        
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #777;
+            font-size: 0.8rem;
+        }
+
+        .icon-svg {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            color: currentColor;
+        }
+        
+        /* Contact Form Styles */
+        .contact-form {
+            background-color: #111111;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        .contact-form h2 {
+            margin-bottom: 20px;
+            color: #e0e0e0;
+        }
+        
+        .contact-form .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .contact-form label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b0b0b0;
+        }
+        
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 12px;
+            background-color: #111111;
+            border: 1px solid #555;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .contact-form textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .contact-form button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+        }
+        
+        .success-message {
+            background-color: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .app-info {
+            background-color: #111111;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        .app-info h2 {
+            margin-bottom: 15px;
+            color: #e0e0e0;
+        }
+        
+        .app-info p {
+            margin-bottom: 10px;
+            color: #b0b0b0;
+        }
+        
+        .app-info a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .app-info a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Langsung ke konten utama</a>
+    
+    <div class="main-container">
+        <header class="header-back">
+            <a href="settings.html" aria-label="Kembali ke halaman pengaturan">
+                <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </a>
+            <h1>Bantuan & FAQ</h1>
+        </header>
+
+        <main id="main-content">
+            <section class="app-info">
+                <h2>Tentang ELSA</h2>
+                <p>ELSA (Education Learning Smart App) adalah aplikasi PWA (Progressive Web App) yang dirancang untuk membantu Anda belajar dengan lebih efisien. Aplikasi ini dapat bekerja secara offline dan memberikan pengalaman belajar yang cepat dan responsif.</p>
+                <p><strong>URL Aplikasi:</strong> <a href="https://shadowwd117.github.io/ELSA/" target="_blank">https://shadowwd117.github.io/ELSA/</a></p>
+                <p><strong>Pengembang:</strong> Shadow</p>
+            </section>
+
+            <h2 style="margin-bottom: 20px;">Pertanyaan Umum (FAQ)</h2>
+            
+            <details role="group">
+                <summary aria-expanded="false" role="button" tabindex="0">
+                    Apa itu ELSA?
+                    <span aria-hidden="true"></span>
+                </summary>
+                <div class="details-content" aria-hidden="true">
+                    <p>ELSA adalah aplikasi pembelajaran berbasis web progresif (PWA) yang memungkinkan Anda mengakses materi belajar secara offline. Aplikasi ini dirancang untuk memberikan pengalaman belajar yang cepat dan efisien dengan antarmuka yang sederhana.</p>
+                </div>
+            </details>
+            
+            <details role="group">
+                <summary aria-expanded="false" role="button" tabindex="0">
+                    Bagaimana cara menggunakan ELSA secara offline?
+                    <span aria-hidden="true"></span>
+                </summary>
+                <div class="details-content" aria-hidden="true">
+                    <p>ELSA menggunakan teknologi Service Worker untuk menyimpan konten secara lokal di perangkat Anda. Setelah Anda mengunjungi situs ELSA untuk pertama kali, aplikasi akan meng-cache konten penting sehingga dapat diakses tanpa koneksi internet.</p>
+                    <p>Pastikan Anda telah mengizinkan penyimpanan cache di browser Anda untuk pengalaman offline yang optimal.</p>
+                </div>
+            </details>
+            
+            <details role="group">
+                <summary aria-expanded="false" role="button" tabindex="0">
+                    Bagaimana cara mengelola cache di ELSA?
+                    <span aria-hidden="true"></span>
+                </summary>
+                <div class="details-content" aria-hidden="true">
+                    <p>Anda dapat mengelola cache melalui halaman Pengaturan:</p>
+                    <ol>
+                        <li>Buka halaman Pengaturan</li>
+                        <li>Pilih opsi "Manajemen Penyimpanan"</li>
+                        <li>Anda dapat melihat daftar cache dan menghapusnya jika diperlukan</li>
+                    </ol>
+                    <p>Menghapus cache akan membebaskan ruang penyimpanan tetapi juga menghapus data yang memungkinkan aplikasi bekerja offline.</p>
+                </div>
+            </details>
+            
+            <details role="group">
+                <summary aria-expanded="false" role="button" tabindex="0">
+                    Apakah data profil saya aman?
+                    <span aria-hidden="true"></span>
+                </summary>
+                <div class="details-content" aria-hidden="true">
+                    <p>Semua data profil (nama, email, foto, dll.) disimpan secara lokal di perangkat Anda menggunakan localStorage browser. Data ini tidak dikirim ke server mana pun dan hanya dapat diakses oleh aplikasi ELSA di browser Anda.</p>
+                    <p>Anda dapat menghapus semua data lokal kapan saja melalui opsi "Hapus Data Lokal" di halaman Profil.</p>
+                </div>
+            </details>
+            
+            <details role="group">
+                <summary aria-expanded="false" role="button" tabindex="0">
+                    Bagaimana cara memperbarui aplikasi ELSA?
+                    <span aria-hidden="true"></span>
+                </summary>
+                <div class="details-content" aria-hidden="true">
+                    <p>Karena ELSA adalah PWA, pembaruan dilakukan secara otomatis ketika ada versi baru. Service Worker akan mendeteksi perubahan dan memperbarui cache dengan konten terbaru.</p>
+                    <p>Anda juga dapat memaksa pembaruan dengan:</p>
+                    <ol>
+                        <li>Menghapus cache melalui halaman Pengaturan</li>
+                        <li>Muat ulang halaman ELSA</li>
+                    </ol>
+                </div>
+            </details>
+            
+            <details role="group">
+                <summary aria-expanded="false" role="button" tabindex="0">
+                    Apakah ELSA mendukung perangkat mobile?
+                    <span aria-hidden="true"></span>
+                </summary>
+                <div class="details-content" aria-hidden="true">
+                    <p>Ya, ELSA dirancang dengan pendekatan mobile-first dan responsif. Aplikasi ini dapat diinstal di perangkat mobile seperti smartphone dan tablet, serta berfungsi dengan baik di berbagai ukuran layar.</p>
+                    <p>Untuk pengalaman terbaik, disarankan menggunakan browser terbaru seperti Chrome, Firefox, atau Safari.</p>
+                </div>
+            </details>
+            
+            <details role="group">
+                <summary aria-expanded="false" role="button" tabindex="0">
+                    Apa fungsi username dan email pada bagian profile?
+                    <span aria-hidden="true"></span>
+                </summary>
+                <div class="details-content" aria-hidden="true">
+                    <p>Username dan email pada bagian profile bertujuan untuk memudahkan pengguna dalam menghubungi pengembang. Dengan menggunakan username serta email dari bagian profile, pengguna tidak perlu lagi memasukka username dan email di bagian bantuan dan FAQ</p>
+                    <p>Fitur ini aman dan bertujuan untuk meningkatkan kesan terbaik untuk pengguna.</p>
+                </div>
+            </details>
+
+            <section class="contact-form">
+                <h2>Hubungi Developer</h2>
+                <p style="margin-bottom: 20px; color: #b0b0b0;">Kirim pesan kepada developer ELSA untuk pertanyaan, saran, atau laporan masalah.</p>
+                
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="userName">Nama Anda</label>
+                        <input type="text" id="userName" name="userName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userEmail">Email Anda</label>
+                        <input type="email" id="userEmail" name="userEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Pesan</label>
+                        <textarea id="message" name="message" placeholder="Tulis pesan Anda di sini..." required></textarea>
+                    </div>
+                    
+                    <button type="submit">Kirim Pesan</button>
+                </form>
+                
+                <div id="successMessage" class="success-message">
+                    Pesan Anda telah berhasil dikirim! Developer akan membalas melalui email jika diperlukan.
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>© 2025 ELSA Shadow. All Rights Reversed.</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Load user data from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load user data if available
+            const userName = localStorage.getItem('userName');
+            const userEmail = localStorage.getItem('userEmail');
+            
+            if (userName && userName !== 'Nama Pengguna' && userName !== 'Belum Diatur') {
+                document.getElementById('userName').value = userName;
+            }
+            
+            if (userEmail && userEmail !== 'example@mail.com' && userEmail !== 'Belum Diatur') {
+                document.getElementById('userEmail').value = userEmail;
+            }
+            
+            // Handle form submission
+            document.getElementById('contactForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // In a real application, you would send this data to a server
+                // For this demo, we'll just show a success message
+                document.getElementById('successMessage').style.display = 'block';
+                
+                // Reset form
+                this.reset();
+                
+                // Reload user data
+                if (userName && userName !== 'Nama Pengguna' && userName !== 'Belum Diatur') {
+                    document.getElementById('userName').value = userName;
+                }
+                
+                if (userEmail && userEmail !== 'example@mail.com' && userEmail !== 'Belum Diatur') {
+                    document.getElementById('userEmail').value = userEmail;
+                }
+                
+                // Hide success message after 5 seconds
+                setTimeout(function() {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 5000);
+            });
+            
+            // Auto-collapse other details when one opens
+            document.querySelectorAll('details').forEach(detail => {
+                detail.addEventListener('toggle', function() {
+                    if (this.open) {
+                        const isExpanded = this.open ? 'true' : 'false';
+                        this.querySelector('summary').setAttribute('aria-expanded', isExpanded);
+                        this.querySelector('.details-content').setAttribute('aria-hidden', !isExpanded);
+                        
+                        document.querySelectorAll('details').forEach(other => {
+                            if (other !== this) {
+                                other.open = false;
+                                other.querySelector('summary').setAttribute('aria-expanded', 'false');
+                                other.querySelector('.details-content').setAttribute('aria-hidden', 'true');
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Initialize a11y attributes
+            document.querySelectorAll('details').forEach(detail => {
+                const isOpen = detail.open;
+                detail.querySelector('summary').setAttribute('aria-expanded', isOpen);
+                detail.querySelector('.details-content').setAttribute('aria-hidden', !isOpen);
+            });
+        });
+        
+        // === BACK NAVIGATION SOLUTION ===
+        function handleBackNavigation() {
+            if (document.referrer.includes(window.location.hostname) && history.length > 1) {
+                history.back();
+            } else {
+                window.location.href = 'settings.html';
+            }
+        }
+
+        // Auto-initialize back navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.header-back a').forEach(btn => {
+                btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
+            });
+        });
+    </script>
+</body>
+</html>
