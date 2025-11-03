@@ -111,6 +111,7 @@ body {
 .header-icons {
     display: flex;
     flex-shrink: 0;
+    gap: 15px;
 }
 
 .header-icons a {
@@ -120,6 +121,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
 }
 
 /* STICKY NAVBAR */
@@ -149,6 +152,7 @@ body {
     min-width: 60px;
     flex: 1;
     max-width: 100px;
+    min-height: 44px;
 }
 
 .nav-item.active {
@@ -256,6 +260,7 @@ body {
     justify-content: center;
     border: none;
     color: #ffffff;
+    min-height: 44px;
 }
 
 .card-item:active {
@@ -308,14 +313,14 @@ body {
 }
 
 /* ================================================= */
-/* MODIFIKASI: CARD BUKU (.card-row) */
+/* PERBAIKAN: CARD BUKU YANG KONSISTEN */
 /* ================================================= */
 
 .card-row {
     display: flex;
     overflow-x: auto;
-    gap: 16px; /* Jarak antar card sedikit lebih besar */
-    padding: 10px 0; /* Hapus padding horizontal */
+    gap: 16px;
+    padding: 10px 0;
     margin-bottom: 20px;
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -329,18 +334,17 @@ body {
 }
 
 .card-row .card-item {
-    background: #1a1a1a; /* Warna background lebih gelap */
-    padding: 0; /* Hapus padding agar gambar cover menempel */
-    border-radius: 8px; /* Sudut lebih lembut */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2); /* Bayangan lebih jelas */
-    text-align: left; /* Teks rata kiri */
-    min-width: 130px; 
-    max-width: 130px; /* Lebar card dikurangi agar lebih proporsional */
+    background: #1a1a1a;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    min-width: 140px;
+    max-width: 140px;
     flex-shrink: 0;
     display: flex;
-    flex-direction: column; /* Menggunakan Flexbox untuk tata letak vertikal */
-    overflow: hidden; /* Penting untuk efek border-radius dan gambar */
+    flex-direction: column;
+    overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding: 0;
 }
 
 .card-row .card-item:active {
@@ -348,14 +352,16 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-/* NEW: Container untuk sampul buku dengan rasio aspek 2:3 */
+/* Container sampul buku yang konsisten */
 .book-cover-container {
     width: 100%;
-    /* Rasio aspek 2:3 (Tinggi = 150% dari Lebar) */
-    padding-top: 150%; 
+    padding-top: 150%; /* Rasio 2:3 */
     position: relative;
     overflow: hidden;
-    background-color: #333333; /* Placeholder saat gambar belum dimuat */
+    background: linear-gradient(135deg, #333333 0%, #555555 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .book-cover-container img {
@@ -364,51 +370,225 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Memastikan gambar mengisi area tanpa distorsi */
+    object-fit: cover;
 }
 
-/* NEW: Info buku (Judul, Ukuran, Tombol) */
+.book-cover-container .icon-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: rgba(255,255,255,0.7);
+}
+
+/* Konten info buku */
 .book-info-content {
-    padding: 10px; /* Padding untuk konten teks dan tombol */
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    flex-grow: 1; 
+    flex-grow: 1;
+    gap: 6px;
 }
 
-/* MODIFIKASI: Judul Buku */
-.card-row .card-item h3 {
-    font-size: 0.85rem; 
-    font-weight: 600;
+/* Header buku dengan lock button */
+.book-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    gap: 8px;
     margin-bottom: 4px;
+}
+
+.book-header h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0;
     color: #f8f9fa;
-    /* Truncation 2 baris untuk Judul Panjang */
-    white-space: normal; 
+    line-height: 1.3;
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* Batasi maksimal 2 baris */
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 2.2em; /* Minimal tinggi 2 baris agar card stabil */
-    text-align: left; /* Pastikan rata kiri */
+    min-height: 2.4em;
+    text-align: left;
+    flex: 1;
+    word-break: break-word;
 }
 
-/* MODIFIKASI: Deskripsi/Icon Wrapper */
-.card-row .card-item p {
-    font-size: 0.7rem; 
-    color: #adb5bd; /* Warna abu-abu yang lebih baik */
-    margin-top: auto; /* Mendorong info file size ke bawah */
-    text-align: left; /* Pastikan rata kiri */
+/* Info subjek dan ukuran file */
+.book-subject {
+    font-size: 0.75rem;
+    color: #adb5bd;
+    margin: 0;
+    text-align: left;
+    line-height: 1.3;
 }
 
-.card-row .card-item .icon-wrapper {
-    /* Gaya ini mungkin tidak relevan untuk buku, biarkan saja */
-    font-size: 1.8rem;
-    margin-bottom: 6px;
+.file-size {
+    font-size: 0.7rem;
+    color: #6c757d;
+    margin: 0;
+    text-align: left;
 }
 
 /* ================================================= */
-/* AKHIR MODIFIKASI CARD BUKU */
+/* PERBAIKAN: TOMBOL YANG KONSISTEN */
 /* ================================================= */
 
+.btn-download, .btn-read, .btn-update {
+    width: 100%;
+    padding: 10px 8px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    margin-top: 8px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.btn-download {
+    background: #007bff;
+    color: white;
+}
+
+.btn-download:active {
+    background: #0056b3;
+    transform: scale(0.98);
+}
+
+.btn-read {
+    background: #28a745;
+    color: white;
+}
+
+.btn-read:active {
+    background: #1e7e34;
+    transform: scale(0.98);
+}
+
+.btn-update {
+    background: #ffc107;
+    color: #212529;
+}
+
+.btn-update:active {
+    background: #e0a800;
+    transform: scale(0.98);
+}
+
+/* Lock button yang lebih baik */
+.lock-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px;
+    color: #6c757d;
+    flex-shrink: 0;
+    transition: color 0.2s;
+    min-width: 30px;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lock-btn.locked {
+    color: #ffc107;
+}
+
+.lock-btn:active {
+    transform: scale(0.9);
+}
+
+/* Container untuk actions */
+.book-actions-container {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 600;
+    min-height: 32px;
+    transition: all 0.2s;
+}
+
+.btn-delete:active {
+    background: #c82333;
+    transform: scale(0.98);
+}
+
+/* Status indicators */
+.book-status {
+    font-size: 0.7rem;
+    margin-top: 4px;
+    text-align: center;
+    padding: 4px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.book-status:not(.update) {
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.book-status.update {
+    color: #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.lock-status {
+    font-size: 0.7rem;
+    color: #ffc107;
+    margin-top: 4px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Progress indicator */
+.download-progress {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: #28a745;
+    text-align: center;
+    font-weight: 500;
+    padding: 4px;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 4px;
+}
+
+/* Loading state yang lebih baik */
+.loading-text {
+    color: #6c757d;
+    font-style: italic;
+    text-align: center;
+    padding: 40px 20px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
 
 /* ALAT GRID */
 #alat-section {
@@ -476,6 +656,9 @@ body {
     font-size: 0.9rem;
     white-space: nowrap;
     flex-shrink: 0;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
 }
 
 .custom-file-input label:active {
@@ -492,6 +675,9 @@ body {
     text-overflow: ellipsis;
     font-size: 0.9rem;
     min-width: 0;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
 }
 
 input[type="file"] {
@@ -511,6 +697,10 @@ input[type="file"] {
     text-align: center;
     transition: background 0.2s;
     text-decoration: none;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn:active {
@@ -533,6 +723,7 @@ input[type="file"] {
     color: white;
     border: none;
     cursor: pointer;
+    min-height: 44px;
 }
 
 #installButton:active {
@@ -583,6 +774,10 @@ input[type="file"] {
     transition: background-color 0.2s;
     flex: 1;
     min-width: 120px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-btn.primary {
@@ -603,7 +798,6 @@ input[type="file"] {
     background: #5a6268;
 }
 
-
 /* ===================================================
    GAYA UNTUK CUSTOM ALERT MODAL
    =================================================== */
@@ -611,20 +805,20 @@ input[type="file"] {
 .custom-modal {
     display: none; 
     position: fixed;
-    z-index: 3000; /* Di atas PDF viewer (z-index 2000) */
+    z-index: 3000;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.75); /* Background gelap transparan */
+    background-color: rgba(0, 0, 0, 0.75);
     animation: fadeIn 0.3s;
-    align-items: center; /* Tambahan untuk memposisikan di tengah */
-    justify-content: center; /* Tambahan untuk memposisikan di tengah */
+    align-items: center;
+    justify-content: center;
 }
 
 .custom-modal-content {
-    background-color: #333333; /* Warna gelap konten modal */
+    background-color: #333333;
     color: #ffffff;
     padding: 20px;
     border-radius: 12px;
@@ -644,7 +838,7 @@ input[type="file"] {
     font-size: 1.2rem;
     font-weight: 700;
     margin-bottom: 10px;
-    color: #007bff; /* Warna Judul Utama */
+    color: #007bff;
 }
 
 .custom-modal-content .modal-message {
@@ -660,12 +854,12 @@ input[type="file"] {
     gap: 15px;
 }
 
-/* Tombol Alert Custom (menggunakan gaya modal-btn yang sudah ada) */
 .custom-modal-content .modal-btn {
     padding: 10px 18px;
     font-weight: 600;
     flex: 1;
     min-width: 100px;
+    min-height: 44px;
 }
 
 /* Responsif untuk tombol custom alert */
@@ -678,7 +872,6 @@ input[type="file"] {
     }
 }
 
-
 /* PDF VIEWER */
 #pdf-viewer {
     display: none;
@@ -688,7 +881,7 @@ input[type="file"] {
     top: 0;
     left: 0;
     width: 100%;
-    background-color: #262626; /* Background utama */
+    background-color: #262626;
     z-index: 2000;
 }
 
@@ -696,7 +889,7 @@ input[type="file"] {
     display: flex;
     align-items: center;
     padding: 15px 20px;
-    background-color: #444444; /* Header */
+    background-color: #444444;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     z-index: 10;
     border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -711,9 +904,11 @@ input[type="file"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: none; /* Pastikan ini adalah tombol */
+    background: none;
     border: none;
     cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
 }
 
 #top-bar #file-name-display {
@@ -735,7 +930,7 @@ input[type="file"] {
     padding: 20px;
     -webkit-overflow-scrolling: touch;
     width: 100%;
-    background-color: #111111; /* Konten area PDF */
+    background-color: #111111;
 }
 
 #pdf-render {
@@ -760,7 +955,7 @@ input[type="file"] {
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: #444444; /* UI bawah */
+    background-color: #444444;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -790,14 +985,16 @@ input[type="file"] {
     font-size: 0.9rem;
     transition: background-color 0.2s, transform 0.1s;
     min-width: 50px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .control-group button:active {
     background-color: rgba(255, 255, 255, 0.2);
     transform: scale(0.95);
 }
-
-/* PERBAIKAN: Menghapus CSS duplikat */
 
 #page-info {
     padding: 10px 15px;
@@ -806,6 +1003,10 @@ input[type="file"] {
     font-size: 0.9rem;
     background-color: rgba(255, 255, 255, 0.1);
     cursor: pointer;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #page-info:active {
@@ -822,6 +1023,7 @@ input[type="file"] {
     border-radius: 8px;
     color: #000000;
     font-size: 0.9rem;
+    min-height: 44px;
 }
 
 /* UPDATE NOTIFICATION */
@@ -851,6 +1053,7 @@ input[type="file"] {
     cursor: pointer;
     font-weight: bold;
     font-size: 0.8rem;
+    min-height: 32px;
 }
 
 #update-notification button:active {
@@ -880,7 +1083,10 @@ input[type="file"] {
     height: 20px;
 }
 
-/* RESPONSIVE DESIGN */
+/* ================================================= */
+/* PERBAIKAN: RESPONSIVENESS */
+/* ================================================= */
+
 @media (max-width: 360px) {
     .app-header {
         padding: 12px 15px;
@@ -913,20 +1119,31 @@ input[type="file"] {
     }
     
     .card-row .card-item {
-        min-width: 120px;
-        max-width: 120px;
+        min-width: 125px;
+        max-width: 125px;
     }
     
     .book-info-content {
-        padding: 8px; /* Padding lebih kecil untuk mobile kecil */
+        padding: 10px 8px;
     }
     
     .card-row .card-item h3 {
         font-size: 0.8rem;
+        min-height: 2.2em;
     }
     
-    .card-row .card-item p {
+    .book-subject {
+        font-size: 0.7rem;
+    }
+    
+    .file-size {
         font-size: 0.65rem;
+    }
+    
+    .btn-download, .btn-read, .btn-update {
+        font-size: 0.75rem;
+        padding: 8px 6px;
+        min-height: 34px;
     }
     
     .card-item h3 {
@@ -1027,9 +1244,10 @@ html {
 }
 
 /* FOCUS OUTLINE */
-button:focus,
-a:focus,
-.nav-item:focus {
+button:focus-visible,
+a:focus-visible,
+.nav-item:focus-visible,
+.card-item:focus-visible {
     outline: 2px solid #007bff;
     outline-offset: 2px;
 }
@@ -1092,19 +1310,9 @@ p, span, a {
     line-height: 1.4;
 }
 
-/* TOUCH-FRIENDLY TARGET SIZES */
-@media (max-width: 768px) {
-    button, 
-    .btn, 
-    .nav-item, 
-    .card-item {
-        min-height: 44px;
-    }
-    
-    .header-icons a {
-        min-width: 44px;
-        min-height: 44px;
-    }
+/* Smooth transitions untuk semua interaktif elements */
+button, .card-item, .lock-btn, .nav-item {
+    transition: all 0.2s ease;
 }
 
 /* DARK MODE SUPPORT */
@@ -1125,110 +1333,6 @@ p, span, a {
     .card-item, .upload-section {
         background-color: #1a1a1a;
     }
-}
-
-/* MODIFIKASI: Book Manager Styles */
-.btn-download, .btn-read {
-  width: 100%;
-  padding: 8px; /* Padding dikurangi */
-  margin-top: 6px; /* Margin dikurangi */
-  border: none;
-  border-radius: 4px; /* Border radius dikurangi */
-  cursor: pointer;
-  font-size: 0.75rem; /* Ukuran font dikurangi */
-  transition: all 0.2s;
-  font-weight: 500;
-}
-
-.btn-download {
-  background: #007bff;
-  color: white;
-}
-
-.btn-download:active {
-  background: #0056b3;
-  transform: scale(0.98);
-}
-
-.btn-download:disabled {
-  background: #6c757d;
-  cursor: not-allowed;
-}
-
-.file-size {
-  font-size: 0.7rem; /* Font size dikurangi */
-  color: #adb5bd; /* Warna disesuaikan */
-  margin: 5px 0 0; /* Margin atas ditambahkan */
-  text-align: left;
-}
-
-.download-progress {
-  margin-top: 8px;
-  font-size: 0.75rem;
-  color: #28a745;
-  text-align: center;
-  font-weight: 500;
-}
-
-/* MODIFIKASI: loading-text dalam card-item */
-.loading-text {
-  color: #6c757d;
-  font-style: italic;
-  text-align: center;
-  /* Membuat text loading berada di tengah card */
-  padding: 20px 10px; 
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Gaya untuk tombol buku yang lebih baik */
-.book-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start; /* Ganti dari center ke flex-start */
-    width: 100%;
-    margin-bottom: 8px;
-}
-.book-header h3 {
-    margin-bottom: 0;
-    text-align: left;
-    flex-grow: 1;
-    word-break: break-word; 
-}
-.lock-btn {
-    background: none;
-    border: none;
-    font-size: 1rem; /* Ukuran icon dikurangi */
-    cursor: pointer;
-    padding: 3px; /* Padding dikurangi */
-    margin-left: 5px;
-    color: white;
-    flex-shrink: 0; /* Pastikan tidak mengecil */
-    line-height: 1;
-}
-.lock-btn.locked {
-    color: #ffc107; /* Warna kuning untuk terkunci */
-}
-.book-actions {
-    margin-top: auto; /* Mendorong ke bagian bawah card */
-    width: 100%;
-    padding-top: 5px;
-}
-.btn-delete {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 0.7rem;
-    cursor: pointer;
-    width: 100%;
-}
-.btn-delete:active {
-    background: #c82333;
 }
 </style>
 </head>
@@ -1353,7 +1457,27 @@ p, span, a {
                   <div class="loading-text">Memuat daftar buku...</div>
                 </div>
               </section>
+              
+              <!-- Tambahkan ini di section buku -->
+<h2 class="section-title">Kelas 12 IPA</h2>
+<section class="card-row" id="kelas-12-ipa-books">
+  <div class="card-item">
+    <div class="loading-text">Memuat daftar buku...</div>
+  </div>
+</section>
+
+<h2 class="section-title">Kelas 12 IPS</h2>  
+<section class="card-row" id="kelas-12-ips-books">
+  <div class="card-item">
+    <div class="loading-text">Memuat daftar buku...</div>
+  </div>
+</section>
+              
             </div>
+            
+
+            
+            
             
             <div id="alat-section" class="content-section">
                 <h2 class="section-title">Alat Praktis</h2>

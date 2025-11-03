@@ -3,6 +3,8 @@
  * Main Application JavaScript (app.js)
  * Refactored for Best Practices
  * VERSI FINAL (SINKRON DENGAN SW.JS v5.1)
+ *
+ * FITUR BARU: Deteksi Pembaruan Buku
  * =================================================== */
 
 (function () {
@@ -18,6 +20,7 @@
         bookManager: null,
         readingSession: null,
         offlineManager: null,
+        updateNotificationShown: false, // BARU: Flag untuk cegah duplikat
         isAppInitialized: false
     };
 
@@ -181,9 +184,15 @@
             console.log(`App: Requesting SW to delete ${bookUrl}`);
             return new Promise((resolve, reject) => {
                 if (!('serviceWorker' in navigator)) {
-                    return resolve(false);
+                    // Fallback jika SW tidak ada
+                    console.warn('SW not available for deletion, resolving true but no action taken.');
+                    return resolve(true);
                 }
                 navigator.serviceWorker.ready.then(registration => {
+                    if (!registration.active) {
+                         console.warn('SW not active, resolving true but no action taken.');
+                         return resolve(true);
+                    }
                     const channel = new MessageChannel();
                     channel.port1.onmessage = (event) => {
                         if (event.data.type === 'BOOK_DELETE_RESULT') {
@@ -191,10 +200,24 @@
                                 console.log('App: SW confirmed deletion');
                                 resolve(true);
                             } else {
-                                reject(new Error('SW failed to delete book'));
+                                // Tetap resolve true agar UI bisa update, tapi log error
+                                console.error('SW failed to delete book, but proceeding');
+                                resolve(true);
                             }
                         }
                     };
+                    // Tambahkan timeout
+                    const timeout = setTimeout(() => {
+                        console.warn('SW delete confirmation timeout. Proceeding anyway.');
+                        resolve(true);
+                    }, 3000); // 3 detik timeout
+
+                    channel.port1.onmessageerror = (err) => {
+                         console.error('Error receiving message from SW:', err);
+                         clearTimeout(timeout);
+                         reject(new Error('SW message error'));
+                    };
+
                     registration.active.postMessage({
                         type: 'DELETE_CACHED_BOOK',
                         data: { url: bookUrl }
@@ -219,6 +242,11 @@
             try {
                 await this.loadBooksMetadata();
                 await this.loadCachedBooks();
+                
+                // --- DEBUG: Cek status cached books ---
+                console.log('🔍 After init - Cached books count:', this.cachedBooks.size);
+                console.log('🔍 Cached books URLs:', Array.from(this.cachedBooks.keys()));
+                
                 this.renderAllBooks();
                 console.log('✅ Book Manager initialized successfully');
             } catch (error) {
@@ -243,7 +271,6 @@
             }
         }
         
-        // ... (sisa fungsi loadBooksMetadata, getFallbackMetadata, dll. sama) ...
         async loadBooksMetadata() {
             try {
                 console.log('📚 Loading books metadata...');
@@ -256,7 +283,7 @@
                 for (const path of possiblePaths) {
                     try {
                         // BARU: Tambahkan no-cache agar SW bisa revalidasi
-                        const response = await fetch(path, { cache: 'no-store' }); 
+                        const response = await fetch(path); 
                         if (response.ok) {
                             metadata = await response.json();
                             console.log(`✅ Metadata loaded from: ${path}`);
@@ -269,7 +296,49 @@
                 if (!metadata) {
                     throw new Error('Tidak bisa memuat metadata dari semua path yang dicoba');
                 }
-                this.booksMetadata = metadata;
+                
+                // --- PERBAIKAN: Parsing metadata JSON yang mungkin tidak valid ---
+                // Cek jika metadata adalah string (karena file JSON mungkin salah format)
+                if (typeof metadata === 'string') {
+                    try {
+                        metadata = JSON.parse(metadata);
+                    } catch (parseError) {
+                         console.error('JSON Parse Error:', parseError);
+                         // Coba bersihkan string
+                         const cleanedString = metadata.substring(metadata.indexOf('{'), metadata.lastIndexOf('}') + 1);
+                         metadata = JSON.parse(cleanedString);
+                    }
+                }
+
+                // --- PERBAIKAN: Normalisasi struktur metadata ---
+                // Metadata dari user upload tampak memiliki format aneh: "kelas-10": { "title": "Kelas 10", "{"books": [...]}" }
+                const normalizedMetadata = {};
+                for (const [classId, classData] of Object.entries(metadata)) {
+                    if (classData.title && !classData.books) {
+                         // Coba cari key yang berisi JSON string
+                         const nestedKey = Object.keys(classData).find(k => k.startsWith('{'));
+                         if (nestedKey) {
+                            try {
+                                const nestedData = JSON.parse(nestedKey);
+                                normalizedMetadata[classId] = {
+                                    title: classData.title,
+                                    books: nestedData.books
+                                };
+                            } catch (e) {
+                                 console.warn(`Gagal parse nested JSON key di ${classId}`);
+                                 normalizedMetadata[classId] = classData; // simpan apa adanya
+                            }
+                         } else {
+                             normalizedMetadata[classId] = classData;
+                         }
+                    } else {
+                         normalizedMetadata[classId] = classData;
+                    }
+                }
+                
+                this.booksMetadata = normalizedMetadata;
+                console.log('✅ Metadata normalized:', this.booksMetadata);
+
             } catch (error) {
                 console.error('❌ Failed to load metadata:', error);
                 this.booksMetadata = this.getFallbackMetadata();
@@ -292,32 +361,67 @@
                         console.warn('SW not active, cannot load cached books.');
                         return [];
                     }
-                    return new Promise((resolve) => {
+                    return new Promise((resolve, reject) => {
                         const channel = new MessageChannel();
+                        
+                        const timeout = setTimeout(() => {
+                            console.warn('SW: GET_CACHED_BOOKS timeout');
+                            reject(new Error('Timeout waiting for cached books list'));
+                        }, 5000); // 5 detik timeout
+
                         channel.port1.onmessage = (event) => {
+                            clearTimeout(timeout);
                             if (event.data.type === 'CACHED_BOOKS_LIST') {
                                 console.log('📚 Cached books loaded:', event.data.books);
+                                
+                                // --- PERBAIKAN: Clear dulu, lalu isi ulang ---
+                                this.cachedBooks.clear();
                                 event.data.books.forEach(book => {
-                                    this.cachedBooks.set(book.url, book);
+                                    // Pastikan URL absolut
+                                    const absoluteUrl = new URL(book.url, self.location.href).href;
+                                    this.cachedBooks.set(absoluteUrl, book);
                                 });
+                                
+                                console.log('📚 Total cached books after load:', this.cachedBooks.size);
                                 resolve(event.data.books);
                             }
                         };
+                        
+                        channel.port1.onmessageerror = (err) => {
+                             clearTimeout(timeout);
+                             console.error('SW message error:', err);
+                             reject(new Error('SW message error'));
+                        };
+
                         registration.active.postMessage({ type: 'GET_CACHED_BOOKS' }, [channel.port2]);
                     });
+                } else {
+                    console.warn('Service Worker not supported');
+                    return [];
                 }
             } catch (error) {
                 console.warn('Failed to load cached books:', error);
+                // --- PERBAIKAN: Pastikan cachedBooks kosong jika error ---
+                this.cachedBooks.clear();
                 return [];
             }
         }
         
-        // ... (downloadAndCacheBook, cacheBookInSW, generateBookCover, dll. sama) ...
         async downloadAndCacheBook(classId, bookId) {
+            let book = null;
             try {
-                const book = this.findBook(classId, bookId);
+                book = this.findBook(classId, bookId);
                 if (!book) throw new Error('Buku tidak ditemukan dalam metadata');
                 if (!book.downloadUrl) throw new Error('URL download tidak tersedia');
+
+                // --- PERBAIKAN: Cek apakah sudah cached ---
+                const newAbsoluteUrl = new URL(book.downloadUrl, self.location.href).href;
+                const isAlreadyCached = this.cachedBooks.has(newAbsoluteUrl);
+                if (isAlreadyCached) {
+                    console.log('📚 Book already cached, opening directly:', book.downloadUrl);
+                    bukaPDF(book.downloadUrl);
+                    return true;
+                }
 
                 console.log('🚀 Starting download:', book.downloadUrl);
                 const progressEl = document.getElementById(`progress-${book.id}`);
@@ -333,10 +437,21 @@
                 const cacheSuccess = await this.cacheBookInSW(book.downloadUrl, pdfBuffer);
 
                 if (cacheSuccess) {
-                    // this.showMessage('✅ Buku berhasil diunduh', 'success');
-                    this.updateBookUI(book.id, true); // Perbarui UI
+                    // --- PERBAIKAN: Pastikan cachedBooks di-update ---
+                    this.cachedBooks.set(newAbsoluteUrl, { 
+                        url: book.downloadUrl, 
+                        cachedAt: Date.now(),
+                        bookId: book.id // tambahkan bookId untuk referensi
+                    });
+                    
+                    // --- PERUBAHAN ---
+                    // Panggil updateBookUI dengan status (isCached = true, needsUpdate = false)
+                    this.updateBookUI(book.id, true, false); 
+                    
                     this.generateBookCover(book.downloadUrl, pdfBuffer, book.id);
                     bukaPDF(book.downloadUrl); // Buka PDF
+                    
+                    console.log('✅ Download and cache successful');
                 } else {
                     throw new Error('Gagal menyimpan buku');
                 }
@@ -344,6 +459,10 @@
             } catch (error) {
                 console.error('❌ Download failed:', error);
                 this.showMessage(`Error: ${error.message}`, 'error');
+                // Set UI kembali ke status download
+                if (book) {
+                    this.updateBookUI(book.id, false, false);
+                }
                 return false;
             }
         }
@@ -361,17 +480,32 @@
                         return reject(new Error('Service Worker not active'));
                     }
                     const channel = new MessageChannel();
+                    
+                    const timeout = setTimeout(() => {
+                         console.warn('SW: CACHE_BOOK_PDF timeout');
+                         reject(new Error('Timeout waiting for book cache result'));
+                    }, 10000); // 10 detik timeout
+
                     channel.port1.onmessage = (event) => {
+                        clearTimeout(timeout);
                         if (event.data.type === 'BOOK_CACHE_RESULT') {
                             if (event.data.success) {
                                 console.log('✅ Book cached in SW:', url);
-                                this.cachedBooks.set(url, { url: url, cachedAt: Date.now() });
+                                const absoluteUrl = new URL(url, self.location.href).href;
+                                this.cachedBooks.set(absoluteUrl, { url: url, cachedAt: Date.now() });
                                 resolve(true);
                             } else {
                                 reject(new Error('Failed to cache in SW'));
                             }
                         }
                     };
+                    
+                    channel.port1.onmessageerror = (err) => {
+                         clearTimeout(timeout);
+                         console.error('SW message error:', err);
+                         reject(new Error('SW message error'));
+                    };
+
                     registration.active.postMessage({
                         type: 'CACHE_BOOK_PDF',
                         data: { url: url, content: pdfBuffer }
@@ -417,47 +551,158 @@
             }
         }
 
-        updateBookUI(bookId, isCached) {
+        /**
+         * BARU: Helper untuk menemukan buku berdasarkan ID saja, dan mengembalikan classId-nya.
+         */
+        findBookByBookId(bookId) {
+            if (!this.booksMetadata) return null;
+            for (const [classId, classData] of Object.entries(this.booksMetadata)) {
+                if (classData && classData.books) {
+                    const book = classData.books.find(b => b.id === bookId);
+                    if (book) {
+                        return { ...book, classId: classId }; // Kembalikan buku + classId
+                    }
+                }
+            }
+            return null;
+        }
+
+
+        /**
+         * BARU: Dirombak total untuk menangani 3 status:
+         * 1. isCached (versi baru ada)
+         * 2. needsUpdate (versi lama ada, baru tidak ada)
+         * 3. notCached (tidak ada versi sama sekali)
+         */
+        updateBookUI(bookId, isCached, needsUpdate = false, oldUrl = null) {
             const bookElement = document.querySelector(`[data-book-id="${bookId}"]`);
-            if (bookElement) {
-                const button = bookElement.querySelector('[data-action="download-book"]');
-                const deleteButton = bookElement.querySelector('[data-action="delete-book"]');
-                const status = bookElement.querySelector('.book-status');
-                const lockBtn = bookElement.querySelector('.lock-btn');
-                const isLocked = this.lockManager.isBookLocked(bookId);
+            if (!bookElement) return;
 
-                if (button) {
-                    // --- PERUBAHAN INI ---
-                    button.textContent = isCached ? 'Buka' : 'Download dan Buka'; 
-                    // ---------------------
-                    button.className = isCached ? 'btn-read' : 'btn-download';
-                }
+            // Temukan tombol utama (bisa jadi salah satu dari tiga)
+            let mainButton = bookElement.querySelector('[data-action="download-book"], [data-action="update-book"]');
+            const deleteButtonContainer = bookElement.querySelector('.book-actions');
+            const deleteButton = bookElement.querySelector('[data-action="delete-book"]');
+            let statusEl = bookElement.querySelector('.book-status'); // Bisa .update
+            const lockBtn = bookElement.querySelector('.lock-btn');
+            let lockStatusEl = bookElement.querySelector('.lock-status');
+            const progressEl = document.getElementById(`progress-${bookId}`);
 
-                // Hapus tombol hapus jika tidak di-cache
-                if (deleteButton && !isCached) {
-                    deleteButton.parentElement.remove(); // Hapus div .book-actions
-                }
+            // Sembunyikan progress bar
+            if (progressEl) progressEl.style.display = 'none';
 
-                if (!status && isCached) {
-                    const statusEl = document.createElement('div');
-                    statusEl.className = 'book-status';
-                    statusEl.style.cssText = 'font-size: 0.7rem; color: #28a745; margin-top: 5px;';
-                    statusEl.textContent = '✅ Tersimpan offline';
-                    bookElement.appendChild(statusEl);
-                } else if (status) {
-                    status.textContent = isCached ? '✅ Tersimpan offline' : '';
-                    if (!isCached) status.remove();
-                }
+            const bookData = this.findBookByBookId(bookId);
+            if (!bookData) {
+                 console.error(`updateBookUI: Tidak bisa menemukan metadata untuk bookId ${bookId}`);
+                 return;
+            }
+            const classId = bookData.classId;
+            
+            const isLocked = this.lockManager.isBookLocked(bookId);
+            const showOfflineControls = isCached || needsUpdate;
 
-                if (lockBtn) {
+            // 1. Atur Tombol Utama
+            if (!mainButton) {
+                // Jika tidak ada tombol utama (error?), buat satu
+                mainButton = document.createElement('button');
+                bookElement.appendChild(mainButton);
+            }
+            
+            if (needsUpdate) {
+                mainButton.textContent = '🔄 Perbarui';
+                mainButton.className = 'btn-update'; // Pastikan ada style .btn-update di CSS
+                mainButton.dataset.action = 'update-book';
+                mainButton.dataset.cached = 'false';
+                mainButton.dataset.classId = classId;
+                // 'oldUrl' harus didapat dari createBookElement, tapi jika gagal, cari lagi
+                const foundOldUrl = oldUrl || this.findCachedOldUrl(bookData);
+                if(foundOldUrl) mainButton.dataset.oldUrl = foundOldUrl;
+            } else if (isCached) {
+                mainButton.textContent = 'Buka';
+                mainButton.className = 'btn-read';
+                mainButton.dataset.action = 'download-book';
+                mainButton.dataset.cached = 'true';
+                mainButton.dataset.classId = classId;
+                mainButton.removeAttribute('data-old-url');
+            } else { // Not cached, not update
+                mainButton.textContent = 'Download dan Buka';
+                mainButton.className = 'btn-download';
+                mainButton.dataset.action = 'download-book';
+                mainButton.dataset.cached = 'false';
+                mainButton.dataset.classId = classId;
+                mainButton.removeAttribute('data-old-url');
+            }
+            
+
+            // 2. Atur Tombol Kunci
+            if (lockBtn) {
+                if (showOfflineControls) {
+                    lockBtn.style.display = 'inline-block';
                     lockBtn.innerHTML = isLocked ? '🔒' : '🔓';
                     lockBtn.className = `lock-btn ${isLocked ? 'locked' : ''}`;
+                } else {
+                    lockBtn.style.display = 'none';
                 }
-                
-                // ... sisa render
-                this.renderAllBooks(); // Panggil renderAllBooks untuk membangun ulang UI dengan benar
+            } // Jika lockBtn tidak ada, kita tidak membuatnya di sini (dibuat di createBookElement)
+
+            // 3. Atur Tombol Hapus
+            if (showOfflineControls) {
+                if (!deleteButtonContainer) {
+                    // Buat jika belum ada
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'book-actions';
+                    actionsDiv.style.cssText = 'margin-top: 5px;';
+                    actionsDiv.innerHTML = `
+                        <button class="btn-delete" data-action="delete-book" data-class-id="${classId}" data-book-id="${bookId}" title="Hapus buku">
+                            🗑️ Hapus
+                        </button>
+                    `;
+                    mainButton.insertAdjacentElement('afterend', actionsDiv);
+                } else if (deleteButton) {
+                    deleteButton.dataset.classId = classId; // Pastikan classId benar
+                }
+            } else {
+                if (deleteButtonContainer) {
+                    deleteButtonContainer.remove();
+                }
+            }
+
+            // 4. Atur Status Teks
+            if (isCached) {
+                if (!statusEl) {
+                    statusEl = document.createElement('div');
+                    statusEl.className = 'book-status';
+                    (deleteButtonContainer || mainButton).insertAdjacentElement('afterend', statusEl);
+                }
+                statusEl.style.cssText = 'font-size: 0.7rem; color: #28a745; margin-top: 5px;';
+                statusEl.textContent = '✅ Tersimpan offline';
+                statusEl.classList.remove('update');
+            } else if (needsUpdate) {
+                if (!statusEl) {
+                    statusEl = document.createElement('div');
+                    statusEl.className = 'book-status';
+                    (deleteButtonContainer || mainButton).insertAdjacentElement('afterend', statusEl);
+                }
+                statusEl.style.cssText = 'font-size: 0.7rem; color: #ffc107; margin-top: 5px;';
+                statusEl.textContent = 'ℹ️ Versi baru tersedia';
+                statusEl.classList.add('update');
+            } else if (statusEl) {
+                statusEl.remove();
+            }
+            
+            // 5. Atur Status Kunci Teks
+            if (showOfflineControls && isLocked) {
+                if (!lockStatusEl) {
+                    lockStatusEl = document.createElement('div');
+                    lockStatusEl.className = 'lock-status';
+                    lockStatusEl.style.cssText = 'font-size: 0.7rem; color: #ffc107; margin-top: 3px;';
+                    (statusEl || deleteButtonContainer || mainButton).insertAdjacentElement('afterend', lockStatusEl);
+                }
+                lockStatusEl.textContent = '🔒 Terkunci';
+            } else if (lockStatusEl) {
+                lockStatusEl.remove();
             }
         }
+
 
         renderAllBooks() {
             for (const [classId, classData] of Object.entries(this.booksMetadata)) {
@@ -479,47 +724,114 @@
             });
         }
 
+        /**
+         * BARU: Helper untuk `createBookElement` untuk menemukan URL lama yang di-cache.
+         */
+        findCachedOldUrl(book) {
+             if (book.oldDownloadUrls && Array.isArray(book.oldDownloadUrls)) {
+                for (const oldUrl of book.oldDownloadUrls) {
+                    const oldAbsoluteUrl = new URL(oldUrl, self.location.href).href;
+                    if (this.cachedBooks.has(oldAbsoluteUrl)) {
+                        return oldUrl; // Kembalikan URL relatif/asli
+                    }
+                }
+            }
+            return null;
+        }
+
+        /**
+         * BARU: Dirombak total untuk deteksi pembaruan
+         */
         createBookElement(book, classId) {
             const div = document.createElement('div');
             div.className = 'card-item';
             div.setAttribute('data-book-id', book.id);
 
             const savedCover = localStorage.getItem(`book-cover-${book.id}`);
-            const isCached = this.cachedBooks.has(book.downloadUrl);
+            
+            // --- BARU: Logika Pengecekan Versi ---
+            const newAbsoluteUrl = new URL(book.downloadUrl, self.location.href).href;
+            const isNewVersionCached = this.cachedBooks.has(newAbsoluteUrl);
+
+            const oldUrlToDelete = this.findCachedOldUrl(book);
+            const isOldVersionCached = !!oldUrlToDelete;
+
+            const needsUpdate = isOldVersionCached && !isNewVersionCached;
+            const isCached = isNewVersionCached; // 'isCached' berarti versi BARU yang di-cache
+            const showOfflineControls = isCached || needsUpdate; // Tampilkan kontrol jika cache baru ATAU lama ada
+            // --- AKHIR LOGIKA BARU ---
+
             const isLocked = this.lockManager.isBookLocked(book.id);
 
             const coverHtml = savedCover ?
                 `<img src="${savedCover}" alt="Cover" style="width: 60px; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">` :
                 `<div class="icon-wrapper">📚</div>`;
 
+            // --- PERBAIKAN: Hanya tampilkan kunci untuk buku yang di-cache / perlu update ---
+            const lockButtonHtml = showOfflineControls ? 
+                `<button class="lock-btn ${isLocked ? 'locked' : ''}" 
+                        data-action="toggle-lock" data-book-id="${book.id}"
+                        title="${isLocked ? 'Buka kunci buku' : 'Kunci buku'}">
+                    ${isLocked ? '🔒' : '🔓'}
+                </button>` : '';
+
+            // --- BARU: Logika Tombol Dinamis ---
+            let buttonHtml;
+            if (needsUpdate) {
+                buttonHtml = `
+                    <button class="btn-update" 
+                            data-action="update-book" data-class-id="${classId}" data-book-id="${book.id}"
+                            data-old-url="${oldUrlToDelete}" data-cached="false">
+                        🔄 Perbarui
+                    </button>`;
+            } else if (isCached) {
+                buttonHtml = `
+                    <button class="btn-read" 
+                            data-action="download-book" data-class-id="${classId}" data-book-id="${book.id}"
+                            data-cached="true">
+                        Buka
+                    </button>`;
+            } else {
+                buttonHtml = `
+                    <button class="btn-download" 
+                            data-action="download-book" data-class-id="${classId}" data-book-id="${book.id}"
+                            data-cached="false">
+                        Download dan Buka
+                    </button>`;
+            }
+            
+            // --- BARU: Logika Status Dinamis ---
+            let statusHtml = '';
+            if (isCached) {
+                statusHtml = '<div class="book-status" style="font-size: 0.7rem; color: #28a745; margin-top: 5px;">✅ Tersimpan offline</div>';
+            } else if (needsUpdate) {
+                statusHtml = '<div class="book-status update" style="font-size: 0.7rem; color: #ffc107; margin-top: 5px;">ℹ️ Versi baru tersedia</div>';
+            }
+
+
             div.innerHTML = `
                 <div class="book-header">
                     <h3>${book.title}</h3>
-                    <button class="lock-btn ${isLocked ? 'locked' : ''}" 
-                            data-action="toggle-lock" data-book-id="${book.id}"
-                            title="${isLocked ? 'Buka kunci buku' : 'Kunci buku'}">
-                        ${isLocked ? '🔒' : '🔓'}
-                    </button>
+                    ${lockButtonHtml}
                 </div>
                 ${coverHtml}
                 <p>${book.subject}</p>
                 <p class="file-size">${book.size}</p>
-                <button class="${isCached ? 'btn-read' : 'btn-download'}" 
-                        data-action="download-book" data-class-id="${classId}" data-book-id="${book.id}">
-                    ${isCached ? 'Buka' : 'Download dan Buka'} </button>
-                ${isCached ?
+                ${buttonHtml}
+                ${showOfflineControls ?
                     `<div class="book-actions" style="margin-top: 5px;">
                         <button class="btn-delete" data-action="delete-book" data-class-id="${classId}" data-book-id="${book.id}" title="Hapus buku">
                             🗑️ Hapus
                         </button>
                     </div>` : ''
                 }
-                ${isCached ? '<div class="book-status" style="font-size: 0.7rem; color: #28a745; margin-top: 5px;"> Tersimpan</div>' : ''}
-                ${isLocked ? '<div class="lock-status" style="font-size: 0.7rem; color: #ffc107; margin-top: 3px;">🔒 Terkunci</div>' : ''}
+                ${statusHtml}
+                ${(showOfflineControls && isLocked) ? '<div class="lock-status" style="font-size: 0.7rem; color: #ffc107; margin-top: 3px;">🔒 Terkunci</div>' : ''}
                 <div class="download-progress" id="progress-${book.id}" style="display: none;"></div>
             `;
             return div;
         }
+
 
         toggleBookLock(bookId) {
             if (this.lockManager.isBookLocked(bookId)) {
@@ -531,51 +843,133 @@
                     //this.showMessage('🔒 Buku dikunci - tidak akan terhapus otomatis', 'success');
                 }
             }
-            this.renderAllBooks(); // Re-render untuk update UI
+            // BARU: Panggil updateBookUI alih-alih renderAllBooks
+            const bookData = this.findBookByBookId(bookId);
+            if(bookData) {
+                const newAbsoluteUrl = new URL(bookData.downloadUrl, self.location.href).href;
+                const isNewCached = this.cachedBooks.has(newAbsoluteUrl);
+                const oldUrl = this.findCachedOldUrl(bookData);
+                const needsUpdate = !!oldUrl && !isNewCached;
+                
+                this.updateBookUI(bookId, isNewCached, needsUpdate, oldUrl);
+            }
         }
 
+        /**
+         * BARU: Fungsi untuk menangani pembaruan buku
+         */
+        async updateBook(classId, bookId, oldUrl) {
+            const book = this.findBook(classId, bookId);
+            if (!book) {
+                this.showMessage('Error: Buku tidak ditemukan', 'error');
+                return false;
+            }
+
+            const progressEl = document.getElementById(`progress-${book.id}`);
+            if (progressEl) {
+                progressEl.style.display = 'block';
+                progressEl.textContent = 'Menghapus versi lama...';
+            }
+
+            try {
+                // 1. Hapus versi lama
+                const oldAbsoluteUrl = new URL(oldUrl, self.location.href).href;
+                await EnhancedCacheManager.deleteCachedBook(oldUrl);
+                this.cachedBooks.delete(oldAbsoluteUrl);
+                localStorage.removeItem(`book-cover-${bookId}`); // Hapus cover lama
+                
+                if (progressEl) progressEl.textContent = 'Mengunduh versi baru...';
+                
+                // 2. Download versi baru (fungsi ini sudah menangani UI update on success)
+                const downloadSuccess = await this.downloadAndCacheBook(classId, bookId);
+                
+                if (!downloadSuccess) {
+                    throw new Error('Gagal mengunduh versi baru');
+                }
+                
+                // downloadAndCacheBook akan memanggil updateBookUI(bookId, true, false)
+                // dan membuka PDF. Ini sudah benar.
+                return true;
+
+            } catch (error) {
+                console.error('Update book failed:', error);
+                this.showMessage(`Error update: ${error.message}`, 'error');
+                if (progressEl) progressEl.style.display = 'none';
+                // Kembalikan UI ke status "needs update"
+                this.updateBookUI(bookId, false, true, oldUrl); // (bookId, isCached, needsUpdate, oldUrl)
+                return false;
+            }
+        }
+
+        /**
+         * BARU: Diperbarui untuk menghapus SEMUA versi buku (lama dan baru)
+         */
         async deleteBook(classId, bookId) {
             const book = this.findBook(classId, bookId);
             if (!book) {
-                // MENGGANTI: alert('Buku tidak ditemukan!')
                 customAlert('Error Hapus', 'Buku tidak ditemukan!');
                 return false;
             }
 
+            // --- PERBAIKAN: Tambahkan konfirmasi untuk buku yang tidak terkunci ---
             const isLocked = this.lockManager.isBookLocked(bookId);
             if (isLocked) {
-                // MENGGANTI: confirm('Buku ini terkunci. ...')
                 const confirmUnlock = await customConfirm('Buku Terkunci', 'Buku ini terkunci. Apakah Anda yakin ingin membuka kunci dan menghapusnya?');
                 if (!confirmUnlock) return false;
-                this.lockManager.unlockBook(bookId); // Ini akan memanggil saveLockedBooks() dan updateSWState()
+                this.lockManager.unlockBook(bookId);
+            } else {
+                const confirmDelete = await customConfirm('Konfirmasi Hapus', `Apakah Anda yakin ingin menghapus "${book.title}"?`);
+                if (!confirmDelete) return false;
             }
 
-            // MENGGANTI: confirm(`Apakah Anda yakin ingin menghapus ...`)
-            const confirmDelete = await customConfirm('Konfirmasi Hapus', `Apakah Anda yakin ingin menghapus "${book.title}"?`);
-            if (!confirmDelete) return false;
-
             try {
-                // Gunakan EnhancedCacheManager yang sudah di-refactor
-                const cacheDeleted = await EnhancedCacheManager.deleteCachedBook(book.downloadUrl);
+                let cacheDeleted = false;
                 
-                if (cacheDeleted) {
-                    this.cachedBooks.delete(book.downloadUrl); // Hapus dari map internal
-                    localStorage.removeItem(`book-cover-${bookId}`); // Hapus cover
-                    this.showMessage('🗑️ Buku berhasil dihapus', 'success');
-                    this.updateBookUI(bookId, false); // Update UI
-                    return true;
-                } else {
-                    throw new Error('Gagal menghapus dari cache via SW');
+                // Hapus versi BARU
+                const newAbsoluteUrl = new URL(book.downloadUrl, self.location.href).href;
+                if (this.cachedBooks.has(newAbsoluteUrl)) {
+                    const deleted = await EnhancedCacheManager.deleteCachedBook(book.downloadUrl);
+                    if (deleted) {
+                        this.cachedBooks.delete(newAbsoluteUrl);
+                        cacheDeleted = true;
+                    }
                 }
 
+                // Hapus versi LAMA
+                if (book.oldDownloadUrls && Array.isArray(book.oldDownloadUrls)) {
+                    for (const oldUrl of book.oldDownloadUrls) {
+                        const oldAbsoluteUrl = new URL(oldUrl, self.location.href).href;
+                        if (this.cachedBooks.has(oldAbsoluteUrl)) {
+                            const deleted = await EnhancedCacheManager.deleteCachedBook(oldUrl);
+                            if (deleted) {
+                                this.cachedBooks.delete(oldAbsoluteUrl);
+                                cacheDeleted = true;
+                            }
+                        }
+                    }
+                }
+                
+                if (cacheDeleted) {
+                    localStorage.removeItem(`book-cover-${bookId}`);
+                    
+                    // Panggil updateBookUI dengan status "tidak cached"
+                    this.updateBookUI(bookId, false, false); // (bookId, isCached, needsUpdate)
+                    
+                    console.log('🗑️ All versions of book deleted:', bookId);
+                    return true;
+                } else {
+                    // Jika tidak ada di cache, anggap berhasil dihapus (UI update)
+                    console.log('Book not found in cache, updating UI to not-cached');
+                    localStorage.removeItem(`book-cover-${bookId}`);
+                    this.updateBookUI(bookId, false, false);
+                    return true;
+                }
             } catch (error) {
                 console.error('Error deleting book:', error);
                 this.showMessage('❌ Gagal menghapus buku', 'error');
                 return false;
             }
         }
-        
-        // ... (sisa fungsi cleanupAllUnlockedBooks, showMessage, dll. sama) ...
         
         async cleanupAllUnlockedBooks() {
             // ... (implementasi sama)
@@ -625,6 +1019,15 @@
                     container.innerHTML = `<div class="card-item"><div class="icon-wrapper">⚠️</div><h3>Error Load Buku</h3><p>Refresh halaman</p><button class="btn-download" data-action="reload-page">🔄 Refresh</button></div>`;
                 }
             });
+        }
+
+        getPreference(key) {
+            return this.userPreferences[key];
+        }
+
+        setPreference(key, value) {
+            this.userPreferences[key] = value;
+            this.saveUserPreferences();
         }
     }
 
@@ -694,7 +1097,6 @@
             dom.customAlertCancel.parentNode.replaceChild(oldCancel, dom.customAlertCancel);
             dom.customAlertCancel = oldCancel;
 
-
             dom.customAlertConfirm.textContent = 'Ya';
             dom.customAlertConfirm.classList.remove('secondary');
             dom.customAlertConfirm.classList.add('primary');
@@ -702,7 +1104,6 @@
             dom.customAlertCancel.textContent = 'Batal';
             dom.customAlertCancel.classList.remove('primary');
             dom.customAlertCancel.classList.add('secondary');
-
 
             dom.customAlertConfirm.onclick = () => {
                 dom.customAlertModal.style.display = 'none';
@@ -740,7 +1141,6 @@
 
     // ==================== PDF VIEWER FUNCTIONS ====================
     function tampilkanPDFViewer() {
-        // ... (fungsi sama)
         if (dom.mainContent && dom.pdfViewer) {
             dom.mainContent.style.display = 'none';
             dom.pdfViewer.style.display = 'flex';
@@ -749,7 +1149,6 @@
     }
 
     function sembunyikanPDFViewer() {
-        // ... (fungsi sama, termasuk scheduleHistorySync)
         if (dom.mainContent && dom.pdfViewer) {
             dom.mainContent.style.display = 'block';
             dom.pdfViewer.style.display = 'none';
@@ -767,7 +1166,6 @@
     }
 
     const updatePageInfo = num => {
-        // ... (fungsi sama)
         if (!appState.pdfDoc || !dom.pageInfo) return;
         dom.pageInfo.textContent = `Halaman ${num} dari ${appState.pdfDoc.numPages}`;
         const prevBtn = document.getElementById("prev");
@@ -777,7 +1175,6 @@
     };
 
     const renderPage = num => {
-        // ... (fungsi sama)
         if (!appState.pdfDoc || !dom.canvas || !dom.ctx || !dom.loading) return;
         appState.pageIsRendering = true;
         dom.loading.style.display = 'block';
@@ -819,7 +1216,6 @@
     };
 
     const queueRenderPage = num => {
-        // ... (fungsi sama)
         if (appState.pageIsRendering) {
             appState.pageNumIsPending = num;
         } else {
@@ -828,7 +1224,6 @@
     };
 
     function loadPDF(source) {
-        // ... (fungsi sama)
         if (!dom.loading) return;
         dom.loading.textContent = "Memuat PDF...";
         tampilkanPDFViewer();
@@ -863,7 +1258,6 @@
 
     // ==================== PDF NAVIGATION EVENT LISTENERS ====================
     function setupPDFNavigation() {
-        // ... (fungsi sama)
         document.getElementById("prev")?.addEventListener("click", () => {
             if (appState.pageNum > 1 && !appState.pageIsRendering) {
                 appState.pageNum--;
@@ -889,7 +1283,6 @@
             if (e.key === "Enter") {
                 let val = parseInt(dom.pageInput.value, 10);
                 if (isNaN(val) || val < 1 || val > appState.pdfDoc.numPages) {
-                    // MENGGANTI: alert(`Masukkan halaman 1-${appState.pdfDoc.numPages}`);
                     customAlert('Halaman Tidak Valid', `Masukkan halaman 1-${appState.pdfDoc.numPages}`);
                 } else {
                     appState.pageNum = val;
@@ -904,7 +1297,6 @@
 
     // ==================== PDF OPENING FUNCTIONS ====================
     async function bukaPDF(path) {
-        // ... (fungsi sama)
         try {
             console.log('Loading PDF:', path);
             await ensurePDFJSLoaded();
@@ -919,17 +1311,21 @@
             loadPDF(path);
         } catch (error) {
             console.error('PDF.js load error:', error);
-            // MENGGANTI: alert('Error: PDF viewer tidak bisa dimuat. ' + error.message);
             customAlert('Error Memuat PDF', 'PDF viewer tidak bisa dimuat. ' + error.message);
         }
     }
 
     async function isPDFCached(url) {
-        // ... (fungsi sama, tapi nama cache harus sesuai sw.js)
         try {
+            // Gunakan state Book Manager yang lebih reliabel
+            if (appState.bookManager) {
+                const absoluteUrl = new URL(url, self.location.href).href;
+                return appState.bookManager.cachedBooks.has(absoluteUrl);
+            }
+            
+            // Fallback ke cek cache manual jika bookManager belum siap
             if ('caches' in window) {
-                // Ambil nama cache dari SW jika memungkinkan, atau hardcode
-                const cacheName = `pdf-cache-v2-book-management-finalV1`; // Sesuaikan dengan APP_VERSION di sw.js
+                const cacheName = `pdf-cache-user`; // Sesuaikan dengan sw.js
                 const cache = await caches.open(cacheName);
                 const response = await cache.match(url);
                 return !!response;
@@ -942,7 +1338,6 @@
     }
 
     function bacaPDFUpload() {
-        // ... (fungsi sama)
         if (dom.pdfUploadInput && dom.pdfUploadInput.files.length > 0) {
             const file = dom.pdfUploadInput.files[0];
             if (dom.fileNameDisplay) {
@@ -950,13 +1345,11 @@
             }
             loadPDF(file);
         } else {
-            // MENGGANTI: alert('Silakan pilih file PDF terlebih dahulu.');
             customAlert('Peringatan', 'Silakan pilih file PDF terlebih dahulu.');
         }
     }
 
     function setupFileUpload() {
-        // ... (fungsi sama)
         dom.pdfUploadInput?.addEventListener('change', function () {
             if (dom.selectedFileName) {
                 dom.selectedFileName.textContent = this.files.length > 0 ?
@@ -968,7 +1361,6 @@
 
     // ==================== PWA INSTALLATION ====================
     function setupPWAInstall() {
-        // ... (fungsi sama)
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             appState.deferredPrompt = e;
@@ -989,7 +1381,6 @@
     }
 
     function installApp() {
-        // ... (fungsi sama)
         if (dom.installButton) dom.installButton.style.display = 'none';
         if (appState.deferredPrompt) {
             appState.deferredPrompt.prompt();
@@ -1003,7 +1394,6 @@
 
     // ==================== GREETING SYSTEM ====================
     function setupGreeting() {
-        // ... (fungsi sama)
         if (!dom.greetingName) return;
         const userName = localStorage.getItem('userName');
         dom.greetingName.textContent = (userName && userName.trim() !== '' && userName !== 'Nama Pengguna') ?
@@ -1013,7 +1403,6 @@
 
     // ==================== SERVICE WORKER REGISTRATION ====================
     async function initializeServiceWorker() {
-        // ... (fungsi sama)
         if (!('serviceWorker' in navigator)) {
             console.log('❌ Service Worker not supported');
             return null;
@@ -1022,7 +1411,6 @@
             const swUrl = './sw.js';
             const registration = await navigator.serviceWorker.register(swUrl, {
                 scope: './'
-                // updateViaCache: 'none' // Hapus ini untuk membiarkan browser mengelola update
             });
             console.log('✅ Service Worker registered successfully');
             return registration;
@@ -1034,7 +1422,6 @@
 
     // ==================== BACKGROUND SYNC SETUP ====================
     async function setupBackgroundSync(registration) {
-        // ... (fungsi sama)
         try {
             if ('sync' in registration) {
                 console.log('✅ Background Sync supported');
@@ -1057,42 +1444,33 @@
     }
 
     // ==================== UPDATE NOTIFICATION SYSTEM ====================
-    function showUpdateNotification() {
-        // ... (fungsi sama)
-        let notification = document.getElementById('update-notification');
-        if (!notification) {
-            notification = document.createElement('div');
-            notification.id = 'update-notification';
-            notification.style.cssText = `
-                position: fixed; top: 20px; right: 15px; background: #28a745;
-                color: white; padding: 12px 16px; border-radius: 6px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 2000;
-                font-family: Arial, sans-serif; max-width: min(300px, calc(100vw - 30px));
-                word-break: break-word; display: none;
-            `;
-            dom.body.appendChild(notification);
-        }
-        notification.innerHTML = '🔄 Update tersedia! <button id="updateRefreshBtn">Perbarui Sekarang</button>';
-        notification.style.display = 'block';
-        document.getElementById('updateRefreshBtn').addEventListener('click', async () => {
-            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                const registration = await navigator.serviceWorker.getRegistration();
-                if (registration && registration.waiting) {
-                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                    navigator.serviceWorker.addEventListener('controllerchange', () => {
-                        window.location.reload();
-                    });
-                    return;
-                }
-            }
-            window.location.reload();
-        });
-        setTimeout(() => { notification.style.display = 'none'; }, 10000);
-    }
+let lastNotifTime = 0;
+// Ganti function showUpdateNotification() dengan ini
+function showUpdateNotification() {
+  const now = Date.now();
+  if (now - lastNotifTime < 60000) {  // Debounce 1 menit
+    console.log('Notif suppressed (debounce)');
+    return;
+  }
+  lastNotifTime = now;
+
+  if (appState.updateNotificationShown) return;  // Flag existing
+
+  // Kode tampil notif Anda yang sudah ada (asumsi dari kode sebelumnya; sesuaikan jika beda)
+  customAlert('Update Tersedia!', 'Aplikasi memiliki pembaruan baru. Perbarui sekarang untuk mendapatkan fitur terbaru?')
+    .then(() => {
+      location.reload();
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+      }
+      location.reload();
+    });
+
+  appState.updateNotificationShown = true;  // Set flag setelah tampil
+}
 
     // ==================== SERVICE WORKER MESSAGE HANDLER ====================
     function setupServiceWorkerMessages() {
-        // ... (fungsi sama, tambahkan case baru)
         if (!('serviceWorker' in navigator)) return;
         navigator.serviceWorker.addEventListener('message', event => {
             const data = event.data;
@@ -1106,12 +1484,10 @@
                 case 'SW_ACTIVATED':
                     console.log('✅ SW activated:', data.version || 'ready');
                     break;
-                // BARU: Tangani pesan dari SW
                 case 'SYNC_COMPLETED':
                     appState.offlineManager?.showMessage(`Sync ${data.syncType} selesai`, 'success');
                     break;
                 case 'CACHE_CLEARED':
-                    // MENGGANTI: alert('Cache telah dibersihkan. Aplikasi akan dimuat ulang.');
                     customAlert('Cache Dihapus', 'Cache telah dibersihkan. Aplikasi akan dimuat ulang.', () => {
                         window.location.reload();
                     });
@@ -1129,7 +1505,6 @@
         }
 
         startPDF(pdfName) {
-            // ... (fungsi sama)
             this.currentPDF = pdfName;
             this.sessionStart = Date.now();
             this.pageTurns = 0;
@@ -1137,7 +1512,6 @@
         }
 
         trackPageTurn() {
-            // ... (fungsi sama)
             this.pageTurns++;
             if (this.pageTurns % 3 === 0) {
                 this.scheduleHistorySync();
@@ -1170,13 +1544,11 @@
                 const registration = await navigator.serviceWorker.ready;
                 if ('sync' in registration) {
                     await registration.sync.register('sync-pdf-history');
-                    this.showSyncIndicator('Progress membaca disimpan');
                 }
             }
         }
 
         showSyncIndicator(message) {
-            // ... (fungsi sama)
             const indicator = document.createElement('div');
             indicator.style.cssText = `
                 position: fixed; top: 10px; right: 10px; background: #4CAF50;
@@ -1195,7 +1567,6 @@
 
     // ==================== OFFLINE MANAGER ====================
     class OfflineManager {
-        // ... (semua fungsi sama)
         constructor() {
             this.isOnline = navigator.onLine;
             this.offlineIndicator = null;
@@ -1203,7 +1574,7 @@
         }
         init() {
             this.setupNetworkListeners();
-            this.updateOnlineStatus(); // Panggil saat init
+            this.updateOnlineStatus();
         }
 
         setupNetworkListeners() {
@@ -1212,7 +1583,7 @@
         }
         updateOnlineStatus() {
              if (navigator.onLine) {
-                this.handleOnline(true); // true = silent
+                this.handleOnline(true);
             } else {
                 this.handleOffline();
             }
@@ -1248,11 +1619,23 @@
             dom.body.appendChild(messageEl);
             setTimeout(() => { messageEl.parentNode?.removeChild(messageEl); }, 3000);
         }
+        
+        async deleteFile(url) {
+        if (!navigator.serviceWorker || !navigator.serviceWorker.controller) {
+            console.warn('OfflineManager: Service Worker is unavailable for deletion.');
+            return;
+        }
+
+        // Mengirim pesan ke Service Worker untuk menghapus file
+        navigator.serviceWorker.controller.postMessage({
+            action: 'delete-cache-file',
+            url: url
+        });
+        }
     }
 
     // ==================== LAYOUT AND UI FUNCTIONS ====================
     function adjustCardSizes() {
-        // ... (fungsi sama)
         document.querySelectorAll('.card-row').forEach(row => {
             const cardItems = row.querySelectorAll('.card-item');
             if (cardItems.length === 0) return;
@@ -1270,7 +1653,6 @@
     }
 
     function ensureNavbarPosition() {
-        // ... (fungsi sama)
         const navbar = document.querySelector('.mobile-navbar');
         if (navbar) {
             navbar.style.bottom = '0';
@@ -1286,22 +1668,55 @@
 
     // ==================== EVENT HANDLERS (DELEGATION) ====================
     function handleDynamicBookActions(event) {
-        // ... (fungsi sama)
         const button = event.target.closest('[data-action]');
         if (!button || !appState.bookManager) return;
         const action = button.dataset.action;
         const bookId = button.dataset.bookId;
         const classId = button.dataset.classId;
+        
         switch (action) {
             case 'toggle-lock':
                 appState.bookManager.toggleBookLock(bookId);
                 break;
+                
             case 'download-book':
-                appState.bookManager.downloadAndCacheBook(classId, bookId);
+                // --- PERBAIKAN: Logika yang lebih baik ---
+                const book = appState.bookManager.findBook(classId, bookId);
+                if (!book) {
+                    console.error('Book not found:', {classId, bookId});
+                    return;
+                }
+                
+                // Cek status cache dari dataset button atau cachedBooks
+                const newAbsoluteUrl = new URL(book.downloadUrl, self.location.href).href;
+                const isCached = button.dataset.cached === 'true' || 
+                                appState.bookManager.cachedBooks.has(newAbsoluteUrl);
+                
+                if (isCached) {
+                    console.log('📖 Opening cached book:', book.downloadUrl);
+                    bukaPDF(book.downloadUrl);
+                } else {
+                    console.log('🚀 Downloading book:', book.downloadUrl);
+                    appState.bookManager.downloadAndCacheBook(classId, bookId);
+                }
                 break;
+                
+            // --- BARU: Handle Aksi Update ---
+            case 'update-book':
+                const oldUrl = button.dataset.oldUrl;
+                if (!oldUrl) {
+                    console.error('Update action failed: oldUrl not specified.');
+                    customAlert('Error', 'Gagal memulai update, URL lama tidak ditemukan.');
+                    return;
+                }
+                console.log('🚀 Updating book:', bookId, 'from', oldUrl);
+                appState.bookManager.updateBook(classId, bookId, oldUrl);
+                break;
+                
             case 'delete-book':
                 appState.bookManager.deleteBook(classId, bookId);
                 break;
+                
             case 'reload-page':
                 location.reload();
                 break;
@@ -1309,7 +1724,6 @@
     }
 
     function handleStaticActions(event) {
-        // ... (fungsi sama)
         const target = event.target;
         if (target.matches('.upload-section .btn')) {
             bacaPDFUpload();
@@ -1331,7 +1745,6 @@
 
     // ==================== INITIALIZATION ====================
     function initializeDOMElements() {
-        // ... (fungsi sama)
         dom.canvas = document.getElementById('pdf-render');
         dom.ctx = dom.canvas ? dom.canvas.getContext('2d') : null;
         dom.loading = document.getElementById('loading');
@@ -1408,7 +1821,14 @@
 
         // Pasang Event Listeners
         dom.body.addEventListener('click', handleStaticActions);
-        dom.bukuSection.addEventListener('click', handleDynamicBookActions);
+        
+        // Pastikan dom.bukuSection ada sebelum menambah listener
+        if (dom.bukuSection) {
+            dom.bukuSection.addEventListener('click', handleDynamicBookActions);
+        } else {
+            console.error('DOM element #buku-section not found!');
+        }
+        
         window.addEventListener('resize', () => {
             adjustCardSizes();
             ensureNavbarPosition();
@@ -1431,11 +1851,18 @@
         appState.isAppInitialized = true;
         console.log('✅ ELSA Enhanced App JavaScript loaded successfully');
         setTimeout(debugAppState, 2000);
+        
+        // Tambahkan di akhir initializeApp() untuk polling setiap jam
+setInterval(() => {
+  if (navigator.onLine && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'RUN_INTEGRITY_CHECK' });
+  }
+}, 3600000);  // 1 jam
+        
     }
 
     // ==================== DEBUGGING ====================
     function debugAppState() {
-        // ... (fungsi sama)
         console.log('🔍 ELSA App Debug Info:');
         console.log('- DOM Ready:', document.readyState);
         console.log('- PDF.js Loaded:', typeof pdfjsLib !== 'undefined');
@@ -1444,6 +1871,10 @@
         console.log('- Online:', navigator.onLine);
         if (appState.bookManager && appState.bookManager.booksMetadata) {
             console.log('- Books Metadata:', Object.keys(appState.bookManager.booksMetadata));
+        }
+        if (appState.bookManager && appState.bookManager.cachedBooks) {
+            console.log('- Cached Books:', appState.bookManager.cachedBooks.size);
+            console.log('- Cached URLs:', Array.from(appState.bookManager.cachedBooks.keys()));
         }
     }
 
@@ -1458,10 +1889,9 @@
         showUpdateNotification,
         bukaPDF,
         bacaPDFUpload,
-        customAlert, // NEW
-        customConfirm, // NEW
+        customAlert,
+        customConfirm,
         debug: debugAppState,
-        // BARU: Tambahkan helper debug
         forceSWUpdate: () => {
             navigator.serviceWorker.getRegistration().then(reg => {
                 reg.update().then(() => console.log('SW update check forced'));

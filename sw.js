@@ -1,10 +1,12 @@
 /* ============================
-   ELSA PWA Service Worker v5.1 - ROBUST STATE
+   ELSA PWA Service Worker v5.2 - ROBUST STATE + UPDATE LOGIC
    ============================ */
 
-const APP_VERSION = 'v2-FAQ-update';
+// --- PERUBAHAN: Versi dinaikkan untuk memicu update ---
+// Gunakan version yang stabil
+const APP_VERSION = 'v5.2-final';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
-const STATIC_CACHE = `static-${APP_VERSION}`;
+const STATIC_CACHE = `static-v5`; // Nama statis untuk cache utama
 // --- UBAH INI ---
 const PDF_CACHE = 'pdf-cache-user'; 
 const STATE_CACHE = 'elsa-state-user'; 
@@ -35,7 +37,7 @@ const urlsToCache = [
   './icons/icon-192x192.png', 
   './icons/icon-512x512.png',
   './icons/icons.svg',
-  './data/books-metadata.json'
+  './data/books-metadata.json' // Pastikan ini di-cache ulang saat install
 ];
 
 // ==================== STORAGE MANAGEMENT ====================
@@ -82,6 +84,19 @@ async function setStateInCache(key, data) {
   }
 }
 
+// Tambahkan fungsi ini di atas class EnhancedCacheManager
+function canonicalJSON(obj) {
+  if (typeof obj !== 'object' || obj === null) {
+    return JSON.stringify(obj);
+  }
+  if (Array.isArray(obj)) {
+    return '[' + obj.map(canonicalJSON).join(',') + ']';
+  }
+  const keys = Object.keys(obj).sort();  // Sort keys alphabetically
+  const parts = keys.map(key => JSON.stringify(key) + ':' + canonicalJSON(obj[key]));
+  return '{' + parts.join(',') + '}';
+}
+
 // ==================== ENHANCED CACHE MANAGER ====================
 class EnhancedCacheManager {
   
@@ -118,7 +133,7 @@ class EnhancedCacheManager {
       const cache = await caches.open(cacheName);
       const keys = await cache.keys();
       
-      // Get locked book URLs
+      // Get locked book URLs (versi baru yang sudah diperbaiki)
       const lockedBookUrls = await this.getLockedBookUrls(lockedBookIds);
       
       const unlockedItems = keys.filter(key => !this.isLockedUrl(key.url, lockedBookUrls));
@@ -145,15 +160,18 @@ class EnhancedCacheManager {
     }
   }
 
-  // DI EnhancedCacheManager - Ini adalah versi yang benar (duplikat telah dihapus)
+  /**
+   * --- PERUBAHAN ---
+   * Diperbarui untuk melindungi URL baru (downloadUrl) DAN URL lama (oldDownloadUrls)
+   * agar buku yang "needs update" tidak terhapus otomatis jika dikunci.
+   */
   static async getLockedBookUrls(lockedBookIds) {
     try {
-      // PERBAIKAN: Validasi booksMetadata
       if (!lockedBookIds || lockedBookIds.length === 0) {
         return [];
       }
         
-      const booksMetadata = await this.getBooksMetadata();
+      const booksMetadata = await this.getBooksMetadata(); // Menggunakan fungsi baru
       const lockedUrls = [];
       
       if (!booksMetadata || typeof booksMetadata !== 'object') {
@@ -164,14 +182,26 @@ class EnhancedCacheManager {
       for (const classData of Object.values(booksMetadata)) {
         if (classData && Array.isArray(classData.books)) {
           for (const book of classData.books) {
-            if (book && book.id && lockedBookIds.includes(book.id) && book.downloadUrl) {
-              lockedUrls.push(book.downloadUrl);
+            // Cek apakah buku ini ada di daftar ID yang dikunci
+            if (book && book.id && lockedBookIds.includes(book.id)) {
+                
+                // 1. Lindungi URL baru (wajib)
+                if (book.downloadUrl) {
+                  lockedUrls.push(book.downloadUrl);
+                }
+                
+                // 2. Lindungi juga SEMUA URL lama jika ada
+                if (book.oldDownloadUrls && Array.isArray(book.oldDownloadUrls)) {
+                  book.oldDownloadUrls.forEach(oldUrl => {
+                    if (oldUrl) lockedUrls.push(oldUrl);
+                  });
+                }
             }
           }
         }
       }
       
-      console.log(`🔒 Found ${lockedUrls.length} locked book URLs`);
+      console.log(`🔒 Found ${lockedUrls.length} locked book URLs (termasuk versi lama)`);
       return lockedUrls;
     } catch (error) {
       console.warn('Failed to get locked book URLs:', error);
@@ -179,31 +209,88 @@ class EnhancedCacheManager {
     }
   }
 
+  /**
+   * --- PERUBAHAN ---
+   * Ditambahkan logika parsing dan normalisasi JSON yang robust
+   * untuk menangani format file metadata yang tidak standar.
+   */
   static async getBooksMetadata() {
     try {
       const cache = await caches.open(STATIC_CACHE);
-      // Coba path yang paling mungkin
       let response = await cache.match('./data/books-metadata.json');
       if (!response) {
         response = await cache.match('data/books-metadata.json');
       }
       
       if (response) {
-        return await response.json();
+        let metadata = null;
+        try {
+            // Coba parse sebagai JSON dulu
+            metadata = await response.json();
+        } catch (e) {
+            // Jika gagal (seperti pada metadata yang di-upload), baca sebagai teks
+            console.warn('SW: .json() failed, reading as text.');
+            const metadataText = await response.text();
+            // Coba parse teks
+            try {
+                metadata = JSON.parse(metadataText);
+            } catch (parseError) {
+                // Jika masih gagal, coba bersihkan
+                console.warn('SW: JSON.parse(text) failed, cleaning string.');
+                const cleanedString = metadataText.substring(metadataText.indexOf('{'), metadataText.lastIndexOf('}') + 1);
+                metadata = JSON.parse(cleanedString);
+            }
+        }
+
+        // --- BARU: Normalisasi struktur metadata (copy dari app.js) ---
+        const normalizedMetadata = {};
+        if (!metadata || typeof metadata !== 'object') {
+             console.warn('SW: Metadata is not an object.');
+             return {};
+        }
+        
+        for (const [classId, classData] of Object.entries(metadata)) {
+            if (classData && classData.title && !classData.books) {
+                 const nestedKey = Object.keys(classData).find(k => k.startsWith('{'));
+                 if (nestedKey) {
+                    try {
+                        const nestedData = JSON.parse(nestedKey);
+                        normalizedMetadata[classId] = {
+                            title: classData.title,
+                            books: nestedData.books
+                        };
+                    } catch (e) {
+                         console.warn(`SW: Gagal parse nested JSON key di ${classId}`);
+                         normalizedMetadata[classId] = classData;
+                    }
+                 } else {
+                     normalizedMetadata[classId] = classData;
+                 }
+            } else {
+                 normalizedMetadata[classId] = classData;
+            }
+        }
+        console.log('SW: Metadata normalized.');
+        return normalizedMetadata;
       }
     } catch (error) {
       console.warn('Failed to get books metadata:', error);
     }
-    return {};
+    return {}; // Fallback
   }
 
+
   static isLockedUrl(url, lockedUrls) {
+    // Normalisasi URL dari cache (mis: ..././buku/...)
+    const normalizedUrl = new URL(url).pathname;
+
     return lockedUrls.some(lockedUrl => {
       try {
-        const urlObj = new URL(url);
-        const lockedUrlObj = new URL(lockedUrl);
-        return urlObj.pathname === lockedUrlObj.pathname;
-      } catch {
+        // Normalisasi URL dari metadata (mis: ./buku/...)
+        const normalizedLockedUrl = new URL(lockedUrl, self.location.origin).pathname;
+        return normalizedUrl === normalizedLockedUrl;
+      } catch (e) {
+        // Fallback
         return url.includes(lockedUrl);
       }
     });
@@ -212,14 +299,22 @@ class EnhancedCacheManager {
   static async deleteCachedBook(bookUrl) {
     try {
       const pdfCache = await caches.open(PDF_CACHE);
-      const result = await pdfCache.delete(bookUrl);
-      console.log(`🗑️ Book cache deleted: ${this.getFileNameFromUrl(bookUrl)}`, result);
+      // Gunakan URL absolut untuk menghapus
+      const absoluteUrl = new URL(bookUrl, self.location.origin).href;
       
-      // Also try to delete from static cache if it exists there
+      // Coba hapus dengan URL asli dan URL absolut
+      const result1 = await pdfCache.delete(bookUrl);
+      const result2 = await pdfCache.delete(absoluteUrl);
+      
+      const success = result1 || result2;
+      console.log(`🗑️ Book cache deleted: ${this.getFileNameFromUrl(bookUrl)}`, success);
+      
+      // Coba hapus juga dari static cache jika ada
       const staticCache = await caches.open(STATIC_CACHE);
       await staticCache.delete(bookUrl);
+      await staticCache.delete(absoluteUrl);
       
-      return result;
+      return success;
     } catch (error) {
       console.error('Error deleting cached book:', error);
       return false;
@@ -276,8 +371,11 @@ class BookManagerIntegration {
         }
       });
       
-      await pdfCache.put(data.url, response);
-      console.log('✅ Book PDF cached successfully:', data.url);
+      // Gunakan URL absolut sebagai key
+      const absoluteUrl = new URL(data.url, self.location.origin).href;
+      await pdfCache.put(absoluteUrl, response);
+      
+      console.log('✅ Book PDF cached successfully:', absoluteUrl);
       
       // Limit cache size after adding new book
       await EnhancedCacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS, 'auto_manage');
@@ -303,7 +401,7 @@ class BookManagerIntegration {
             const bookType = response.headers.get('X-Book-Type');
             
             books.push({
-              url: request.url,
+              url: request.url, // Kembalikan URL absolut yang di-cache
               cachedAt: cachedAt ? parseInt(cachedAt) : Date.now(),
               filename: EnhancedCacheManager.getFileNameFromUrl(request.url),
               type: bookType || 'regular',
@@ -327,14 +425,30 @@ class BookManagerIntegration {
     try {
       // PERBAIKAN: Mengambil data dari state cache SW yang reliabel
       const lockedBooks = await getStateFromCache(STORAGE_KEYS.LOCKED_BOOKS) || [];
-      const booksMetadata = await EnhancedCacheManager.getBooksMetadata();
+      const booksMetadata = await EnhancedCacheManager.getBooksMetadata(); // Pakai fungsi baru
       
+      const normalizedBookUrl = new URL(bookUrl, self.location.origin).pathname;
+
       // Find book ID from URL
       if (booksMetadata) {
         for (const classData of Object.values(booksMetadata)) {
           for (const book of classData.books || []) {
-            if (book.downloadUrl === bookUrl && lockedBooks.includes(book.id)) {
-              return true;
+            if (!book || !book.id || !lockedBooks.includes(book.id)) {
+                continue;
+            }
+            
+            // Cek URL baru
+            if (book.downloadUrl) {
+                 const normalizedNewUrl = new URL(book.downloadUrl, self.location.origin).pathname;
+                 if (normalizedNewUrl === normalizedBookUrl) return true;
+            }
+            
+            // Cek URL lama
+            if (book.oldDownloadUrls && Array.isArray(book.oldDownloadUrls)) {
+                for (const oldUrl of book.oldDownloadUrls) {
+                    const normalizedOldUrl = new URL(oldUrl, self.location.origin).pathname;
+                    if (normalizedOldUrl === normalizedBookUrl) return true;
+                }
             }
           }
         }
@@ -349,212 +463,72 @@ class BookManagerIntegration {
 }
 
 // ==================== INTEGRITY CHECKER ====================
+// Ganti seluruh class StartupIntegrityChecker dengan ini (untuk konsistensi)
 class StartupIntegrityChecker {
-  // ... (Kelas ini tidak memiliki masalah kritis, dibiarkan apa adanya) ...
   constructor() {
-    this.checked = false;
-    this.cacheConfig = {
-      static: STATIC_CACHE,
-      pdf: PDF_CACHE
-    };
+    this.suppressNotifications = false;  // Flag untuk suppress pada check rutin
   }
-  
+
   async checkAllCachedAssets() {
-    console.log('🎯 CHECKER: Starting integrity check...');
-    
-    if (this.checked || !(await this.isOnline())) {
-      console.log('⏩ CHECKER: Skip - already checked or offline');
-      return [];
-    }
-    
-    this.checked = true;
-    const allChanges = [];
-    
-    try {
-      console.log('🔍 CHECKER: Checking static cache...');
-      const staticChanges = await this.checkCache(this.cacheConfig.static);
-      allChanges.push(...staticChanges);
-      
-      console.log('🔍 CHECKER: Checking PDF cache...');
-      const pdfChanges = await this.checkCache(this.cacheConfig.pdf);
-      allChanges.push(...pdfChanges);
-      
-      console.log('📊 CHECKER: Total changes found:', allChanges.length);
-      
-      if (allChanges.length > 0) {
-        console.log('🔄 CHECKER: Changes detected:', allChanges);
-        this.notifyUpdates(allChanges);
-      } else {
-        console.log('✅ CHECKER: No changes detected');
+    const assetsToCheck = [
+      './data/books-metadata.json',
+      './manifest.json'
+      // Tambah aset lain jika perlu
+    ];
+
+    const changedAssets = [];
+    for (const assetUrl of assetsToCheck) {
+      const hasChanges = await this.checkAsset(assetUrl);
+      if (hasChanges) {
+        changedAssets.push(assetUrl);
       }
-      
-    } catch (error) {
-      console.error('❌ CHECKER: Error during check:', error);
     }
-    
-    return allChanges;
-  }
-  
-  async checkCache(cacheName) {
-    console.log(`🔍 CHECKER: Checking cache: ${cacheName}`);
-    const changes = [];
-    
-    try {
-      const cache = await caches.open(cacheName);
-      const requests = await cache.keys();
-      console.log(`🔍 CHECKER: Found ${requests.length} items in ${cacheName}`);
-      
-      for (const request of requests) {
-        console.log(`🔍 CHECKER: Processing: ${request.url}`);
-        const isChanged = await this.isAssetChanged(request.url, cacheName);
-        if (isChanged) {
-          console.log(`🔄 CHECKER: Change detected: ${request.url}`);
-          changes.push(request.url);
-        }
-      }
-    } catch (error) {
-      console.error(`❌ CHECKER: Error checking cache ${cacheName}:`, error);
-    }
-    
-    console.log(`📊 CHECKER: ${cacheName} changes:`, changes.length);
-    return changes;
-  }
-  
-  async isAssetChanged(url, cacheName = STATIC_CACHE) {
-    try {
-      if (!url.startsWith(self.location.origin)) return false;
 
-      const cache = await caches.open(cacheName);
-      const cachedResponse = await cache.match(url);
-      
-      if (!cachedResponse) {
-        console.log(`🆕 CHECKER: New asset not in cache: ${url}`);
-        return true;
-      }
-
-      const headResponse = await fetch(url, { 
-        method: 'HEAD', 
-        cache: 'no-store' 
-      }).catch(() => null);
-
-      if (headResponse && headResponse.ok) {
-        const remoteETag = headResponse.headers.get('ETag');
-        const remoteLastModified = headResponse.headers.get('Last-Modified');
-        
-        const cachedETag = cachedResponse.headers.get('ETag');
-        const cachedLastModified = cachedResponse.headers.get('Last-Modified');
-
-        if (remoteETag && cachedETag && remoteETag !== cachedETag) {
-          console.log(`🔄 CHECKER: ETag changed for ${url}`);
-          await this.updateCachedAsset(url, cacheName);
-          return true;
-        }
-
-        if (remoteLastModified && cachedLastModified && remoteLastModified !== cachedLastModified) {
-          console.log(`🔄 CHECKER: Last-Modified changed for ${url}`);
-          await this.updateCachedAsset(url, cacheName);
-          return true;
-        }
-      }
-
-      const isContentChanged = await this.isContentChanged(url, cachedResponse, cacheName);
-      if (isContentChanged) {
-        await this.updateCachedAsset(url, cacheName);
-        return true;
-      }
-
-      return false;
-      
-    } catch (error) {
-      console.error(`❌ CHECKER: Error checking asset ${url}:`, error);
-      return false;
-    }
-  }
-  
-  async isContentChanged(url, cachedResponse, cacheName) {
-    try {
-      const networkResponse = await fetch(url, { cache: 'no-store' });
-      if (!networkResponse || !networkResponse.ok) return false;
-
-      const [remoteHash, cachedHash] = await Promise.all([
-        this.computeHash(networkResponse.clone()),
-        this.computeHash(cachedResponse.clone())
-      ]);
-
-      return remoteHash && cachedHash && remoteHash !== cachedHash;
-    } catch (error) {
-      console.warn(`⚠️ CHECKER: Content comparison failed for ${url}:`, error);
-      return false;
-    }
-  }
-  
-  async computeHash(response) {
-    try {
-      const buffer = await response.arrayBuffer();
-      const digest = await crypto.subtle.digest('SHA-256', buffer);
-      const hashArray = Array.from(new Uint8Array(digest));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    } catch (error) {
-      console.warn('Hash compute failed', error);
-      return null;
-    }
-  }
-  
-  async updateCachedAsset(url, cacheName) {
-    try {
-      const networkResponse = await fetch(url, { cache: 'no-store' });
-      if (networkResponse && networkResponse.ok) {
-        const cache = await caches.open(cacheName);
-        await cache.put(url, networkResponse);
-        console.log(`✅ CHECKER: Updated cache for ${url}`);
-        return true;
-      }
-    } catch (error) {
-      console.error(`❌ CHECKER: Failed to update cache for ${url}:`, error);
-    }
-    return false;
-  }
-  
-  notifyUpdates(changedAssets) {
-    console.log('📢 CHECKER: notifyUpdates called with:', changedAssets);
-    
-    self.clients.matchAll().then(clients => {
-      console.log(`📢 CHECKER: Found ${clients.length} clients`);
-      
-      if (clients.length === 0) {
-        console.log('❌ CHECKER: No clients found to notify');
-        return;
-      }
-      
-      clients.forEach(client => {
-        console.log(`📢 CHECKER: Sending to client: ${client.url}`);
-        client.postMessage({
+    if (changedAssets.length > 0 && !this.suppressNotifications) {
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => client.postMessage({
           type: 'STARTUP_UPDATES_DETECTED',
           assets: changedAssets,
-          timestamp: Date.now()
-        });
+          hasChanges: true
+        }));
       });
-      
-      console.log('✅ CHECKER: Messages sent to all clients');
-    }).catch(error => {
-      console.error('❌ CHECKER: Error matching clients:', error);
-    });
+    }
+
+    return changedAssets.length > 0;
   }
 
-  async isOnline() {
+  async checkAsset(assetUrl) {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
-      
-      const response = await fetch(`${self.location.origin}/icons/icon-96x96.png`, {
-        method: 'HEAD',
-        cache: 'no-store',
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      return response && response.ok;
+      const cache = await caches.open(STATIC_CACHE);
+      const cachedResponse = await cache.match(assetUrl);
+      if (!cachedResponse) return false;
+
+      // Cek HEAD untuk Last-Modified/ETag
+      const headResponse = await fetch(assetUrl, { method: 'HEAD' });
+      const netLastMod = headResponse.headers.get('Last-Modified');
+      const cacheLastMod = cachedResponse.headers.get('Last-Modified');
+      const netEtag = headResponse.headers.get('etag');
+      const cacheEtag = cachedResponse.headers.get('etag');
+
+      if ((netLastMod && cacheLastMod === netLastMod) || (netEtag && cacheEtag === netEtag)) {
+        return false;  // Tidak berubah
+      }
+
+      // Jika header tidak cukup, fetch full dan bandingkan JSON canonical
+      const networkResponse = await fetch(assetUrl);
+      if (!networkResponse.ok) return false;
+
+      const oldData = await cachedResponse.json();
+      const newData = await networkResponse.json();
+      const hasChanges = canonicalJSON(oldData) !== canonicalJSON(newData);  // Ganti ini
+
+      if (hasChanges) {
+        await cache.put(assetUrl, networkResponse.clone());
+      }
+
+      return hasChanges;
     } catch (error) {
+      console.warn(`Failed to check asset ${assetUrl}:`, error);
       return false;
     }
   }
@@ -644,7 +618,7 @@ self.addEventListener('install', event => {
       for (const url of urlsToCache) {
         try {
           const response = await fetch(url, { 
-            cache: 'no-cache',
+            cache: 'no-cache', // Selalu ambil versi baru saat install
             headers: { 'Cache-Control': 'no-cache' }
           });
           
@@ -677,7 +651,6 @@ self.addEventListener('install', event => {
 });
 
 // Activate Event
-// Activate Event (Kode Terakhir dan Lengkap)
 self.addEventListener('activate', event => {
   console.log(`🟢 [SW ${APP_VERSION}] activating...`);
   
@@ -693,16 +666,20 @@ self.addEventListener('activate', event => {
       await Promise.all(
         cacheNames.map(name => {
           // Hapus cache yang dimulai dengan 'elsa-pwa-' (prefix lama) 
-          // atau 'static-' versi lama, dan bukan nama cache versi baru/permanen
-          if (name.includes('elsa-pwa') && !newVersionCaches.includes(name)) {
+          // atau 'static-' versi lama, dan BUKAN nama cache versi baru/permanen
+          if ((name.startsWith('elsa-pwa-') || name.startsWith('static-')) && !newVersionCaches.includes(name)) {
             console.log('🗑️ Deleting old version-locked cache:', name);
             return caches.delete(name);
           }
+          return null;
         })
       );
 
       await self.clients.claim();
-      // ... (kode lainnya) ...
+      console.log('✅ SW activated and claimed clients');
+      
+      // Jalankan pengecekan integritas setelah aktivasi
+      integrityChecker.checkAllCachedAssets().catch(console.error);
       
     } catch (error) {
       console.error('❌ Activation failed:', error);
@@ -713,6 +690,13 @@ self.addEventListener('activate', event => {
 // Message Event Handler
 self.addEventListener('message', event => {
   const { type, data } = event.data || {};
+  
+  // Di dalam self.addEventListener('message', event => { ...
+if (event.data.type === 'RUN_INTEGRITY_CHECK') {
+  const checker = new StartupIntegrityChecker();
+  checker.suppressNotifications = true;  // Suppress untuk check rutin
+  checker.checkAllCachedAssets();
+}
   
   if (!type) return;
 
@@ -815,6 +799,7 @@ self.addEventListener('fetch', event => {
   
   if (request.method !== 'GET') return;
   
+  // Abaikan request yang tidak relevan
   if (request.url.startsWith('chrome-extension://') ||
       request.url.startsWith('data:') ||
       !request.url.startsWith(self.location.origin)) {
@@ -835,9 +820,12 @@ self.addEventListener('fetch', event => {
       event.respondWith(handleFileHandlerRequest(event));
     } else if (router.isProtocol) {
       event.respondWith(handleProtocolRequest(event));
-    } else if (router.isPDF || router.isBookMetadata) {
-      // Penanganan khusus untuk PDF dan metadata buku
+    } else if (router.isPDF) {
+      // Penanganan khusus untuk PDF
       event.respondWith(handlePDFRequest(event));
+    } else if (router.isBookMetadata) {
+       // Penanganan khusus metadata (Stale While Revalidate)
+       event.respondWith(handleMetadataRequest(event));
     } else if (router.isNavigation) {
       event.respondWith(handleNavigationRequest(event));
     } else if (router.isShareTarget) {
@@ -856,9 +844,13 @@ async function handlePDFRequest(event) {
   const { request } = event;
   const url = new URL(request.url);
   const fileName = EnhancedCacheManager.getFileNameFromUrl(request.url);
+  
+  // Gunakan URL absolut sebagai key cache
+  const absoluteUrl = new URL(request.url, self.location.origin).href;
+  const cacheKey = new Request(absoluteUrl, request);
 
   try {
-    // Check if this is a locked book
+    // Check if this is a locked book (menggunakan URL asli/relatif)
     const isLocked = await BookManagerIntegration.isBookLocked(request.url);
     if (isLocked) {
       console.log(`🛡️ Serving locked book: ${fileName}`);
@@ -866,13 +858,13 @@ async function handlePDFRequest(event) {
 
     // Try cache first
     const pdfCache = await caches.open(PDF_CACHE);
-    const cachedResponse = await pdfCache.match(request);
+    const cachedResponse = await pdfCache.match(cacheKey);
     
     if (cachedResponse) {
       // Stale-while-revalidate (HANYA jika tidak dikunci)
       if (!isLocked) { 
         event.waitUntil(
-          updatePDFCache(request, pdfCache, fileName)
+          updatePDFCache(cacheKey, pdfCache, fileName) // Gunakan cacheKey
         );
       }
       return cachedResponse;
@@ -881,7 +873,7 @@ async function handlePDFRequest(event) {
     // Network fallback
     const networkResponse = await fetch(request);
     if (networkResponse && networkResponse.ok) {
-      await pdfCache.put(request, networkResponse.clone());
+      await pdfCache.put(cacheKey, networkResponse.clone()); // Gunakan cacheKey
       await EnhancedCacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS, 'auto_manage');
       return networkResponse;
     }
@@ -913,6 +905,61 @@ async function updatePDFCache(request, cache, fileName) {
     console.warn(`⚠️ PDF cache update failed: ${fileName}`, error);
   }
 }
+
+// Metadata Request Handler (Stale While Revalidate)
+// Ganti seluruh async function handleMetadataRequest(event) dengan ini
+async function handleMetadataRequest(event) {
+  const { request } = event;
+  const cache = await caches.open(STATIC_CACHE);
+  const cachedResponse = await cache.match(request);
+
+  event.waitUntil((async () => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      const networkResponse = await fetch(request, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (networkResponse && networkResponse.ok) {
+        const netEtag = networkResponse.headers.get('etag');
+        const cacheEtag = cachedResponse?.headers.get('etag');
+        let hasChanges = true;
+
+        if (netEtag && cacheEtag === netEtag) {
+          hasChanges = false;  // Prioritaskan ETag jika ada
+        } else if (cachedResponse) {
+          const oldData = await cachedResponse.json();
+          const newData = await networkResponse.json();
+          hasChanges = canonicalJSON(oldData) !== canonicalJSON(newData);  // Normalkan
+        }
+
+        await cache.put(request, networkResponse.clone());
+
+        if (hasChanges) {
+          self.clients.matchAll().then(clients => {
+            clients.forEach(c => c.postMessage({
+              type: 'STARTUP_UPDATES_DETECTED',
+              assets: [request.url],
+              hasChanges: true
+            }));
+          });
+        }
+      }
+    } catch (e) { /* ignore */ }
+  })());
+
+  return cachedResponse ?? (await fetch(request));
+}
+
+function canonicalJSON(obj) {
+  if (obj === null || typeof obj !== 'object') return JSON.stringify(obj);
+  if (Array.isArray(obj)) return '[' + obj.map(canonicalJSON).join(',') + ']';
+  const keys = Object.keys(obj).sort();
+  const parts = keys.map(k => `${JSON.stringify(k)}:${canonicalJSON(obj[k])}`);
+  return '{' + parts.join(',') + '}';
+}
+
 
 // Navigation Request Handler (Network first)
 async function handleNavigationRequest(event) {
@@ -1147,8 +1194,12 @@ async function verifyCacheHealth() {
       if (!response) {
         missing.push(url);
         try {
-          await cache.add(url);
-          console.log('✅ Re-cached missing critical asset:', url);
+          // Ambil dari network jika hilang
+          const netResponse = await fetch(url, { cache: 'no-cache' });
+          if (netResponse.ok) {
+              await cache.put(url, netResponse);
+              console.log('✅ Re-cached missing critical asset:', url);
+          }
         } catch (error) {
           console.warn('❌ Failed to re-cache:', url, error);
         }
