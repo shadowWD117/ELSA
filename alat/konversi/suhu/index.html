@@ -3,18 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Konverter Suhu</title>
+  <title>Konverter Suhu - ELSA</title>
+  <meta name="theme-color" content="#1a1a1a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
   <style>
+    /* ============================================== */
+    /* BASE STYLES & TEMA GELAP (DISAMAKAN)           */
+    /* ============================================== */
     :root {
-      --primary: #4CAF50;
-      --primary-dark: #388E3C;
-      --secondary: #FFC107;
-      --dark: #121212;
-      --dark-card: #1E1E1E;
-      --dark-border: #333;
-      --text: #FFFFFF;
-      --text-secondary: #AAAAAA;
-      --success: #2196F3;
+        --bg-color: #1a1a1a;
+        --card-color: #2f2f2f;
+        --text-color: #e0e0e0;
+        --secondary-text: #b0b0b0;
+        --primary-color: #007bff; /* BIRU - Warna Utama */
+        --primary-hover: #0056b3;
+        --success-color: #28a745;
+        --success-hover: #218838;
+        --danger-color: #dc3545;
+        --danger-hover: #c82333;
+        --border-color: #3a3a3a;
+        
+        /* Variabel tambahan untuk input */
+        --input-bg: #3a3a3a;
+        --input-border: #444444;
     }
     
     * {
@@ -25,55 +38,86 @@
     
     body {
       font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      color: var(--text-color);
+      background-color: #111111; /* Body background */
       min-height: 100vh;
-      background: linear-gradient(135deg, var(--dark) 0%, #1a1a2e 100%);
-      color: var(--text);
-      padding: 20px;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      padding: 0;
+    }
+    
+    /* HEADER BACK BUTTON (Dari Tema Profil) */
+    .header-back {
+        display: flex;
+        position: fixed;
+        align-items: center;
+        background-color: #444444; /* Warna sedikit lebih terang dari card */
+        width: 100%;
+        top: 0;
+        left: 0;
+        height: 50px;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .header-back a {
+        color: var(--primary-color);
+        font-size: 1.5rem;
+        margin-right: 15px;
+        text-decoration: none;
+        margin-left: 15px;
+        transition: color 0.2s;
+    }
+    .header-back a:hover {
+        color: var(--primary-hover);
+    }
+    .header-back h1 {
+        font-size: 1.5rem;
+        color: var(--text-color);
+    }
+    .icon-svg {
+        width: 24px;
+        height: 24px;
+        vertical-align: middle;
+        color: currentColor;
+    }
+    
+    /* MAIN CONTAINER DAN CARD (Dari Tema Profil) */
+    .main-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding-top: 70px; /* Jarak untuk header fixed */
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .card { /* Menggantikan .container */
+        background-color: var(--card-color);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        margin-bottom: 30px;
+        border: 1px solid var(--border-color);
     }
 
-    .container {
-        height: 100%;
-      width: 100%;
-      max-width: 550px;
-      background-color: var(--dark-card);
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      overflow: auto;
-      border: 1px solid var(--dark-border);
-      padding: 2rem;
-    }
 
-    .header {
+    /* ============================================== */
+    /* GAYA KHUSUS KONVERTER SUHU (Diadaptasi ke Tema)*/
+    /* ============================================== */
+    
+    /* Menggantikan .header dan .title */
+    .converter-title { 
       text-align: center;
-      margin-bottom: 2rem;
-      position: relative;
-      padding-bottom: 1rem;
-    }
-
-    .header::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 3px;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      border-radius: 3px;
-    }
-
-    .title {
-      font-size: 2.2rem;
+      margin-bottom: 25px;
+      font-size: 1.8rem;
       font-weight: 700;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: var(--primary-color);
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--primary-color); /* Separator baru */
     }
+    
+    /* Hapus gaya lama yang tidak terpakai */
+    .header::after { display: none; }
+    .title { color: var(--primary-color); }
+    /* --- */
 
     .input-group {
       margin-bottom: 1.5rem;
@@ -83,29 +127,29 @@
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 500;
-      color: var(--text-secondary);
+      color: var(--secondary-text);
     }
 
     .number-input {
       width: 100%;
       padding: 1rem;
-      background-color: rgba(255, 255, 255, 0.05);
-      border: 2px solid var(--dark-border);
-      border-radius: 12px;
-      color: var(--text);
-      font-size: 1.2rem;
-      text-align: center;
+      background-color: var(--input-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-color);
+      font-size: 1.1rem;
+      text-align: left; /* Diubah menjadi kiri */
       transition: all 0.3s ease;
       outline: none;
     }
 
     .number-input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
     }
 
     .number-input::placeholder {
-      color: var(--text-secondary);
+      color: var(--secondary-text);
     }
 
     .units-container {
@@ -113,43 +157,60 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 2rem;
-      background-color: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      padding: 1rem;
-      border: 1px solid var(--dark-border);
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      padding: 10px;
+      border: 1px solid var(--border-color);
     }
 
     .unit-select {
       flex: 1;
       padding: 0.8rem;
-      background-color: var(--dark-card);
-      border: 2px solid var(--dark-border);
-      border-radius: 10px;
-      color: var(--text);
+      background-color: var(--input-bg); /* Menggunakan input-bg untuk konsistensi */
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-color);
       font-size: 1rem;
       text-align: center;
       cursor: pointer;
       transition: all 0.3s ease;
       margin: 0 0.5rem;
+      
+      /* Style untuk arrow select agar terlihat di dark mode */
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23b0b0b0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 1em;
+      padding-right: 30px;
+    }
+    
+    .unit-select optgroup {
+        background-color: var(--card-color);
+        color: var(--primary-color);
+        font-weight: bold;
     }
 
     .unit-select:focus {
-      border-color: var(--primary);
+      border-color: var(--primary-color);
       outline: none;
     }
 
     .conversion-arrow {
       font-size: 1.5rem;
-      color: var(--primary);
+      color: var(--primary-color); /* Warna Biru */
       margin: 0 0.5rem;
+      font-weight: bold;
     }
 
     .result-container {
-      background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(255, 193, 7, 0.1));
+      background: rgba(0, 123, 255, 0.1); /* Latar belakang biru transparan */
       border-radius: 12px;
       padding: 1.5rem;
       margin-top: 1.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-color);
       text-align: center;
       transition: all 0.3s ease;
       cursor: pointer;
@@ -178,20 +239,20 @@
 
     .result-label {
       font-size: 0.9rem;
-      color: var(--text-secondary);
+      color: var(--secondary-text);
       margin-bottom: 0.5rem;
     }
 
     .result-value {
       font-size: 1.8rem;
       font-weight: 700;
-      color: var(--text);
+      color: var(--text-color);
       word-break: break-all;
     }
 
     .result-unit {
       font-size: 1rem;
-      color: var(--text-secondary);
+      color: var(--secondary-text);
       margin-left: 0.5rem;
     }
 
@@ -200,7 +261,7 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%) translateY(100px);
-      background-color: var(--success);
+      background-color: var(--success-color);
       color: white;
       padding: 10px 20px;
       border-radius: 50px;
@@ -218,26 +279,18 @@
       text-align: center;
       margin-top: 2rem;
       padding-top: 1rem;
-      border-top: 1px solid var(--dark-border);
-      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+      color: var(--secondary-text);
       font-size: 0.8rem;
     }
 
-    .unit-categories {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 0.5rem;
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-    }
-
     @media (max-width: 480px) {
-      .container {
+      .card {
         padding: 1.5rem;
       }
       
-      .title {
-        font-size: 1.8rem;
+      .converter-title {
+        font-size: 1.5rem;
       }
       
       .units-container {
@@ -258,92 +311,69 @@
       }
     }
     
-        .header-back {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .header-back a {
-            color: #007bff;
-            font-size: 1.5rem;
-            margin-right: 15px;
-            text-decoration: none;
-            padding: 5px;
-            border-radius: 4px;
-        }
-        
-        .header-back h1 {
-            font-size: 1.5rem;
-            color: #e0e0e0;
-        }
-        
-        .icon-svg {
-            width: 24px;
-            height: 24px;
-            vertical-align: middle;
-            color: currentColor; /* Agar bisa mengikuti warna text/icon */
-        }
-        
   </style>
 </head>
 <body>
-  <div class="container">
-        <header class="header-back">
-            <a href="../../../index.html" title="Kembali">
-                <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            </a>
-            <h1>Kembali</h1>
-        </header>
-    <div class="header">
-      <h1 class="title">KONVERSI SUHU</h1>
-    </div>
+    
+    <header class="header-back">
+        <a href="../../../index.html" title="Kembali">
+            <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </a>
+        <h1>Konverter Suhu</h1>
+    </header>
 
-    <div class="input-group">
-      <label class="input-label" for="num">Masukkan Nilai Suhu</label>
-      <input type="number" id="num" class="number-input" placeholder="0" step="any" />
-    </div>
+    <div class="main-container">
+        <section class="card">
+            
+            <h2 class="converter-title">KONVERSI SUHU</h2>
 
-    <div class="units-container">
-      <select id="fromUnit" class="unit-select">
-        <optgroup label="Skala Umum">
-          <option value="c" selected>Celcius (°C)</option>
-          <option value="f">Fahrenheit (°F)</option>
-          <option value="k">Kelvin (K)</option>
-        </optgroup>
-        <optgroup label="Skala Lainnya">
-          <option value="r">Réaumur (°Ré)</option>
-          <option value="ra">Rankine (°R)</option>
-        </optgroup>
-      </select>
-      
-      <div class="conversion-arrow">⇄</div>
-      
-      <select id="toUnit" class="unit-select">
-        <optgroup label="Skala Umum">
-          <option value="c">Celcius (°C)</option>
-          <option value="f" selected>Fahrenheit (°F)</option>
-          <option value="k">Kelvin (K)</option>
-        </optgroup>
-        <optgroup label="Skala Lainnya">
-          <option value="r">Réaumur (°Ré)</option>
-          <option value="ra">Rankine (°R)</option>
-        </optgroup>
-      </select>
-    </div>
+            <div class="input-group">
+              <label class="input-label" for="num">Masukkan Nilai Suhu</label>
+              <input type="number" id="num" class="number-input" placeholder="0" step="any" />
+            </div>
 
-    <div class="result-container" id="resultContainer">
-      <div class="result-label">HASIL KONVERSI</div>
-      <div id="result">
-        <span class="result-value">-</span>
-        <span class="result-unit" id="resultUnit">-</span>
-      </div>
-    </div>
+            <div class="units-container">
+              <select id="fromUnit" class="unit-select">
+                <optgroup label="Skala Umum">
+                  <option value="c" selected>Celcius (°C)</option>
+                  <option value="f">Fahrenheit (°F)</option>
+                  <option value="k">Kelvin (K)</option>
+                </optgroup>
+                <optgroup label="Skala Lainnya">
+                  <option value="r">Réaumur (°Ré)</option>
+                  <option value="ra">Rankine (°R)</option>
+                </optgroup>
+              </select>
+              
+              <div class="conversion-arrow">⇄</div>
+              
+              <select id="toUnit" class="unit-select">
+                <optgroup label="Skala Umum">
+                  <option value="c">Celcius (°C)</option>
+                  <option value="f" selected>Fahrenheit (°F)</option>
+                  <option value="k">Kelvin (K)</option>
+                </optgroup>
+                <optgroup label="Skala Lainnya">
+                  <option value="r">Réaumur (°Ré)</option>
+                  <option value="ra">Rankine (°R)</option>
+                </optgroup>
+              </select>
+            </div>
 
-    <div class="footer">
-      Hasil akan terupdate secara otomatis. Klik hasil untuk menyalin ke clipboard.
+            <div class="result-container" id="resultContainer">
+              <div class="result-label">HASIL KONVERSI</div>
+              <div id="result">
+                <span class="result-value">-</span>
+                <span class="result-unit" id="resultUnit">-</span>
+              </div>
+            </div>
+
+            <div class="footer">
+              Hasil akan terupdate secara otomatis. Klik hasil untuk menyalin ke clipboard.
+            </div>
+            
+        </section>
     </div>
-  </div>
 
   <div class="copy-notification" id="copyNotification">Hasil disalin!</div>
 
@@ -406,37 +436,20 @@
           result = valueInCelsius;
       }
 
-      // Format angka berdasarkan besarnya hasil
+      // Format angka
       let formattedResult;
       
       if (result === 0) {
         formattedResult = '0';
-      } else if (Math.abs(result) < 0.000001) {
-        // Untuk nilai sangat kecil, gunakan notasi ilmiah
-        formattedResult = result.toExponential(6);
-      } else if (Math.abs(result) < 0.01) {
-        // Untuk nilai kecil, tampilkan lebih banyak desimal
-        formattedResult = result.toFixed(8);
-        // Hapus trailing zeros
-        formattedResult = formattedResult.replace(/\.?0+$/, '');
-      } else if (Math.abs(result) < 1) {
-        // Untuk nilai antara 0.01 dan 1
-        formattedResult = result.toFixed(6);
-        // Hapus trailing zeros
-        formattedResult = formattedResult.replace(/\.?0+$/, '');
-      } else if (Math.abs(result) < 1000) {
-        // Untuk nilai biasa
-        formattedResult = result.toFixed(4);
-        // Hapus trailing zeros
-        formattedResult = formattedResult.replace(/\.?0+$/, '');
-      } else if (Math.abs(result) < 1000000) {
-        // Untuk nilai besar, format dengan koma
-        formattedResult = result.toLocaleString('id-ID', {
-          maximumFractionDigits: 2
-        });
+      } else if (Math.abs(result) < 0.000001 || Math.abs(result) > 1e15) {
+        // Tampilan notasi ilmiah disederhanakan
+        formattedResult = result.toExponential(4).replace('e', ' × 10^');
       } else {
-        // Untuk nilai sangat besar, gunakan notasi ilmiah
-        formattedResult = result.toExponential(4);
+        // Format dengan pembatasan desimal dan pemisah ribuan
+        formattedResult = result.toLocaleString("id-ID", { 
+          maximumFractionDigits: 6,
+          minimumFractionDigits: 0
+        });
       }
 
       resultValue.textContent = formattedResult;
@@ -465,7 +478,7 @@
     function copyToClipboard() {
       const resultText = resultValue.textContent + ' ' + resultUnit.textContent;
       
-      if (resultText === '- -') return;
+      if (resultText.includes('- -')) return;
       
       navigator.clipboard.writeText(resultText).then(() => {
         // Tampilkan notifikasi
@@ -477,42 +490,59 @@
         console.error('Gagal menyalin teks: ', err);
       });
     }
+    
+    // Simpan dan muat preferensi
+    function savePreference() {
+      const fromUnit = fromUnitSelect.value;
+      const toUnit = toUnitSelect.value;
+      localStorage.setItem('preferredTemperatureFromUnit', fromUnit);
+      localStorage.setItem('preferredTemperatureToUnit', toUnit);
+    }
+    
+    function loadPreference() {
+      const fromUnit = localStorage.getItem('preferredTemperatureFromUnit');
+      const toUnit = localStorage.getItem('preferredTemperatureToUnit');
+      if (fromUnit && unitNames[fromUnit]) {
+        fromUnitSelect.value = fromUnit;
+      }
+      if (toUnit && unitNames[toUnit]) {
+        toUnitSelect.value = toUnit;
+      }
+    }
+
 
     // Event listeners untuk auto-convert
     numInput.addEventListener('input', convertTemperature);
-    fromUnitSelect.addEventListener('change', convertTemperature);
-    toUnitSelect.addEventListener('change', convertTemperature);
+    fromUnitSelect.addEventListener('change', () => { convertTemperature(); savePreference(); });
+    toUnitSelect.addEventListener('change', () => { convertTemperature(); savePreference(); });
 
     // Event listener untuk copy to clipboard
     resultContainer.addEventListener('click', copyToClipboard);
 
     // Konversi otomatis saat halaman dimuat
-    window.addEventListener('load', convertTemperature);
-
-    // Tambahkan efek visual saat input difokuskan
-    numInput.addEventListener('focus', function() {
-      this.parentElement.style.transform = 'translateY(-2px)';
-    });
-
-    numInput.addEventListener('blur', function() {
-      this.parentElement.style.transform = 'translateY(0)';
+    document.addEventListener('DOMContentLoaded', () => {
+        loadPreference();
+        // Beri nilai default untuk demonstrasi
+        numInput.value = '25'; 
+        convertTemperature();
     });
     
     // === BACK NAVIGATION SOLUTION ===
-function handleBackNavigation() {
-    if (document.referrer.includes(window.location.hostname) && history.length > 1) {
-        history.back();
-    } else {
-        window.location.href = '.,/../../index.html';
+    function handleBackNavigation() {
+        if (document.referrer.includes(window.location.hostname) && history.length > 1) {
+            history.back();
+        } else {
+            // Perbaiki path agar kembali ke halaman utama
+            window.location.href = '../../../index.html'; 
+        }
     }
-}
 
-// Auto-initialize
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[href="../../../index.html"], .header-back a').forEach(btn => {
-        btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
+    // Auto-initialize back button
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('[href="../../../index.html"], .header-back a').forEach(btn => {
+            btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
+        });
     });
-});
     
   </script>
 </body>
