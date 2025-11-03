@@ -3,69 +3,148 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kalkulator Multi-Operasi</title>
+    <title>Kalkulator - ELSA</title> <meta name="theme-color" content="#1a1a1a">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
     <style>
+        /* ============================================== */
+        /* SEMUA CSS DASAR DARI PROFIL/TODOLIST DI-COPY   */
+        /* ============================================== */
         :root {
-            --primary-color: #4a90e2;
-            --secondary-color: #f39c12;
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-color: #ffffff;
-            --border-color: #333;
-            --error-color: #e74c3c;
-            --success-color: #2ecc71;
-            --button-bg: #2d2d2d;
-            --button-hover: #3d3d3d;
+            --bg-color: #1a1a1a;
+            --card-color: #2f2f2f;
+            --text-color: #e0e0e0;
+            --secondary-text: #b0b0b0;
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --success-color: #28a745;
+            --success-hover: #218838;
+            --danger-color: #dc3545;
+            --danger-hover: #c82333;
+            --border-color: #3a3a3a;
+            
+            /* Variabel tambahan khusus untuk kalkulator */
             --operator-bg: #f39c12;
             --operator-hover: #e67e22;
+            --button-bg: #3a3a3a; /* Disesuaikan agar lebih menyatu */
+            --button-hover: #4a4a4a;
         }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
             color: var(--text-color);
-            min-height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
+            background-color: #111111;
+            max-width: 100%;
+            overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
-            padding: 20px;
-            touch-action: manipulation;
             user-select: none;
+            touch-action: manipulation;
+        }
+
+        .main-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding-top: 60px; /* Jarak untuk header fixed */
         }
         
-        #container {
-            width: 100%;
-            max-width: 400px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            padding: 20px;
-            background-color: var(--card-bg);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        /* HEADER BACK BUTTON (Dari Tema Profil) */
+        .header-back {
             display: flex;
-            flex-direction: column;
-            gap: 15px;
+            position: fixed;
+            align-items: center;
+            margin-bottom: 30px;
+            background-color: #444444;
+            width: 100%;
+            top: 0;
+            left: 0;
+            height: 50px;
+            z-index: 10;
+        }
+        .header-back a {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-right: 15px;
+            text-decoration: none;
+            margin-left: 15px;
+            transition: color 0.2s;
+        }
+        .header-back a:hover {
+            color: var(--primary-hover);
+        }
+        .header-back h1 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        /* CARD STYLES (Dari Tema Profil) */
+        .card {
+            background-color: var(--card-color); /* Menggunakan var tema */
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
         }
         
-        #head {
+        .icon-svg {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            color: currentColor;
+        }
+        
+        section h2 {
+            font-size: 1rem;
+            color: var(--secondary-text);
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* ============================================== */
+        /* MODAL STYLES (DARI TEMA PROFIL)                */
+        /* (Disertakan untuk konsistensi, jika app.js ada)*/
+        /* ============================================== */
+        .custom-modal-backdrop {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 10000;
+        }
+        .custom-modal-content {
+            background-color: var(--card-color); color: var(--text-color); padding: 25px;
+            border-radius: 10px; max-width: 400px; width: 90%; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); text-align: center;
+        }
+        .custom-modal-content h3 { margin-bottom: 15px; font-size: 1.25rem; }
+        .custom-modal-content p { margin-bottom: 25px; color: var(--secondary-text); }
+        .custom-modal-buttons button {
+            padding: 10px 20px; margin: 0 5px; border: none; border-radius: 6px;
+            font-weight: 600; cursor: pointer; transition: background-color 0.2s;
+        }
+        .custom-modal-buttons .primary { background-color: var(--primary-color); color: white; }
+        .custom-modal-buttons .primary:hover { background-color: var(--primary-hover); }
+        .custom-modal-buttons .secondary { background-color: var(--border-color); color: var(--text-color); }
+        .custom-modal-buttons .secondary:hover { background-color: #4a4a4a; }
+        
+        
+        /* ============================================== */
+        /* GAYA KHUSUS KALKULATOR (Digabung dengan tema)  */
+        /* ============================================== */
+
+        /* Judul internal di dalam kartu (menggantikan #head) */
+        .calculator-title {
             text-align: center;
             border-bottom: 1px solid var(--border-color);
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             padding-bottom: 10px;
             color: var(--primary-color);
             font-weight: 600;
+            margin-bottom: 20px;
         }
-        
+
         .display-container {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(0, 0, 0, 0.2); /* Disesuaikan dengan tema */
             border-radius: 10px;
             padding: 15px;
             border: 1px solid var(--border-color);
@@ -77,7 +156,7 @@
         
         #calculation {
             font-size: 1.2rem;
-            color: #aaa;
+            color: var(--secondary-text); /* Sesuai tema */
             min-height: 1.5rem;
             text-align: right;
             overflow: hidden;
@@ -93,25 +172,26 @@
             overflow: hidden;
             text-overflow: ellipsis;
             transition: color 0.3s;
+            color: var(--text-color); /* Sesuai tema */
         }
         
         #result.error {
-            color: var(--error-color);
+            color: var(--danger-color); /* Sesuai tema */
         }
         
         #result.success {
-            color: var(--success-color);
+            color: var(--success-color); /* Sesuai tema */
         }
         
         .keypad {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 20px; /* Diberi jarak dari display */
         }
         
         .key {
-            background-color: var(--button-bg);
+            background-color: var(--button-bg); /* Sesuai tema */
             border: none;
             border-radius: 10px;
             color: var(--text-color);
@@ -131,12 +211,8 @@
             opacity: 0.8;
         }
         
-        .key.number {
-            background-color: var(--button-bg);
-        }
-        
         .key.number:hover {
-            background-color: var(--button-hover);
+            background-color: var(--button-hover); /* Sesuai tema */
         }
         
         .key.operator {
@@ -150,21 +226,21 @@
         }
         
         .key.equals {
-            background-color: var(--primary-color);
+            background-color: var(--primary-color); /* Sesuai tema */
             font-weight: bold;
         }
         
         .key.equals:hover {
-            background-color: #3a7bc8;
+            background-color: var(--primary-hover); /* Sesuai tema */
         }
         
         .key.clear {
-            background-color: #e74c3c;
+            background-color: var(--danger-color); /* Sesuai tema */
             font-weight: bold;
         }
         
         .key.clear:hover {
-            background-color: #c0392b;
+            background-color: var(--danger-hover); /* Sesuai tema */
         }
         
         .key.zero {
@@ -180,121 +256,80 @@
             background-color: #7d3c98;
         }
         
+        /* Responsive (Opsional, tapi sudah ada) */
         @media (max-width: 480px) {
-            #container {
-                padding: 15px;
-                max-width: 100%;
-            }
-            
-            #head {
-                font-size: 1.5rem;
-            }
-            
-            #result {
-                font-size: 2rem;
-            }
-            
-            .key {
-                font-size: 1.3rem;
-                padding: 12px 5px;
-            }
-            
-            .options {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .options label {
-                justify-content: center;
-            }
+            #result { font-size: 2rem; }
+            .key { font-size: 1.3rem; padding: 12px 5px; }
         }
-        
         @media (max-width: 350px) {
-            .key {
-                font-size: 1.1rem;
-                padding: 10px 5px;
-            }
-            
-            #result {
-                font-size: 1.8rem;
-            }
-        }
-        
-        .header-back {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .header-back a {
-            color: #007bff;
-            font-size: 1.5rem;
-            margin-right: 15px;
-            text-decoration: none;
-            padding: 5px;
-            border-radius: 4px;
-        }
-        
-        .header-back h1 {
-            font-size: 1.5rem;
-            color: #e0e0e0;
-        }
-        
-        .icon-svg {
-            width: 24px;
-            height: 24px;
-            vertical-align: middle;
-            color: currentColor; /* Agar bisa mengikuti warna text/icon */
+            .key { font-size: 1.1rem; padding: 10px 5px; }
+            #result { font-size: 1.8rem; }
         }
         
     </style>
 </head>
 <body>
-    <div id="container">
-        <header class="header-back">
-            <a href="../../index.html" title="Kembali">
-                <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-            </a>
-            <h1>Kembali</h1>
-        </header>
+    
+    <header class="header-back">
+        <a href="../../index.html" title="Kembali">
+            <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </a>
+        <h1>Kalkulator</h1>
+    </header>
+
+    <div class="main-container">
         
-        <header id="head">
-            KALKULATOR MULTI-OPERASI
-        </header>
+        <section class="card" style="max-width: 420px; margin-left: auto; margin-right: auto;">
+            
+            <h2 class="calculator-title">
+                MULTI-OPERASI
+            </h2>
 
-        <div class="display-container">
-            <div id="calculation"></div>
-            <div id="result">0</div>
-        </div>
+            <div class="display-container">
+                <div id="calculation"></div>
+                <div id="result">0</div>
+            </div>
 
-        <div class="keypad">
-            <button class="key clear" data-action="clear">C</button>
-            <button class="key backspace" data-action="backspace">⌫</button>
-            <button class="key operator" data-operator="%">%</button>
-            <button class="key operator" data-operator="/">/</button>
+            <div class="keypad">
+                <button class="key clear" data-action="clear">C</button>
+                <button class="key backspace" data-action="backspace">⌫</button>
+                <button class="key operator" data-operator="%">%</button>
+                <button class="key operator" data-operator="/">/</button>
+                
+                <button class="key number" data-number="7">7</button>
+                <button class="key number" data-number="8">8</button>
+                <button class="key number" data-number="9">9</button>
+                <button class="key operator" data-operator="*">×</button>
+                
+                <button class="key number" data-number="4">4</button>
+                <button class="key number" data-number="5">5</button>
+                <button class="key number" data-number="6">6</button>
+                <button class="key operator" data-operator="-">-</button>
+                
+                <button class="key number" data-number="1">1</button>
+                <button class="key number" data-number="2">2</button>
+                <button class="key number" data-number="3">3</button>
+                <button class="key operator" data-operator="+">+</button>
+                
+                <button class="key number zero" data-number="0">0</button>
+                <button class="key number" data-number=".">.</button>
+                <button class="key equals" data-action="equals">=</button>
+            </div>
             
-            <button class="key number" data-number="7">7</button>
-            <button class="key number" data-number="8">8</button>
-            <button class="key number" data-number="9">9</button>
-            <button class="key operator" data-operator="*">×</button>
-            
-            <button class="key number" data-number="4">4</button>
-            <button class="key number" data-number="5">5</button>
-            <button class="key number" data-number="6">6</button>
-            <button class="key operator" data-operator="-">-</button>
-            
-            <button class="key number" data-number="1">1</button>
-            <button class="key number" data-number="2">2</button>
-            <button class="key number" data-number="3">3</button>
-            <button class="key operator" data-operator="+">+</button>
-            
-            <button class="key number zero" data-number="0">0</button>
-            <button class="key number" data-number=".">.</button>
-            <button class="key equals" data-action="equals">=</button>
-        </div>
-
+        </section>
     </div>
 
+    <div id="customAlertModal" class="custom-modal-backdrop">
+        <div class="custom-modal-content">
+            <h3 id="customAlertTitle">Pemberitahuan</h3>
+            <p id="customAlertMessage">Ini adalah pesan custom.</p>
+            <div class="custom-modal-buttons">
+                <button id="customAlertConfirm" class="primary">OK</button>
+                <button id="customAlertCancel" class="secondary" style="display: none;">Batal</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // State kalkulator
         let expression = '';
@@ -304,15 +339,12 @@
         // Ambil elemen-elemen yang diperlukan
         const resultDiv = document.getElementById("result");
         const calculationDiv = document.getElementById("calculation");
-        const formatRadios = document.querySelectorAll("input[name='format']");
         
         // Update tampilan
         function updateDisplay() {
             resultDiv.textContent = currentInput;
             calculationDiv.textContent = expression;
-            
-            // Reset status error/success
-            resultDiv.className = '';
+            resultDiv.className = ''; // Reset status error/success
         }
         
         // Input angka
@@ -325,23 +357,30 @@
             }
             updateDisplay();
         }
+
+        // Input desimal
+        function inputDecimal() {
+            if (lastResult !== null) {
+                currentInput = '0.';
+                lastResult = null;
+            } else if (!currentInput.includes('.')) {
+                currentInput += '.';
+            }
+            updateDisplay();
+        }
         
         // Handle operator
         function handleOperator(op) {
-            // Jika ada hasil sebelumnya, gunakan sebagai angka pertama
             if (lastResult !== null) {
                 expression = lastResult + ' ' + op + ' ';
                 currentInput = '0';
                 lastResult = null;
             } 
-            // Jika expression kosong, mulai expression baru
             else if (expression === '') {
                 expression = currentInput + ' ' + op + ' ';
                 currentInput = '0';
             }
-            // Jika expression sudah ada, tambahkan operator baru
             else {
-                // Evaluasi expression saat ini sebelum menambahkan operator baru
                 try {
                     const result = evaluateExpression(expression + currentInput);
                     expression = result + ' ' + op + ' ';
@@ -356,34 +395,29 @@
         
         // Evaluasi expression matematika
         function evaluateExpression(expr) {
-            // Hapus spasi dan ubah operator untuk evaluasi
             expr = expr.replace(/\s+/g, '');
-            
-            // Validasi expression
-            if (!/^[0-9+\-*/.%]+$/.test(expr)) {
-                throw new Error('Expression tidak valid');
+            if (!/^[0-9.+\-*/%]+$/.test(expr)) {
+                if (expr.includes('Error:')) {
+                     throw new Error('Input tidak valid');
+                }
             }
             
-            // Gunakan Function constructor untuk evaluasi (lebih aman daripada eval)
+            expr = expr.replace(/×/g, '*');
+            
             try {
-                // Ganti × dengan * untuk evaluasi
-                expr = expr.replace(/×/g, '*');
-                
-                // Validasi pembagian dengan nol
-                if (expr.includes('/0') && !expr.includes('/0.')) {
+                if (/\/0(?![.0-9])/.test(expr)) {
                     throw new Error('Pembagian dengan nol');
                 }
-                
-                // Evaluasi dengan Function constructor (lebih aman daripada eval)
                 const result = Function('"use strict"; return (' + expr + ')')();
-                
                 if (!isFinite(result)) {
                     throw new Error('Hasil tidak terhingga');
                 }
-                
                 return result;
             } catch (error) {
-                throw new Error('Error dalam evaluasi');
+                if(error.message.includes("zero")) {
+                     throw new Error('Pembagian dengan nol');
+                }
+                throw new Error('Format tidak valid');
             }
         }
         
@@ -393,16 +427,7 @@
             
             try {
                 const result = evaluateExpression(expression + currentInput);
-                
-                // Format hasil berdasarkan pilihan pengguna
-                const format = document.querySelector("input[name='format']:checked").value;
-                if (format === "fixed") {
-                    currentInput = Number.isInteger(result) ? result.toString() : result.toFixed(2);
-                } else {
-                    currentInput = result.toString();
-                }
-                
-                // Simpan hasil untuk operasi lanjutan
+                currentInput = result.toString();
                 lastResult = currentInput;
                 expression = '';
                 
@@ -436,7 +461,6 @@
                 clearCalculator();
                 return;
             }
-            
             if (currentInput.length > 1) {
                 currentInput = currentInput.slice(0, -1);
             } else {
@@ -449,11 +473,7 @@
         document.querySelectorAll('.key.number').forEach(button => {
             button.addEventListener('click', () => {
                 const number = button.getAttribute('data-number');
-                if (number === '.') {
-                    inputDecimal();
-                } else {
-                    inputNumber(number);
-                }
+                if (number === '.') { inputDecimal(); } else { inputNumber(number); }
             });
         });
         
@@ -468,57 +488,36 @@
         document.querySelector('.key.clear').addEventListener('click', clearCalculator);
         document.querySelector('.key.backspace').addEventListener('click', backspace);
         
-        // Event listener untuk format
-        formatRadios.forEach(radio => {
-            radio.addEventListener('change', () => {
-                if (lastResult !== null) {
-                    const format = document.querySelector("input[name='format']:checked").value;
-                    const num = parseFloat(currentInput);
-                    if (format === "fixed") {
-                        currentInput = Number.isInteger(num) ? num.toString() : num.toFixed(2);
-                    }
-                    updateDisplay();
-                }
-            });
-        });
-        
         // Inisialisasi
         updateDisplay();
         
-        // Tambahan: Support keyboard input
+        // Support keyboard input
         document.addEventListener('keydown', (e) => {
             const key = e.key;
-            
-            if (key >= '0' && key <= '9') {
-                inputNumber(key);
-            } else if (key === '.') {
-                inputDecimal();
-            } else if (['+', '-', '*', '/', '%'].includes(key)) {
-                handleOperator(key);
-            } else if (key === 'Enter' || key === '=') {
-                performCalculation();
-            } else if (key === 'Escape' || key === 'c' || key === 'C') {
-                clearCalculator();
-            } else if (key === 'Backspace') {
-                backspace();
-            }
+            if (key >= '0' && key <= '9') { inputNumber(key); }
+            else if (key === '.') { inputDecimal(); }
+            else if (['+', '-', '/', '%'].includes(key)) { handleOperator(key); }
+            else if (key === '*') { handleOperator('×'); } // Tangani input *
+            else if (key === 'Enter' || key === '=') { performCalculation(); }
+            else if (key === 'Escape' || key === 'c' || key === 'C') { clearCalculator(); }
+            else if (key === 'Backspace') { backspace(); }
         });
         
-        // === BACK NAVIGATION SOLUTION ===
-function handleBackNavigation() {
-    if (document.referrer.includes(window.location.hostname) && history.length > 1) {
-        history.back();
-    } else {
-        window.location.href = '../../index.html';
-    }
-}
+        // === FUNGSI NAVIGASI KEMBALI (DARI TEMA PROFIL) ===
+        function handleBackNavigation() {
+            if (document.referrer.includes(window.location.hostname) && history.length > 1) {
+                history.back();
+            } else {
+                window.location.href = '../../index.html';
+            }
+        }
 
-// Auto-initialize
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[href="../../index.html"], .header-back a').forEach(btn => {
-        btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
-    });
-});
+        // Auto-initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('[href="../../index.html"], .header-back a').forEach(btn => {
+                btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
+            });
+        });
         
     </script>
 </body>
