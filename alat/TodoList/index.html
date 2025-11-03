@@ -3,489 +3,551 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo List & Catatan Minimalis</title>
+    <title>Daftar Tugas - ELSA</title> 
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
+        /* ============================================== */
+        /* SELURUH CSS DARI index.html DISALIN KE SINI    */
+        /* ============================================== */
         :root {
-            --primary-color: #4a6fa5;
-            --secondary-color: #6b8cbc;
-            --background-color: #f5f7fa;
-            --text-color: #333;
-            --light-gray: #e0e0e0;
-            --medium-gray: #b0b0b0;
-            --white: #ffffff;
-            --danger: #e74c3c;
-            --success: #2ecc71;
-            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08); /* Shadow lebih halus */
-            --radius-md: 6px; /* Radius sedang untuk elemen utama */
-            --radius-sm: 4px; /* Radius kecil untuk tombol */
+            --bg-color: #1a1a1a;
+            --card-color: #2f2f2f;
+            --text-color: #e0e0e0;
+            --secondary-text: #b0b0b0;
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --success-color: #28a745;
+            --success-hover: #218838;
+            --danger-color: #dc3545;
+            --danger-hover: #c82333;
+            --border-color: #3a3a3a;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background-color: var(--background-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
             color: var(--text-color);
-            line-height: 1.5; /* Kurangi line-height */
-            padding: 20px 15px; /* Sedikit lebih lebar */
-            max-width: 1000px; /* Kurangi lebar maksimal container */
-            margin: 0 auto;
-            user-select: none;
-            -web-kit-tap-highlight-color: transparent;
+            background-color: #111111;
+            max-width: 100%;
             overflow-x: hidden;
-            font-size: 15px; /* Font dasar lebih kecil */
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- Header Styles --- */
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-            padding: 15px 0;
-            border-bottom: 1px solid var(--light-gray);
-        }
-
-        h1 {
-            color: var(--primary-color);
-            margin-bottom: 5px; /* Jarak lebih kecil */
-            font-size: 24px; /* Judul lebih kecil */
+        .main-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding-top: 60px; /* Tambahkan ini */
         }
         
-        /* --- Layout Container (Grid) --- */
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px; /* Gap lebih kecil */
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-        }
-
-        .section {
-            background-color: var(--white);
-            border-radius: var(--radius-md);
-            padding: 20px; /* Padding section lebih kecil */
-            box-shadow: var(--shadow-light);
-        }
-
-        h2 {
-            color: var(--primary-color);
-            margin-bottom: 15px; /* Jarak lebih kecil */
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--light-gray);
-            font-size: 20px; /* Subjudul lebih kecil */
-        }
-
-        /* --- Input Group (Form) --- */
-        .input-group {
-            display: flex;
-            margin-bottom: 15px; /* Margin lebih kecil */
-            gap: 8px; /* Gap lebih kecil */
-        }
-
-        input, textarea {
-            flex: 1;
-            padding: 9px 12px; /* Padding vertikal dikurangi (lebih kecil) */
-            border: 1px solid var(--light-gray);
-            border-radius: var(--radius-sm);
-            font-size: 14px; /* Ukuran font input dikurangi */
-            transition: border 0.3s, box-shadow 0.3s;
-            min-width: 0;
-        }
-        
-        textarea {
-            resize: vertical;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2); /* Efek fokus profesional */
-        }
-
-        /* Tombol Form Tambah/Simpan */
-        .input-group button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: background-color 0.3s;
-            flex-shrink: 0;
-            
-            /* Mobile: Ikon kecil */
-            width: 38px; /* Lebih kecil */
-            height: 38px; /* Lebih kecil */
-            padding: 0; 
-            font-size: 20px; /* Ikon lebih kecil */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            line-height: 1;
-        }
-        
-        .input-group button:hover {
-            background-color: var(--secondary-color);
-        }
-        
-        @media (min-width: 500px) {
-            .input-group button {
-                width: auto; 
-                height: auto;
-                padding: 9px 15px; /* Padding disesuaikan dengan input */
-                font-size: 14px; /* Font tombol disesuaikan */
-            }
-        }
-
-        /* --- Item List & Items --- */
-        .item-list {
-            list-style-type: none;
-            max-height: 350px; /* Tinggi maksimal list dikurangi */
-            overflow-y: auto;
-        }
-
-        .item, .note-item {
-            background-color: var(--white);
-            border: 1px solid var(--light-gray);
-            border-radius: var(--radius-sm);
-            padding: 10px 12px; /* Padding item dikurangi */
-            margin-bottom: 8px; /* Margin bawah dikurangi */
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            transition: all 0.2s;
-            flex-wrap: wrap;
-        }
-
-        .item:hover, .note-item:hover {
-             transform: translateY(-1px);
-             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .item-content {
-            flex: 1 1 100%;
-            margin-right: 0;
-            min-width: 0;
-            overflow-wrap: break-word; 
-            word-break: break-word; 
-            margin-bottom: 8px; /* Jarak lebih kecil */
-        }
-        
-        .item-title, .note-title {
-            font-weight: 600; /* Dibuat sedikit lebih tipis dari 'bold' */
-            margin-bottom: 3px; /* Jarak lebih kecil */
-            font-size: 15px; /* Ukuran judul item/catatan disesuaikan */
-        }
-
-        .item-text, .note-content {
-            font-size: 13px; /* Ukuran teks konten dikurangi */
-            color: #666;
-        }
-        
-        /* Aksi Tombol Daftar (Todo & Catatan) */
-        .item-actions {
-            display: flex;
-            gap: 4px; /* Gap lebih kecil */
-            flex-shrink: 0;
-            flex: 1 1 100%; 
-            justify-content: flex-end; 
-            margin-top: 0;
-        }
-        
-        .item-actions button {
-            /* Dibuat sangat kecil dan ringkas */
-            padding: 6px; 
-            font-size: 13px;
-            width: 30px; 
-            height: 30px; 
-            border-radius: var(--radius-sm);
-        }
-        
-        @media (min-width: 500px) {
-            .item-content { margin-bottom: 0; } /* Hapus margin di desktop */
-            .item-actions {
-                flex: 0 0 auto; 
-                margin-top: 0;
-            }
-            .item-actions button {
-                width: auto;
-                height: auto;
-                padding: 6px 10px; /* Padding horizontal disesuaikan */
-            }
-        }
-        
-
-        .completed { opacity: 0.6; }
-        .completed .item-title { text-decoration: line-through; }
-        .empty-state { padding: 25px; font-size: 14px; }
-        
+        /* HEADER BACK BUTTON */
         .header-back {
             display: flex;
+            position: fixed;
             align-items: center;
             margin-bottom: 30px;
+            background-color: #444444;
+            width: 100%;
+            top: 0;
+            left: 0;
+            height: 50px;
+            z-index: 10;
         }
-        
         .header-back a {
-            color: #007bff;
+            color: var(--primary-color);
             font-size: 1.5rem;
             margin-right: 15px;
             text-decoration: none;
-            padding: 5px;
-            border-radius: 4px;
+            margin-left: 15px;
+            transition: color 0.2s;
         }
-        
+        .header-back a:hover {
+            color: var(--primary-hover);
+        }
         .header-back h1 {
             font-size: 1.5rem;
-            color: #e0e0e0;
+            color: var(--text-color);
+        }
+
+        /* CARD STYLES */
+        .card {
+            background-color: #111111;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        /* PROFILE CARD (Tetap ada, tidak masalah) */
+        .profile-card {
+            text-align: center;
+        }
+
+        /* PROFILE PICTURE (Tetap ada, tidak masalah) */
+        .profile-pic-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background-color: #4a4a4a;
+            overflow: hidden;
+            border: 3px solid var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        /* ... sisa gaya .profile-pic ... */
+        
+        /* DETAIL/SETTINGS ITEM (Ini penting untuk todo list) */
+        .detail-item, .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+            min-height: 60px;
+        }
+        .detail-item:last-child, .settings-card .settings-item:last-child, .card .settings-item:last-child {
+            border-bottom: none;
+        }
+        .detail-item .icon, .settings-item .icon {
+            font-size: 1.3rem;
+            color: var(--secondary-text);
+            margin-right: 15px;
+            flex-shrink: 0;
+            min-width: 20px;
+        }
+        .detail-item .content, .settings-item .content {
+            flex-grow: 1;
+        }
+        .detail-item .content h3, .settings-item .content h3 {
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+            margin-bottom: 3px;
+        }
+        .detail-item .content p, .settings-item .content p {
+            font-size: 1rem;
+            color: var(--text-color);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* FORM ELEMENTS (Penting untuk input tugas) */
+        /* Modifikasi selector agar lebih fleksibel */
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            background-color: #3a3a3a;
+            border: 1px solid #555;
+            border-radius: 6px;
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, input[type="email"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        /* Penyesuaian untuk input di dalam .detail-item */
+        .detail-item input[type="text"], .detail-item input[type="email"] {
+             margin-top: 0; /* Hapus margin atas default */
+        }
+
+
+        /* BUTTONS */
+        .edit-btn, .action-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            flex-shrink: 0;
+            padding: 5px;
+            margin-left: 10px;
+        }
+        .edit-btn:hover, .action-btn:hover {
+            color: var(--primary-hover);
+        }
+        /* Tombol hapus akan menggunakan warna danger */
+        .action-btn.delete {
+            color: var(--danger-color);
+        }
+        .action-btn.delete:hover {
+            color: var(--danger-hover);
         }
         
+        .save-btn {
+            background: var(--success-color);
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+        .save-btn:hover {
+            background-color: var(--success-hover);
+        }
+        .save-btn:disabled {
+            background-color: #555;
+            cursor: default;
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            body {
+                padding: 30px;
+            }
+        }
+
+        /* Basic SVG icons */
         .icon-svg {
             width: 24px;
             height: 24px;
             vertical-align: middle;
-            color: currentColor; /* Agar bisa mengikuti warna text/icon */
+            color: currentColor;
         }
-    </style>
-
+        .icon-small-svg {
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+            color: currentColor;
+        }
+        
+        section h2 {
+            font-size: 1rem;
+            color: var(--secondary-text);
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        /* ============================================== */
+        /* Custom Alert/Modal Styles (DISALIN) */
+        /* ============================================== */
+        .custom-modal-backdrop {
+            display: none; /* Default: Sembunyikan */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        .custom-modal-content {
+            background-color: var(--card-color);
+            color: var(--text-color);
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        .custom-modal-content h3 {
+            margin-bottom: 15px;
+            font-size: 1.25rem;
+        }
+        .custom-modal-content p {
+            margin-bottom: 25px;
+            color: var(--secondary-text);
+        }
+        .custom-modal-buttons button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .custom-modal-buttons .primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .custom-modal-buttons .primary:hover {
+            background-color: var(--primary-hover);
+        }
+        .custom-modal-buttons .secondary {
+            background-color: var(--border-color);
+            color: var(--text-color);
+        }
+        .custom-modal-buttons .secondary:hover {
+            background-color: #4a4a4a;
+        }
+        
+        /* ============================================== */
+        /* GAYA SPESIFIK UNTUK TODO LIST (BARU) */
+        /* ============================================== */
+        /* Gaya untuk input tambah tugas */
+        #add-task-container {
+            padding-bottom: 20px; /* Jarak tambahan */
+            margin-bottom: 10px;
+        }
+        
+        /* Menggunakan style .settings-item untuk todo-item */
+        .todo-item .content p {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        /* Gaya untuk tugas yang selesai */
+        .todo-item.completed .content p {
+            text-decoration: line-through;
+            color: var(--secondary-text);
+        }
+        
+        .todo-item .todo-checkbox {
+            cursor: pointer;
+        }
+        
     </style>
 </head>
 <body>
+    <div class="main-container">
         <header class="header-back">
-            <a href="./../../index.html" title="Kembali">
+            <a href="../index.html" title="Kembali">
                 <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
             </a>
-            <h1>Kembali</h1>
+            <h1>Daftar Tugas</h1>
         </header>
-    <header>
-        <h1>Todo List & Catatan</h1>
-        <p>Kelola tugas dan catatan Anda dengan mudah</p>
-    </header>
 
-    <div class="container">
-        <section class="section">
-            <h2>Daftar Tugas</h2>
-            <div class="input-group">
-                <input type="text" id="todoInput" placeholder="Tambah tugas baru...">
-                <button id="addTodoBtn" title="Tambah Tugas Baru">+</button>
-            </div>
-            <ul class="item-list" id="todoList">
-                </ul>
-        </section>
-
-        <section class="section">
-            <h2>Catatan Cepat</h2>
-            <div class="input-group">
-                <input type="text" id="noteTitle" placeholder="Judul catatan...">
-                <button id="addNoteBtn" title="Tambah Catatan Baru">+</button>
-            </div>
-            <textarea id="noteContent" placeholder="Isi catatan..." rows="3" style="margin-bottom: 15px;"></textarea>
-            <div id="notesList">
+        <main>
+            <section class="card">
+                
+                <h2>Tambah Tugas</h2>
+                <div class="detail-item" id="add-task-container">
+                    <span class="icon">
+                        <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </span>
+                    <div class="content">
+                        <input type="text" id="taskInput" placeholder="Tulis tugas baru di sini..." style="margin-top: 0;">
+                    </div>
+                    <button class="save-btn" id="addTaskBtn" style="font-weight: 600;">Tambah</button>
                 </div>
-        </section>
+
+                <h2>Daftar Tugas Anda</h2>
+                <div id="taskList">
+                    </div>
+            </section>
+        </main>
     </div>
+    
+    <div id="customAlertModal" class="custom-modal-backdrop">
+        <div class="custom-modal-content">
+            <h3 id="customAlertTitle">Pemberitahuan</h3>
+            <p id="customAlertMessage">Ini adalah pesan custom.</p>
+            <div class="custom-modal-buttons">
+                <button id="customAlertConfirm" class="primary">OK</button>
+                <button id="customAlertCancel" class="secondary" style="display: none;">Batal</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../app.js"></script>
 
     <script>
-        // Data aplikasi
-        let todos = JSON.parse(localStorage.getItem('todos')) || [];
-        let notes = JSON.parse(localStorage.getItem('notes')) || [];
-        let editingTodoId = null;
-        let editingNoteId = null;
-
-        // Elemen DOM
-        const todoInput = document.getElementById('todoInput');
-        const addTodoBtn = document.getElementById('addTodoBtn');
-        const todoList = document.getElementById('todoList');
-        const noteTitle = document.getElementById('noteTitle');
-        const noteContent = document.getElementById('noteContent');
-        const addNoteBtn = document.getElementById('addNoteBtn');
-        const notesList = document.getElementById('notesList');
-        
-        // Konstanta Ikon
-        const ICON_ADD = '+';
-        const ICON_SAVE = '✔';
-
-        // Fungsi untuk menyimpan data ke localStorage
-        function saveData() {
-            localStorage.setItem('todos', JSON.stringify(todos));
-            localStorage.setItem('notes', JSON.stringify(notes));
-        }
-
-        // Fungsi untuk mengupdate teks tombol 'Tambah'
-        function updateAddButtonText(button, isEditing) {
-            if (window.matchMedia('(min-width: 500px)').matches) {
-                // Desktop: Teks lengkap
-                button.textContent = isEditing ? 'Simpan' : 'Tambah';
+        // Wrapper functions for custom alerts (DISALIN dari index.html)
+        // Ini memastikan kustom alert/confirm dapat digunakan
+        const customAlert = (title, message, callback) => {
+            if (window.elsaApp && window.elsaApp.customAlert) {
+                window.elsaApp.customAlert(title, message, callback);
             } else {
-                // Mobile: Ikon
-                button.textContent = isEditing ? ICON_SAVE : ICON_ADD;
-                button.title = isEditing ? 'Simpan Perubahan' : 'Tambah Baru';
+                alert(`${title}: ${message}`);
+                if(callback) callback();
             }
-        }
+        };
 
-        // Fungsi untuk menampilkan todo list
-        function renderTodos() {
-            todoList.innerHTML = '';
-            
-            if (todos.length === 0) {
-                todoList.innerHTML = `<div class="empty-state"><p>Tidak ada tugas yang perlu dilakukan.</p><p>Tambahkan tugas baru untuk memulai!</p></div>`;
-                return;
-            }
-            
-            todos.forEach(todo => {
-                const todoItem = document.createElement('li');
-                todoItem.className = `item ${todo.completed ? 'completed' : ''}`;
-                const toggleIcon = todo.completed ? '✔' : '⚪'; 
-                const toggleTitle = todo.completed ? 'Batal Selesai' : 'Tandai Selesai';
-                
-                todoItem.innerHTML = `
-                    <div class="item-content">
-                        <div class="item-title">${todo.text}</div>
-                    </div>
-                    <div class="item-actions">
-                        <button class="${todo.completed ? 'success' : ''}" onclick="toggleTodo(${todo.id})" title="${toggleTitle}">
-                            ${toggleIcon}
-                        </button>
-                        <button onclick="editTodo(${todo.id})" title="Edit Tugas">✎</button>
-                        <button class="danger" onclick="deleteTodo(${todo.id})" title="Hapus Tugas">✖</button>
-                    </div>
-                `;
-                todoList.appendChild(todoItem);
-            });
-        }
-
-        // Fungsi untuk menampilkan catatan
-        function renderNotes() {
-            notesList.innerHTML = '';
-            
-            if (notes.length === 0) {
-                notesList.innerHTML = `<div class="empty-state"><p>Tidak ada catatan.</p><p>Tambahkan catatan baru untuk memulai!</p></div>`;
-                return;
-            }
-            
-            notes.forEach(note => {
-                const noteItem = document.createElement('div');
-                noteItem.className = 'note-item';
-                // Konten dan tombol digabungkan dalam item-content untuk struktur yang rapi
-                noteItem.innerHTML = `
-                    <div class="item-content">
-                        <div class="note-title">${note.title}</div>
-                        <div class="note-content">${note.content}</div>
-                    </div>
-                    <div class="item-actions">
-                        <button onclick="editNote(${note.id})" title="Edit Catatan">✎</button>
-                        <button class="danger" onclick="deleteNote(${note.id})" title="Hapus Catatan">✖</button>
-                    </div>
-                `;
-                notesList.appendChild(noteItem);
-            });
-        }
-
-        // Fungsi CRUD (add, edit, delete, toggle)
-        function addTodo() {
-            const text = todoInput.value.trim();
-            if (text === '') return;
-            if (editingTodoId !== null) {
-                const todoIndex = todos.findIndex(todo => todo.id === editingTodoId);
-                if (todoIndex !== -1) {
-                    todos[todoIndex].text = text;
-                    editingTodoId = null;
-                    updateAddButtonText(addTodoBtn, false); 
+        const customConfirm = (title, message) => {
+            return new Promise(resolve => {
+                if (window.elsaApp && window.elsaApp.customConfirm) {
+                    window.elsaApp.customConfirm(title, message).then(resolve);
+                } else {
+                    resolve(confirm(`${title}: ${message}`));
                 }
-            } else {
-                const newTodo = { id: Date.now(), text: text, completed: false };
-                todos.push(newTodo);
-            }
-            todoInput.value = '';
-            saveData();
-            renderTodos();
-        }
+            });
+        };
+        
+        // --- LOGIKA TODO LIST ---
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const taskInput = document.getElementById('taskInput');
+            const addTaskBtn = document.getElementById('addTaskBtn');
+            const taskList = document.getElementById('taskList');
+            
+            // Muat tugas dari localStorage saat halaman dibuka
+            loadTasks();
 
-        function addNote() {
-            const title = noteTitle.value.trim();
-            const content = noteContent.value.trim();
-            if (title === '' || content === '') return;
-            if (editingNoteId !== null) {
-                const noteIndex = notes.findIndex(note => note.id === editingNoteId);
-                if (noteIndex !== -1) {
-                    notes[noteIndex].title = title;
-                    notes[noteIndex].content = content;
-                    editingNoteId = null;
-                    updateAddButtonText(addNoteBtn, false); 
+            // Tambah tugas saat tombol diklik
+            addTaskBtn.addEventListener('click', addTask);
+            
+            // Tambah tugas saat menekan Enter
+            taskInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTask();
                 }
-            } else {
-                const newNote = { id: Date.now(), title: title, content: content };
-                notes.push(newNote);
-            }
-            noteTitle.value = '';
-            noteContent.value = '';
-            saveData();
-            renderNotes();
-        }
-
-        function editTodo(id) {
-            const todo = todos.find(todo => todo.id === id);
-            if (todo) {
-                todoInput.value = todo.text;
-                editingTodoId = id;
-                updateAddButtonText(addTodoBtn, true); 
-                todoInput.focus();
-            }
-        }
-
-        function editNote(id) {
-            const note = notes.find(note => note.id === id);
-            if (note) {
-                noteTitle.value = note.title;
-                noteContent.value = note.content;
-                editingNoteId = id;
-                updateAddButtonText(addNoteBtn, true); 
-                noteTitle.focus();
-            }
-        }
-        
-        function deleteTodo(id) { if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) { todos = todos.filter(todo => todo.id !== id); saveData(); renderTodos(); } }
-        function deleteNote(id) { if (confirm('Apakah Anda yakin ingin menghapus catatan ini?')) { notes = notes.filter(note => note.id !== id); saveData(); renderNotes(); } }
-        function toggleTodo(id) { const todoIndex = todos.findIndex(todo => todo.id === id); if (todoIndex !== -1) { todos[todoIndex].completed = !todos[todoIndex].completed; saveData(); renderTodos(); } }
-
-        // Event listeners
-        addTodoBtn.addEventListener('click', addTodo);
-        todoInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTodo(); });
-        addNoteBtn.addEventListener('click', addNote);
-        noteTitle.addEventListener('keypress', (e) => { if (e.key === 'Enter') addNote(); });
-        
-        window.addEventListener('resize', () => {
-            updateAddButtonText(addTodoBtn, editingTodoId !== null);
-            updateAddButtonText(addNoteBtn, editingNoteId !== null);
+            });
+            
+            // Event listener untuk klik pada item (delete/toggle)
+            taskList.addEventListener('click', handleTaskAction);
+            
+            // Logika navigasi kembali
+            document.querySelectorAll('[href="../index.html"], .header-back a').forEach(btn => {
+                btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
+            });
         });
-
-        // Inisialisasi aplikasi
-        renderTodos();
-        renderNotes();
-        updateAddButtonText(addTodoBtn, editingTodoId !== null);
-        updateAddButtonText(addNoteBtn, editingNoteId !== null);
         
-        // === BACK NAVIGATION SOLUTION ===
-function handleBackNavigation() {
-    if (document.referrer.includes(window.location.hostname) && history.length > 1) {
-        history.back();
-    } else {
-        window.location.href = './../../index.html';
-    }
-}
+        function handleBackNavigation() {
+            if (document.referrer.includes(window.location.hostname) && history.length > 1) {
+                history.back();
+            } else {
+                window.location.href = '../index.html';
+            }
+        }
 
-// Auto-initialize
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[href="./../../index.html"], .header-back a').forEach(btn => {
-        btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
-    });
-});
+        function getTasks() {
+            // Ambil data dari localStorage, atau kembalikan array kosong
+            return JSON.parse(localStorage.getItem('elsaTasks')) || [];
+        }
+
+        function saveTasks(tasks) {
+            localStorage.setItem('elsaTasks', JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            const tasks = getTasks();
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = ''; // Kosongkan daftar
+            tasks.forEach(task => {
+                const taskElement = createTaskElement(task);
+                taskList.appendChild(taskElement);
+            });
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskText = taskInput.value.trim();
+            
+            if (taskText === '') {
+                customAlert('Input Kosong', 'Silakan masukkan teks untuk tugas Anda.');
+                return;
+            }
+            
+            const newTask = {
+                id: Date.now(), // ID unik berdasarkan waktu
+                text: taskText,
+                completed: false
+            };
+            
+            const tasks = getTasks();
+            tasks.push(newTask);
+            saveTasks(tasks);
+            
+            const taskElement = createTaskElement(newTask);
+            document.getElementById('taskList').appendChild(taskElement);
+            
+            taskInput.value = ''; // Kosongkan input
+        }
+        
+        function handleTaskAction(e) {
+            const item = e.target;
+            
+            // Cari elemen .todo-item terdekat
+            const taskElement = item.closest('.todo-item');
+            if (!taskElement) return;
+
+            const taskId = Number(taskElement.dataset.id);
+            
+            // Cek jika tombol hapus diklik
+            if (item.closest('.delete-btn')) {
+                deleteTask(taskId, taskElement);
+            }
+            // Cek jika checkbox atau teks diklik (untuk toggle)
+            else if (item.closest('.todo-checkbox') || item.closest('.content p')) {
+                toggleTask(taskId, taskElement);
+            }
+        }
+        
+        async function deleteTask(taskId, taskElement) {
+            // Menggunakan customConfirm yang sesuai tema
+            const confirmDelete = await customConfirm(
+                'Konfirmasi Hapus', 
+                'Apakah Anda yakin ingin menghapus tugas ini?'
+            );
+            
+            if (confirmDelete) {
+                let tasks = getTasks();
+                tasks = tasks.filter(task => task.id !== taskId);
+                saveTasks(tasks);
+                
+                taskElement.remove(); // Hapus dari DOM
+            }
+        }
+        
+        function toggleTask(taskId, taskElement) {
+            let tasks = getTasks();
+            const task = tasks.find(task => task.id === taskId);
+            
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks(tasks);
+                
+                // Update tampilan di DOM
+                taskElement.classList.toggle('completed', task.completed);
+                const checkboxSvg = taskElement.querySelector('.todo-checkbox svg');
+                checkboxSvg.innerHTML = task.completed ?
+                    '<polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>' : // Ikon checked
+                    '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>'; // Ikon box
+            }
+        }
+
+        function createTaskElement(task) {
+            // Membuat elemen HTML menggunakan kelas dari tema
+            const div = document.createElement('div');
+            div.className = 'settings-item todo-item';
+            div.dataset.id = task.id;
+            
+            if (task.completed) {
+                div.classList.add('completed');
+            }
+            
+            const checkboxIcon = task.completed ?
+                '<polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>' : // Ikon checked
+                '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>'; // Ikon box
+
+            div.innerHTML = `
+                <span class="icon todo-checkbox" role="button" aria-label="Tandai tugas">
+                    <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        ${checkboxIcon}
+                    </svg>
+                </span>
+                <div class="content">
+                    <p>${task.text}</p>
+                </div>
+                <button class="action-btn delete delete-btn" aria-label="Hapus tugas">
+                    <svg class="icon-small-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
+            `;
+            
+            // Bersihkan teks untuk keamanan (basic XSS prevention)
+            const p = div.querySelector('.content p');
+            p.textContent = task.text;
+
+            return div;
+        }
         
     </script>
 </body>
