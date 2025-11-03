@@ -1,24 +1,707 @@
 {
   "kelas-10": {
-    "title": "Kelas 10",
+    "title": "",
     "books": [
       {
         "id": "matematika-10",
-        "title": "Matematika Kelas 10",
-        "filename": "matematika.pdf",
-        "size": "2.1 MB",
-        "downloadUrl": "./buku/kelas-10/matematika.pdf",
+        "title": "Matematika ",
         "subject": "Matematika",
-        "description": "Buku matematika kelas 10"
+        "downloadUrl": "./buku/kelas-10/matematika.pdf",
+        "size": "2.5 MB",
+        "version": "1.0"
+      },
+      {
+        "id": "fisika-10",
+        "title": "Fisika ",
+        "subject": "Fisika",
+        "downloadUrl": "./buku/kelas-10/fisika.pdf",
+        "size": "3.1 MB",
+        "version": "1.0"
+      },
+      {
+        "id": "kimia-10",
+        "title": "Kimia ",
+        "subject": "Kimia",
+        "downloadUrl": "./buku/kelas-10/kimia.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "biologi-10",
+        "title": "Biologi ",
+        "subject": "Biologi",
+        "downloadUrl": "./buku/kelas-10/biologi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-indonesia-10",
+        "title": "Bahasa Indonesia ",
+        "subject": "Bahasa Indonesia",
+        "downloadUrl": "./buku/kelas-10/b-indo.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-inggris-10",
+        "title": "Bahasa Inggris ",
+        "subject": "Bahasa Inggris",
+        "downloadUrl": "./buku/kelas-10/b-ing.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-arab-10",
+        "title": "Bahasa Arab ",
+        "subject": "Bahasa Arab",
+        "downloadUrl": "./buku/kelas-10/b-arab.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "ppkn-10",
+        "title": "PPKN ",
+        "subject": "PPKN",
+        "downloadUrl": "./buku/kelas-10/ppkn.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "pjok-10",
+        "title": "PJOK ",
+        "subject": "PJOK",
+        "downloadUrl": "./buku/kelas-10/pjok.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "seni-budaya-10",
+        "title": "Seni Budaya ",
+        "subject": "Seni Budaya",
+        "downloadUrl": "./buku/kelas-10/seni-budaya.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "prakarya-10",
+        "title": "Prakarya ",
+        "subject": "Prakarya",
+        "downloadUrl": "./buku/kelas-10/prakarya.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "quran-hadist-10",
+        "title": "Quran Hadist ",
+        "subject": "Quran Hadist",
+        "downloadUrl": "./buku/kelas-10/quran-hadist.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "fikih-10",
+        "title": "Fikih ",
+        "subject": "Fikih",
+        "downloadUrl": "./buku/kelas-10/fikih.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "akidah-akhlaq-10",
+        "title": "Akidah Akhlaq ",
+        "subject": "Akidah Akhlaq",
+        "downloadUrl": "./buku/kelas-10/akidah-akhlaq.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "informatika-10",
+        "title": "Informatika ",
+        "subject": "Informatika",
+        "downloadUrl": "./buku/kelas-10/informatika.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "ekonomi-10",
+        "title": "Ekonomi ",
+        "subject": "Ekonomi",
+        "downloadUrl": "./buku/kelas-10/ekonomi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "sosiologi-10",
+        "title": "Sosiologi ",
+        "subject": "Sosiologi",
+        "downloadUrl": "./buku/kelas-10/sosiologi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "geografi-10",
+        "title": "Geografi ",
+        "subject": "Geografi",
+        "downloadUrl": "./buku/kelas-10/geografi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "sejarah-10",
+        "title": "Sejarah ",
+        "subject": "Sejarah",
+        "downloadUrl": "./buku/kelas-10/sejarah.pdf",
+        "size": "TBD",
+        "version": "1.0"
       }
     ]
   },
   "kelas-11-ipa": {
-    "title": "Kelas 11 IPA", 
-    "books": []
+    "title": " IPA (A/B)",
+    "books": [
+      {
+        "id": "matematika-11-ipa",
+        "title": "Matematika  ",
+        "subject": "Matematika",
+        "downloadUrl": "./buku/kelas-11/matematika-ipa.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "fisika-11-ipa",
+        "title": "Fisika ",
+        "subject": "Fisika",
+        "downloadUrl": "./buku/kelas-11/fisika.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "kimia-11-ipa",
+        "title": "Kimia ",
+        "subject": "Kimia",
+        "downloadUrl": "./buku/kelas-11/kimia.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "biologi-11-ipa",
+        "title": "Biologi ",
+        "subject": "Biologi",
+        "downloadUrl": "./buku/kelas-11/biologi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-indonesia-11",
+        "title": "Bahasa Indonesia ",
+        "subject": "Bahasa Indonesia",
+        "downloadUrl": "./buku/kelas-11/b-indo.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-inggris-11",
+        "title": "Bahasa Inggris ",
+        "subject": "Bahasa Inggris",
+        "downloadUrl": "./buku/kelas-11/b-ing.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-arab-11",
+        "title": "Bahasa Arab ",
+        "subject": "Bahasa Arab",
+        "downloadUrl": "./buku/kelas-11/b-arab.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "ppkn-11",
+        "title": "PPKN ",
+        "subject": "PPKN",
+        "downloadUrl": "./buku/kelas-11/ppkn.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "pjok-11",
+        "title": "PJOK ",
+        "subject": "PJOK",
+        "downloadUrl": "./buku/kelas-11/pjok.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "seni-budaya-11",
+        "title": "Seni Budaya ",
+        "subject": "Seni Budaya",
+        "downloadUrl": "./buku/kelas-11/seni-budaya.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "prakarya-11",
+        "title": "Prakarya ",
+        "subject": "Prakarya",
+        "downloadUrl": "./buku/kelas-11/prakarya.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "quran-hadist-11",
+        "title": "Quran Hadist ",
+        "subject": "Quran Hadist",
+        "downloadUrl": "./buku/kelas-11/quran-hadist.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "fikih-11",
+        "title": "Fikih ",
+        "subject": "Fikih",
+        "downloadUrl": "./buku/kelas-11/fikih.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "akidah-akhlaq-11",
+        "title": "Akidah Akhlaq ",
+        "subject": "Akidah Akhlaq",
+        "downloadUrl": "./buku/kelas-11/akidah-akhlaq.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "informatika-11",
+        "title": "Informatika ",
+        "subject": "Informatika",
+        "downloadUrl": "./buku/kelas-11/informatika.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "sejarah-11-ipa",
+        "title": "Sejarah ",
+        "subject": "Sejarah",
+        "downloadUrl": "./buku/kelas-11/sejarah.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      }
+    ]
   },
   "kelas-11-ips": {
-    "title": "Kelas 11 IPS",
-    "books": []
+    "title": " IPS (C)",
+    "books": [
+      {
+        "id": "matematika-11-ips",
+        "title": "Matematika  ",
+        "subject": "Matematika",
+        "downloadUrl": "./buku/kelas-11/matematika-ips.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "biologi-11-ips",
+        "title": "Biologi   ",
+        "subject": "Biologi",
+        "downloadUrl": "./buku/kelas-11/biologi-ips.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-indonesia-11",
+        "title": "Bahasa Indonesia ",
+        "subject": "Bahasa Indonesia",
+        "downloadUrl": "./buku/kelas-11/b-indo.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-inggris-11",
+        "title": "Bahasa Inggris ",
+        "subject": "Bahasa Inggris",
+        "downloadUrl": "./buku/kelas-11/b-ing.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-arab-11",
+        "title": "Bahasa Arab ",
+        "subject": "Bahasa Arab",
+        "downloadUrl": "./buku/kelas-11/b-arab.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "ppkn-11",
+        "title": "PPKN ",
+        "subject": "PPKN",
+        "downloadUrl": "./buku/kelas-11/ppkn.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "pjok-11",
+        "title": "PJOK ",
+        "subject": "PJOK",
+        "downloadUrl": "./buku/kelas-11/pjok.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "seni-budaya-11",
+        "title": "Seni Budaya ",
+        "subject": "Seni Budaya",
+        "downloadUrl": "./buku/kelas-11/seni-budaya.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "prakarya-11",
+        "title": "Prakarya ",
+        "subject": "Prakarya",
+        "downloadUrl": "./buku/kelas-11/prakarya.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "quran-hadist-11",
+        "title": "Quran Hadist ",
+        "subject": "Quran Hadist",
+        "downloadUrl": "./buku/kelas-11/quran-hadist.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "fikih-11",
+        "title": "Fikih ",
+        "subject": "Fikih",
+        "downloadUrl": "./buku/kelas-11/fikih.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "akidah-akhlaq-11",
+        "title": "Akidah Akhlaq ",
+        "subject": "Akidah Akhlaq",
+        "downloadUrl": "./buku/kelas-11/akidah-akhlaq.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "informatika-11",
+        "title": "Informatika ",
+        "subject": "Informatika",
+        "downloadUrl": "./buku/kelas-11/informatika.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "ekonomi-11",
+        "title": "Ekonomi ",
+        "subject": "Ekonomi",
+        "downloadUrl": "./buku/kelas-11/ekonomi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "sosiologi-11",
+        "title": "Sosiologi ",
+        "subject": "Sosiologi",
+        "downloadUrl": "./buku/kelas-11/sosiologi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "geografi-11",
+        "title": "Geografi ",
+        "subject": "Geografi",
+        "downloadUrl": "./buku/kelas-11/geografi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "sejarah-11-ips",
+        "title": "Sejarah ",
+        "subject": "Sejarah",
+        "downloadUrl": "./buku/kelas-11/sejarah.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      }
+    ]
+  },
+  "kelas-12-ipa": {
+    "title": " IPA (A/B)",
+    "books": [
+      {
+        "id": "matematika-12-ipa",
+        "title": "Matematika  ",
+        "subject": "Matematika",
+        "downloadUrl": "./buku/kelas-12/matematika-ipa.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "fisika-12-ipa",
+        "title": "Fisika ",
+        "subject": "Fisika",
+        "downloadUrl": "./buku/kelas-12/fisika.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "kimia-12-ipa",
+        "title": "Kimia ",
+        "subject": "Kimia",
+        "downloadUrl": "./buku/kelas-12/kimia.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "biologi-12-ipa",
+        "title": "Biologi ",
+        "subject": "Biologi",
+        "downloadUrl": "./buku/kelas-12/biologi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-indonesia-12",
+        "title": "Bahasa Indonesia ",
+        "subject": "Bahasa Indonesia",
+        "downloadUrl": "./buku/kelas-12/b-indo.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-inggris-12",
+        "title": "Bahasa Inggris ",
+        "subject": "Bahasa Inggris",
+        "downloadUrl": "./buku/kelas-12/b-ing.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-arab-12",
+        "title": "Bahasa Arab ",
+        "subject": "Bahasa Arab",
+        "downloadUrl": "./buku/kelas-12/b-arab.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "ppkn-12",
+        "title": "PPKN ",
+        "subject": "PPKN",
+        "downloadUrl": "./buku/kelas-12/ppkn.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "pjok-12",
+        "title": "PJOK ",
+        "subject": "PJOK",
+        "downloadUrl": "./buku/kelas-12/pjok.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "seni-budaya-12",
+        "title": "Seni Budaya ",
+        "subject": "Seni Budaya",
+        "downloadUrl": "./buku/kelas-12/seni-budaya.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "prakarya-12",
+        "title": "Prakarya ",
+        "subject": "Prakarya",
+        "downloadUrl": "./buku/kelas-12/prakarya.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "quran-hadist-12",
+        "title": "Quran Hadist ",
+        "subject": "Quran Hadist",
+        "downloadUrl": "./buku/kelas-12/quran-hadist.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "fikih-12",
+        "title": "Fikih ",
+        "subject": "Fikih",
+        "downloadUrl": "./buku/kelas-12/fikih.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "akidah-akhlaq-12",
+        "title": "Akidah Akhlaq ",
+        "subject": "Akidah Akhlaq",
+        "downloadUrl": "./buku/kelas-12/akidah-akhlaq.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "informatika-12",
+        "title": "Informatika ",
+        "subject": "Informatika",
+        "downloadUrl": "./buku/kelas-12/informatika.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "sejarah-12-ipa",
+        "title": "Sejarah ",
+        "subject": "Sejarah",
+        "downloadUrl": "./buku/kelas-12/sejarah.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      }
+    ]
+  },
+  "kelas-12-ips": {
+    "title": " IPS (C)",
+    "books": [
+      {
+        "id": "matematika-12-ips",
+        "title": "Matematika  ",
+        "subject": "Matematika",
+        "downloadUrl": "./buku/kelas-12/matematika-ips.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "biologi-12-ips",
+        "title": "Biologi   ",
+        "subject": "Biologi",
+        "downloadUrl": "./buku/kelas-12/biologi-ips.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-indonesia-12",
+        "title": "Bahasa Indonesia ",
+        "subject": "Bahasa Indonesia",
+        "downloadUrl": "./buku/kelas-12/b-indo.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-inggris-12",
+        "title": "Bahasa Inggris ",
+        "subject": "Bahasa Inggris",
+        "downloadUrl": "./buku/kelas-12/b-ing.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "bahasa-arab-12",
+        "title": "Bahasa Arab ",
+        "subject": "Bahasa Arab",
+        "downloadUrl": "./buku/kelas-12/b-arab.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "ppkn-12",
+        "title": "PPKN ",
+        "subject": "PPKN",
+        "downloadUrl": "./buku/kelas-12/ppkn.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "pjok-12",
+        "title": "PJOK ",
+        "subject": "PJOK",
+        "downloadUrl": "./buku/kelas-12/pjok.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "seni-budaya-12",
+        "title": "Seni Budaya ",
+        "subject": "Seni Budaya",
+        "downloadUrl": "./buku/kelas-12/seni-budaya.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "prakarya-12",
+        "title": "Prakarya ",
+        "subject": "Prakarya",
+        "downloadUrl": "./buku/kelas-12/prakarya.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "quran-hadist-12",
+        "title": "Quran Hadist ",
+        "subject": "Quran Hadist",
+        "downloadUrl": "./buku/kelas-12/quran-hadist.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "fikih-12",
+        "title": "Fikih ",
+        "subject": "Fikih",
+        "downloadUrl": "./buku/kelas-12/fikih.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "akidah-akhlaq-12",
+        "title": "Akidah Akhlaq ",
+        "subject": "Akidah Akhlaq",
+        "downloadUrl": "./buku/kelas-12/akidah-akhlaq.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "informatika-12",
+        "title": "Informatika ",
+        "subject": "Informatika",
+        "downloadUrl": "./buku/kelas-12/informatika.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "ekonomi-12",
+        "title": "Ekonomi ",
+        "subject": "Ekonomi",
+        "downloadUrl": "./buku/kelas-12/ekonomi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "sosiologi-12",
+        "title": "Sosiologi ",
+        "subject": "Sosiologi",
+        "downloadUrl": "./buku/kelas-12/sosiologi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "geografi-12",
+        "title": "Geografi ",
+        "subject": "Geografi",
+        "downloadUrl": "./buku/kelas-12/geografi.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      },
+      {
+        "id": "sejarah-12-ips",
+        "title": "Sejarah ",
+        "subject": "Sejarah",
+        "downloadUrl": "./buku/kelas-12/sejarah.pdf",
+        "size": "TBD",
+        "version": "1.0"
+      }
+    ]
   }
 }
