@@ -536,7 +536,7 @@
                 
                 // Tentukan jenis cache dan status perlindungan
                 if (cacheName.includes('pdf-cache') || cacheName.includes('pdf-reader-pwa')) {
-                    cacheType = 'Buku Terlindungi 📚';
+                    cacheType = 'Buku Terlindungi ';
                     cacheColor = '#28a745';
                     isProtected = true;
                 } else {
@@ -612,7 +612,7 @@
 
                 if (currentCaches.length > 0) {
                     const appHeader = document.createElement('li');
-                    appHeader.innerHTML = `<h4 style="margin: 15px 0 10px 0; color: #28a745;">📚 Buku Terlindungi</h4>`;
+                    appHeader.innerHTML = `<h4 style="margin: 15px 0 10px 0; color: #28a745;"> Buku Terlindungi</h4>`;
                     cacheListEl.appendChild(appHeader);
                     
                     for (const name of currentCaches) {
@@ -622,7 +622,7 @@
 
                 if (otherCaches.length > 0) {
                     const otherHeader = document.createElement('li');
-                    otherHeader.innerHTML = `<h4 style="margin: 15px 0 10px 0; color: #dc3545;">🗑️ Cache Aplikasi (Aman Dihapus)</h4>`;
+                    otherHeader.innerHTML = `<h4 style="margin: 15px 0 10px 0; color: #dc3545;">️ Cache Aplikasi (Aman Dihapus)</h4>`;
                     cacheListEl.appendChild(otherHeader);
                     
                     for (const name of otherCaches.slice(0, 5)) {
