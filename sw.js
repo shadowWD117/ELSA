@@ -4,9 +4,9 @@
 
 // --- PERUBAHAN: Versi dinaikkan untuk memicu update ---
 // Gunakan version yang stabil
-const APP_VERSION = 'v5.2-final';
+const APP_VERSION = 'v1';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
-const STATIC_CACHE = `static-v5`; // Nama statis untuk cache utama
+const STATIC_CACHE = `static-v1`; // Nama statis untuk cache utama
 // --- UBAH INI ---
 const PDF_CACHE = 'pdf-cache-user'; 
 const STATE_CACHE = 'elsa-state-user'; 
