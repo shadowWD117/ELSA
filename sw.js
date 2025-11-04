@@ -1,16 +1,13 @@
 /* ============================
-   ELSA PWA Service Worker v5.2 - ROBUST STATE + UPDATE LOGIC
+   ELSA PWA Service Worker v5.3 - FIXED MANIFEST CACHE + ICON UPDATE
    ============================ */
 
 // --- PERUBAHAN: Versi dinaikkan untuk memicu update ---
-// Gunakan version yang stabil
-const APP_VERSION = 'v1';
+const APP_VERSION = 'v1.3';
 const CACHE_NAME = `elsa-pwa-${APP_VERSION}`;
-const STATIC_CACHE = `static-v1`; // Nama statis untuk cache utama
-// --- UBAH INI ---
+const STATIC_CACHE = `static-v1.3`; // Nama statis untuk cache utama
 const PDF_CACHE = 'pdf-cache-user'; 
 const STATE_CACHE = 'elsa-state-user'; 
-// --- END UBAH ---
 const MAX_STATIC_ITEMS = 100;
 const MAX_PDF_ITEMS = 50;
 
@@ -19,7 +16,6 @@ const urlsToCache = [
   './fallback/offline.html',
   './fallback/index.html',
   './index.html',
-  './manifest.json',
   './sw.js',
   './pdfjs/pdf.js',
   './pdfjs/pdf.worker.js',
@@ -37,7 +33,7 @@ const urlsToCache = [
   './icons/icon-192x192.png', 
   './icons/icon-512x512.png',
   './icons/icons.svg',
-  './data/books-metadata.json' // Pastikan ini di-cache ulang saat install
+  './data/books-metadata.json'
 ];
 
 // ==================== STORAGE MANAGEMENT ====================
@@ -59,7 +55,7 @@ async function getStateFromCache(key) {
     if (response) {
       return await response.json();
     }
-    return null; // Mengembalikan null jika tidak ditemukan
+    return null;
   } catch (error) {
     console.warn(`Failed to get state '${key}':`, error);
     return null;
@@ -84,7 +80,6 @@ async function setStateInCache(key, data) {
   }
 }
 
-// Tambahkan fungsi ini di atas class EnhancedCacheManager
 function canonicalJSON(obj) {
   if (typeof obj !== 'object' || obj === null) {
     return JSON.stringify(obj);
@@ -92,15 +87,13 @@ function canonicalJSON(obj) {
   if (Array.isArray(obj)) {
     return '[' + obj.map(canonicalJSON).join(',') + ']';
   }
-  const keys = Object.keys(obj).sort();  // Sort keys alphabetically
+  const keys = Object.keys(obj).sort();
   const parts = keys.map(key => JSON.stringify(key) + ':' + canonicalJSON(obj[key]));
   return '{' + parts.join(',') + '}';
 }
 
 // ==================== ENHANCED CACHE MANAGER ====================
 class EnhancedCacheManager {
-  
-  // FUNGSI DUPLIKAT YANG LAMA TELAH DIHAPUS.
   
   static async limitCacheSize(cacheName, maxItems, strategy = 'auto_manage') {
     try {
@@ -113,9 +106,7 @@ class EnhancedCacheManager {
       }
       
       if (keys.length > maxItems) {
-        // PERBAIKAN: Mengambil data dari state cache SW yang reliabel
         const lockedBooks = await getStateFromCache(STORAGE_KEYS.LOCKED_BOOKS) || [];
-        
         const cleanupResult = await this.safeCacheCleanup(cacheName, maxItems, lockedBooks);
         console.log(`📊 Cache ${cacheName} limited: ${keys.length} → ${cleanupResult.kept}`);
         return cleanupResult;
@@ -133,9 +124,7 @@ class EnhancedCacheManager {
       const cache = await caches.open(cacheName);
       const keys = await cache.keys();
       
-      // Get locked book URLs (versi baru yang sudah diperbaiki)
       const lockedBookUrls = await this.getLockedBookUrls(lockedBookIds);
-      
       const unlockedItems = keys.filter(key => !this.isLockedUrl(key.url, lockedBookUrls));
       const lockedItems = keys.filter(key => this.isLockedUrl(key.url, lockedBookUrls));
       
@@ -160,18 +149,13 @@ class EnhancedCacheManager {
     }
   }
 
-  /**
-   * --- PERUBAHAN ---
-   * Diperbarui untuk melindungi URL baru (downloadUrl) DAN URL lama (oldDownloadUrls)
-   * agar buku yang "needs update" tidak terhapus otomatis jika dikunci.
-   */
   static async getLockedBookUrls(lockedBookIds) {
     try {
       if (!lockedBookIds || lockedBookIds.length === 0) {
         return [];
       }
         
-      const booksMetadata = await this.getBooksMetadata(); // Menggunakan fungsi baru
+      const booksMetadata = await this.getBooksMetadata();
       const lockedUrls = [];
       
       if (!booksMetadata || typeof booksMetadata !== 'object') {
@@ -182,15 +166,11 @@ class EnhancedCacheManager {
       for (const classData of Object.values(booksMetadata)) {
         if (classData && Array.isArray(classData.books)) {
           for (const book of classData.books) {
-            // Cek apakah buku ini ada di daftar ID yang dikunci
             if (book && book.id && lockedBookIds.includes(book.id)) {
-                
-                // 1. Lindungi URL baru (wajib)
                 if (book.downloadUrl) {
                   lockedUrls.push(book.downloadUrl);
                 }
                 
-                // 2. Lindungi juga SEMUA URL lama jika ada
                 if (book.oldDownloadUrls && Array.isArray(book.oldDownloadUrls)) {
                   book.oldDownloadUrls.forEach(oldUrl => {
                     if (oldUrl) lockedUrls.push(oldUrl);
@@ -209,11 +189,6 @@ class EnhancedCacheManager {
     }
   }
 
-  /**
-   * --- PERUBAHAN ---
-   * Ditambahkan logika parsing dan normalisasi JSON yang robust
-   * untuk menangani format file metadata yang tidak standar.
-   */
   static async getBooksMetadata() {
     try {
       const cache = await caches.open(STATIC_CACHE);
@@ -225,24 +200,19 @@ class EnhancedCacheManager {
       if (response) {
         let metadata = null;
         try {
-            // Coba parse sebagai JSON dulu
             metadata = await response.json();
         } catch (e) {
-            // Jika gagal (seperti pada metadata yang di-upload), baca sebagai teks
             console.warn('SW: .json() failed, reading as text.');
             const metadataText = await response.text();
-            // Coba parse teks
             try {
                 metadata = JSON.parse(metadataText);
             } catch (parseError) {
-                // Jika masih gagal, coba bersihkan
                 console.warn('SW: JSON.parse(text) failed, cleaning string.');
                 const cleanedString = metadataText.substring(metadataText.indexOf('{'), metadataText.lastIndexOf('}') + 1);
                 metadata = JSON.parse(cleanedString);
             }
         }
 
-        // --- BARU: Normalisasi struktur metadata (copy dari app.js) ---
         const normalizedMetadata = {};
         if (!metadata || typeof metadata !== 'object') {
              console.warn('SW: Metadata is not an object.');
@@ -276,21 +246,16 @@ class EnhancedCacheManager {
     } catch (error) {
       console.warn('Failed to get books metadata:', error);
     }
-    return {}; // Fallback
+    return {};
   }
 
-
   static isLockedUrl(url, lockedUrls) {
-    // Normalisasi URL dari cache (mis: ..././buku/...)
     const normalizedUrl = new URL(url).pathname;
-
     return lockedUrls.some(lockedUrl => {
       try {
-        // Normalisasi URL dari metadata (mis: ./buku/...)
         const normalizedLockedUrl = new URL(lockedUrl, self.location.origin).pathname;
         return normalizedUrl === normalizedLockedUrl;
       } catch (e) {
-        // Fallback
         return url.includes(lockedUrl);
       }
     });
@@ -299,17 +264,14 @@ class EnhancedCacheManager {
   static async deleteCachedBook(bookUrl) {
     try {
       const pdfCache = await caches.open(PDF_CACHE);
-      // Gunakan URL absolut untuk menghapus
       const absoluteUrl = new URL(bookUrl, self.location.origin).href;
       
-      // Coba hapus dengan URL asli dan URL absolut
       const result1 = await pdfCache.delete(bookUrl);
       const result2 = await pdfCache.delete(absoluteUrl);
       
       const success = result1 || result2;
       console.log(`🗑️ Book cache deleted: ${this.getFileNameFromUrl(bookUrl)}`, success);
       
-      // Coba hapus juga dari static cache jika ada
       const staticCache = await caches.open(STATIC_CACHE);
       await staticCache.delete(bookUrl);
       await staticCache.delete(absoluteUrl);
@@ -328,7 +290,6 @@ class EnhancedCacheManager {
       await Promise.all(deletePromises);
       console.log('✅ All caches cleared');
       
-      // Notify clients
       const clients = await self.clients.matchAll();
       clients.forEach(client => {
         client.postMessage({
@@ -371,13 +332,11 @@ class BookManagerIntegration {
         }
       });
       
-      // Gunakan URL absolut sebagai key
       const absoluteUrl = new URL(data.url, self.location.origin).href;
       await pdfCache.put(absoluteUrl, response);
       
       console.log('✅ Book PDF cached successfully:', absoluteUrl);
       
-      // Limit cache size after adding new book
       await EnhancedCacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS, 'auto_manage');
       
       return true;
@@ -401,7 +360,7 @@ class BookManagerIntegration {
             const bookType = response.headers.get('X-Book-Type');
             
             books.push({
-              url: request.url, // Kembalikan URL absolut yang di-cache
+              url: request.url,
               cachedAt: cachedAt ? parseInt(cachedAt) : Date.now(),
               filename: EnhancedCacheManager.getFileNameFromUrl(request.url),
               type: bookType || 'regular',
@@ -423,13 +382,11 @@ class BookManagerIntegration {
 
   static async isBookLocked(bookUrl) {
     try {
-      // PERBAIKAN: Mengambil data dari state cache SW yang reliabel
       const lockedBooks = await getStateFromCache(STORAGE_KEYS.LOCKED_BOOKS) || [];
-      const booksMetadata = await EnhancedCacheManager.getBooksMetadata(); // Pakai fungsi baru
+      const booksMetadata = await EnhancedCacheManager.getBooksMetadata();
       
       const normalizedBookUrl = new URL(bookUrl, self.location.origin).pathname;
 
-      // Find book ID from URL
       if (booksMetadata) {
         for (const classData of Object.values(booksMetadata)) {
           for (const book of classData.books || []) {
@@ -437,13 +394,11 @@ class BookManagerIntegration {
                 continue;
             }
             
-            // Cek URL baru
             if (book.downloadUrl) {
                  const normalizedNewUrl = new URL(book.downloadUrl, self.location.origin).pathname;
                  if (normalizedNewUrl === normalizedBookUrl) return true;
             }
             
-            // Cek URL lama
             if (book.oldDownloadUrls && Array.isArray(book.oldDownloadUrls)) {
                 for (const oldUrl of book.oldDownloadUrls) {
                     const normalizedOldUrl = new URL(oldUrl, self.location.origin).pathname;
@@ -463,17 +418,15 @@ class BookManagerIntegration {
 }
 
 // ==================== INTEGRITY CHECKER ====================
-// Ganti seluruh class StartupIntegrityChecker dengan ini (untuk konsistensi)
 class StartupIntegrityChecker {
   constructor() {
-    this.suppressNotifications = false;  // Flag untuk suppress pada check rutin
+    this.suppressNotifications = false;
   }
 
   async checkAllCachedAssets() {
     const assetsToCheck = [
-      './data/books-metadata.json',
-      './manifest.json'
-      // Tambah aset lain jika perlu
+      './data/books-metadata.json'
+      // manifest.json dihapus dari sini karena sudah ada handler khusus
     ];
 
     const changedAssets = [];
@@ -503,7 +456,6 @@ class StartupIntegrityChecker {
       const cachedResponse = await cache.match(assetUrl);
       if (!cachedResponse) return false;
 
-      // Cek HEAD untuk Last-Modified/ETag
       const headResponse = await fetch(assetUrl, { method: 'HEAD' });
       const netLastMod = headResponse.headers.get('Last-Modified');
       const cacheLastMod = cachedResponse.headers.get('Last-Modified');
@@ -511,16 +463,15 @@ class StartupIntegrityChecker {
       const cacheEtag = cachedResponse.headers.get('etag');
 
       if ((netLastMod && cacheLastMod === netLastMod) || (netEtag && cacheEtag === netEtag)) {
-        return false;  // Tidak berubah
+        return false;
       }
 
-      // Jika header tidak cukup, fetch full dan bandingkan JSON canonical
       const networkResponse = await fetch(assetUrl);
       if (!networkResponse.ok) return false;
 
       const oldData = await cachedResponse.json();
       const newData = await networkResponse.json();
-      const hasChanges = canonicalJSON(oldData) !== canonicalJSON(newData);  // Ganti ini
+      const hasChanges = canonicalJSON(oldData) !== canonicalJSON(newData);
 
       if (hasChanges) {
         await cache.put(assetUrl, networkResponse.clone());
@@ -542,7 +493,6 @@ class BackgroundSyncManager {
     try {
       console.log('🔄 Starting PDF history sync...');
       
-      // PERBAIKAN: Mengambil data dari state cache SW yang reliabel
       const pendingHistory = await getStateFromCache(STORAGE_KEYS.READING_HISTORY);
       
       if (!pendingHistory || pendingHistory.length === 0) {
@@ -557,7 +507,6 @@ class BackgroundSyncManager {
       });
       
       if (success) {
-        // PERBAIKAN: Membersihkan state cache SW
         await this.clearPendingHistory();
         console.log('✅ PDF history synced successfully');
         this.notifySyncSuccess('PDF history');
@@ -572,7 +521,6 @@ class BackgroundSyncManager {
   }
   
   static async clearPendingHistory() {
-    // PERBAIKAN: Hapus state dari cache SW, bukan mengirim pesan ke klien
     await setStateInCache(STORAGE_KEYS.READING_HISTORY, []);
     console.log('✅ Pending history cleared from SW state');
   }
@@ -581,7 +529,7 @@ class BackgroundSyncManager {
     try {
       console.log('📤 Simulating server sync:', endpoint, data);
       await new Promise(resolve => setTimeout(resolve, 1000));
-      return Math.random() > 0.1; // Sukses 90%
+      return Math.random() > 0.1;
     } catch (error) {
       console.error('❌ Server sync error:', error);
       return false;
@@ -601,6 +549,294 @@ class BackgroundSyncManager {
   }
 }
 
+// ==================== SPECIALIZED HANDLERS ====================
+
+/**
+ * Handler khusus untuk manifest.json - NETWORK FIRST + NO CACHE
+ */
+async function handleManifestRequest(event) {
+  const { request } = event;
+  console.log('📄 Manifest request handler triggered');
+  
+  try {
+    // Selalu coba ambil dari network terlebih dahulu
+    const networkResponse = await fetch(request, {
+      cache: 'no-cache',
+      headers: { 
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
+    
+    if (networkResponse && networkResponse.ok) {
+      console.log('✅ Manifest fetched from network, updating cache');
+      
+      // Update cache dengan versi terbaru
+      const cache = await caches.open(STATIC_CACHE);
+      await cache.put(request, networkResponse.clone());
+      
+      // Notify clients tentang update manifest
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'MANIFEST_UPDATED',
+            timestamp: Date.now()
+          });
+        });
+      });
+      
+      return networkResponse;
+    }
+  } catch (error) {
+    console.log('🌐 Manifest network failed, falling back to cache');
+  }
+  
+  // Fallback ke cache jika network gagal
+  try {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      console.log('📄 Manifest served from cache');
+      return cachedResponse;
+    }
+  } catch (cacheError) {
+    console.warn('❌ Manifest cache match failed:', cacheError);
+  }
+  
+  // Ultimate fallback - return empty manifest
+  console.log('⚠️ Using fallback manifest');
+  return new Response(JSON.stringify({
+    name: "ELSA",
+    short_name: "ELSA",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#ffffff",
+    theme_color: "#000000"
+  }), {
+    headers: { 
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache'
+    }
+  });
+}
+
+/**
+ * Handler untuk metadata books (Stale While Revalidate)
+ */
+async function handleMetadataRequest(event) {
+  const { request } = event;
+  const cache = await caches.open(STATIC_CACHE);
+  const cachedResponse = await cache.match(request);
+
+  event.waitUntil((async () => {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      const networkResponse = await fetch(request, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (networkResponse && networkResponse.ok) {
+        const netEtag = networkResponse.headers.get('etag');
+        const cacheEtag = cachedResponse?.headers.get('etag');
+        let hasChanges = true;
+
+        if (netEtag && cacheEtag === netEtag) {
+          hasChanges = false;
+        } else if (cachedResponse) {
+          const oldData = await cachedResponse.json();
+          const newData = await networkResponse.json();
+          hasChanges = canonicalJSON(oldData) !== canonicalJSON(newData);
+        }
+
+        await cache.put(request, networkResponse.clone());
+
+        if (hasChanges) {
+          self.clients.matchAll().then(clients => {
+            clients.forEach(c => c.postMessage({
+              type: 'STARTUP_UPDATES_DETECTED',
+              assets: [request.url],
+              hasChanges: true
+            }));
+          });
+        }
+      }
+    } catch (e) { /* ignore network errors for SWR */ }
+  })());
+
+  return cachedResponse ?? (await fetch(request));
+}
+
+// PDF Request Handler dengan Lock Protection
+async function handlePDFRequest(event) {
+  const { request } = event;
+  const url = new URL(request.url);
+  const fileName = EnhancedCacheManager.getFileNameFromUrl(request.url);
+  
+  const absoluteUrl = new URL(request.url, self.location.origin).href;
+  const cacheKey = new Request(absoluteUrl, request);
+
+  try {
+    const isLocked = await BookManagerIntegration.isBookLocked(request.url);
+    if (isLocked) {
+      console.log(`🛡️ Serving locked book: ${fileName}`);
+    }
+
+    const pdfCache = await caches.open(PDF_CACHE);
+    const cachedResponse = await pdfCache.match(cacheKey);
+    
+    if (cachedResponse) {
+      if (!isLocked) { 
+        event.waitUntil(
+          updatePDFCache(cacheKey, pdfCache, fileName)
+        );
+      }
+      return cachedResponse;
+    }
+
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      await pdfCache.put(cacheKey, networkResponse.clone());
+      await EnhancedCacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS, 'auto_manage');
+      return networkResponse;
+    }
+
+    throw new Error(`Network response not OK: ${networkResponse?.status}`);
+    
+  } catch (error) {
+    console.warn('❌ PDF fetch failed:', fileName, error);
+    return new Response(JSON.stringify({
+      error: 'PDF_UNAVAILABLE',
+      message: 'PDF tidak dapat diakses',
+      fileName,
+      offline: !navigator.onLine
+    }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+async function updatePDFCache(request, cache, fileName) {
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      await cache.put(request, networkResponse);
+      console.log(`✅ PDF cache updated: ${fileName}`);
+    }
+  } catch (error) {
+    console.warn(`⚠️ PDF cache update failed: ${fileName}`, error);
+  }
+}
+
+// Navigation Request Handler (Network first)
+async function handleNavigationRequest(event) {
+  const { request } = event;
+  
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      const cache = await caches.open(STATIC_CACHE);
+      cache.put(request, networkResponse.clone()).catch(console.warn);
+      return networkResponse;
+    }
+  } catch (error) {
+    console.log('🌐 Network failed, falling back to cache:', request.url);
+  }
+  
+  try {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+  } catch (error) {
+    console.warn('❌ Cache match failed:', error);
+  }
+  
+  return getOfflineFallback();
+}
+
+// Static Assets Handler (Cache first) - TAPI exclude manifest
+async function handleStaticRequest(event) {
+  const { request } = event;
+  
+  try {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok) {
+      const clone = networkResponse.clone();
+      caches.open(STATIC_CACHE)
+        .then(cache => cache.put(request, clone))
+        .then(() => EnhancedCacheManager.limitCacheSize(STATIC_CACHE, MAX_STATIC_ITEMS, 'auto_manage'))
+        .catch(console.warn);
+    }
+    
+    return networkResponse;
+    
+  } catch (error) {
+    console.warn('❌ Static asset failed:', request.url, error);
+    return handleFallbackResponse(request);
+  }
+}
+
+// Generic Handlers
+async function handleFileHandlerRequest(event) {
+  return handleGenericHandler(event, 'file-handler', 'File Handler');
+}
+
+async function handleProtocolRequest(event) {
+  return handleGenericHandler(event, 'protocol-handler', 'Protocol Handler');
+}
+
+async function handleShareTargetRequest(event) {
+  return handleGenericHandler(event, 'share-target', 'Share Target');
+}
+
+async function handleGenericHandler(event, type, title) {
+  try {
+    const cachedResponse = await caches.match(`./${type}.html`);
+    if (cachedResponse) return cachedResponse;
+    
+    return new Response(`... (HTML fallback untuk ${title}) ...`, {
+      headers: { 'Content-Type': 'text/html; charset=utf-8' }
+    });
+  } catch (error) {
+    console.error(`❌ ${title} error:`, error);
+    return new Response(JSON.stringify({ error: `${type.toUpperCase()}_ERROR` }), { status: 500 });
+  }
+}
+
+// Fallback Handlers
+async function handleFallbackResponse(request) {
+  const url = request.url.toLowerCase();
+  
+  if (url.endsWith('.css')) {
+    return new Response('/* CSS offline */', { headers: { 'Content-Type': 'text/css' } });
+  }
+  if (url.endsWith('.js')) {
+    return new Response('// JS offline', { headers: { 'Content-Type': 'application/javascript' } });
+  }
+  if (url.match(/\.(png|jpg|jpeg|gif|svg|ico)$/)) {
+    return new Response('<svg></svg>', { headers: { 'Content-Type': 'image/svg+xml' } });
+  }
+  return getOfflineFallback();
+}
+
+async function getOfflineFallback() {
+  try {
+    const offlinePage = await caches.match('./fallback/offline.html');
+    if (offlinePage) return offlinePage;
+  } catch (error) { console.warn('Offline page not found'); }
+  
+  return new Response(`... (HTML fallback offline utama) ...`, {
+    status: 200, 
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+  });
+}
+
 // ==================== SERVICE WORKER EVENTS ====================
 
 // Install Event
@@ -617,8 +853,14 @@ self.addEventListener('install', event => {
 
       for (const url of urlsToCache) {
         try {
+          // JANGAN cache manifest.json secara agresif di install
+          if (url.includes('manifest.json')) {
+            results.push({ url, status: 'skipped' });
+            continue;
+          }
+          
           const response = await fetch(url, { 
-            cache: 'no-cache', // Selalu ambil versi baru saat install
+            cache: 'no-cache',
             headers: { 'Cache-Control': 'no-cache' }
           });
           
@@ -635,11 +877,23 @@ self.addEventListener('install', event => {
       }
 
       const successCount = results.filter(r => r.status === 'success').length;
-      console.log(`📊 Cache results: ${successCount}/${urlsToCache.length} successful`);
+      console.log(`📊 Cache results: ${successCount}/${urlsToCache.length - 1} successful (manifest skipped)`);
       
       if (successCount > 0) {
+        // Force skip waiting untuk immediate update
         self.skipWaiting();
-        console.log('✅ SW installed successfully');
+        
+        // Broadcast update ke clients
+        const clients = await self.clients.matchAll();
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'SW_UPDATED',
+            version: APP_VERSION,
+            timestamp: Date.now()
+          });
+        });
+        
+        console.log('✅ SW installed successfully with forced update');
       } else {
         throw new Error('No assets could be cached');
       }
@@ -659,14 +913,12 @@ self.addEventListener('activate', event => {
       const cacheNames = await caches.keys();
       const newVersionCaches = [STATIC_CACHE, PDF_CACHE, STATE_CACHE]; 
 
-      // Panggil Migrasi terlebih dahulu
+      // Migrasi cache lama
       await migrateOldUserCaches(cacheNames); 
 
-      // Lakukan Penghapusan Cache Versi Lama Statis
+      // Hapus cache versi lama
       await Promise.all(
         cacheNames.map(name => {
-          // Hapus cache yang dimulai dengan 'elsa-pwa-' (prefix lama) 
-          // atau 'static-' versi lama, dan BUKAN nama cache versi baru/permanen
           if ((name.startsWith('elsa-pwa-') || name.startsWith('static-')) && !newVersionCaches.includes(name)) {
             console.log('🗑️ Deleting old version-locked cache:', name);
             return caches.delete(name);
@@ -675,10 +927,16 @@ self.addEventListener('activate', event => {
         })
       );
 
+      // HAPUS CACHE MANIFEST LAMA secara spesifik
+      const cache = await caches.open(STATIC_CACHE);
+      await cache.delete('./manifest.json');
+      await cache.delete('manifest.json');
+      console.log('✅ Old manifest cache cleared');
+
       await self.clients.claim();
       console.log('✅ SW activated and claimed clients');
       
-      // Jalankan pengecekan integritas setelah aktivasi
+      // Jalankan pengecekan integritas
       integrityChecker.checkAllCachedAssets().catch(console.error);
       
     } catch (error) {
@@ -687,16 +945,57 @@ self.addEventListener('activate', event => {
   })());
 });
 
+// Fetch Event Handler - DIPERBAIKI dengan handler manifest khusus
+self.addEventListener('fetch', event => {
+  const { request } = event;
+  const url = new URL(request.url);
+  
+  if (request.method !== 'GET') return;
+  
+  // Abaikan request yang tidak relevan
+  if (request.url.startsWith('chrome-extension://') ||
+      request.url.startsWith('data:') ||
+      !request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
+  const router = {
+    isManifest: url.pathname.endsWith('/manifest.json'), // PRIORITAS: Handler khusus manifest
+    isFileHandler: url.search.includes('file-handler') || url.pathname.includes('/file-handler'),
+    isProtocol: url.protocol === 'web+elsa:' || url.search.includes('web+elsa'),
+    isPDF: url.pathname.endsWith('.pdf') || url.pathname.includes('/buku/'),
+    isNavigation: request.mode === 'navigate',
+    isShareTarget: url.pathname.includes('/share-target.html'),
+    isBookMetadata: url.pathname.endsWith('books-metadata.json')
+  };
+
+  try {
+    if (router.isManifest) {
+      event.respondWith(handleManifestRequest(event));
+    } else if (router.isFileHandler) {
+      event.respondWith(handleFileHandlerRequest(event));
+    } else if (router.isProtocol) {
+      event.respondWith(handleProtocolRequest(event));
+    } else if (router.isPDF) {
+      event.respondWith(handlePDFRequest(event));
+    } else if (router.isBookMetadata) {
+      event.respondWith(handleMetadataRequest(event));
+    } else if (router.isNavigation) {
+      event.respondWith(handleNavigationRequest(event));
+    } else if (router.isShareTarget) {
+      event.respondWith(handleShareTargetRequest(event));
+    } else {
+      event.respondWith(handleStaticRequest(event));
+    }
+  } catch (error) {
+    console.error('❌ Fetch handler error:', error);
+    event.respondWith(handleFallbackResponse(request));
+  }
+});
+
 // Message Event Handler
 self.addEventListener('message', event => {
   const { type, data } = event.data || {};
-  
-  // Di dalam self.addEventListener('message', event => { ...
-if (event.data.type === 'RUN_INTEGRITY_CHECK') {
-  const checker = new StartupIntegrityChecker();
-  checker.suppressNotifications = true;  // Suppress untuk check rutin
-  checker.checkAllCachedAssets();
-}
   
   if (!type) return;
 
@@ -708,7 +1007,6 @@ if (event.data.type === 'RUN_INTEGRITY_CHECK') {
       self.skipWaiting();
       break;
       
-    // PERBAIKAN: Handler baru untuk menerima state dari klien
     case 'UPDATE_SW_STATE':
       console.log('💾 SW: Updating state:', data?.key);
       if (data.key && data.value !== undefined) {
@@ -728,6 +1026,28 @@ if (event.data.type === 'RUN_INTEGRITY_CHECK') {
     case 'CLEAR_CACHE':
       console.log('🗑️ SW: Clearing cache requested');
       event.waitUntil(EnhancedCacheManager.clearAllCaches());
+      break;
+      
+    case 'REFRESH_MANIFEST': // HANDLER BARU untuk refresh manifest
+      console.log('🔄 Manually refreshing manifest cache');
+      event.waitUntil(
+        caches.open(STATIC_CACHE).then(cache => {
+          return cache.delete('./manifest.json')
+            .then(() => cache.delete('manifest.json'))
+            .then(() => {
+              console.log('✅ Manifest cache cleared manually');
+              // Notify clients
+              self.clients.matchAll().then(clients => {
+                clients.forEach(client => {
+                  client.postMessage({
+                    type: 'MANIFEST_REFRESHED',
+                    timestamp: Date.now()
+                  });
+                });
+              });
+            });
+        })
+      );
       break;
       
     case 'GET_CACHE_STATUS':
@@ -784,285 +1104,11 @@ if (event.data.type === 'RUN_INTEGRITY_CHECK') {
         })
       );
       break;
-
-    // DIHAPUS: Case 'GET_STORAGE' yang lama dan tidak reliabel telah dihapus.
       
     default:
       console.log('📨 SW: Unknown message type:', type);
   }
 });
-
-// Fetch Event Handler
-self.addEventListener('fetch', event => {
-  const { request } = event;
-  const url = new URL(request.url);
-  
-  if (request.method !== 'GET') return;
-  
-  // Abaikan request yang tidak relevan
-  if (request.url.startsWith('chrome-extension://') ||
-      request.url.startsWith('data:') ||
-      !request.url.startsWith(self.location.origin)) {
-    return;
-  }
-
-  const router = {
-    isFileHandler: url.search.includes('file-handler') || url.pathname.includes('/file-handler'),
-    isProtocol: url.protocol === 'web+elsa:' || url.search.includes('web+elsa'),
-    isPDF: url.pathname.endsWith('.pdf') || url.pathname.includes('/buku/'),
-    isNavigation: request.mode === 'navigate',
-    isShareTarget: url.pathname.includes('/share-target.html'),
-    isBookMetadata: url.pathname.endsWith('books-metadata.json')
-  };
-
-  try {
-    if (router.isFileHandler) {
-      event.respondWith(handleFileHandlerRequest(event));
-    } else if (router.isProtocol) {
-      event.respondWith(handleProtocolRequest(event));
-    } else if (router.isPDF) {
-      // Penanganan khusus untuk PDF
-      event.respondWith(handlePDFRequest(event));
-    } else if (router.isBookMetadata) {
-       // Penanganan khusus metadata (Stale While Revalidate)
-       event.respondWith(handleMetadataRequest(event));
-    } else if (router.isNavigation) {
-      event.respondWith(handleNavigationRequest(event));
-    } else if (router.isShareTarget) {
-      event.respondWith(handleShareTargetRequest(event));
-    } else {
-      event.respondWith(handleStaticRequest(event));
-    }
-  } catch (error) {
-    console.error('❌ Fetch handler error:', error);
-    event.respondWith(handleFallbackResponse(request));
-  }
-});
-
-// PDF Request Handler dengan Lock Protection
-async function handlePDFRequest(event) {
-  const { request } = event;
-  const url = new URL(request.url);
-  const fileName = EnhancedCacheManager.getFileNameFromUrl(request.url);
-  
-  // Gunakan URL absolut sebagai key cache
-  const absoluteUrl = new URL(request.url, self.location.origin).href;
-  const cacheKey = new Request(absoluteUrl, request);
-
-  try {
-    // Check if this is a locked book (menggunakan URL asli/relatif)
-    const isLocked = await BookManagerIntegration.isBookLocked(request.url);
-    if (isLocked) {
-      console.log(`🛡️ Serving locked book: ${fileName}`);
-    }
-
-    // Try cache first
-    const pdfCache = await caches.open(PDF_CACHE);
-    const cachedResponse = await pdfCache.match(cacheKey);
-    
-    if (cachedResponse) {
-      // Stale-while-revalidate (HANYA jika tidak dikunci)
-      if (!isLocked) { 
-        event.waitUntil(
-          updatePDFCache(cacheKey, pdfCache, fileName) // Gunakan cacheKey
-        );
-      }
-      return cachedResponse;
-    }
-
-    // Network fallback
-    const networkResponse = await fetch(request);
-    if (networkResponse && networkResponse.ok) {
-      await pdfCache.put(cacheKey, networkResponse.clone()); // Gunakan cacheKey
-      await EnhancedCacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS, 'auto_manage');
-      return networkResponse;
-    }
-
-    throw new Error(`Network response not OK: ${networkResponse?.status}`);
-    
-  } catch (error) {
-    console.warn('❌ PDF fetch failed:', fileName, error);
-    return new Response(JSON.stringify({
-      error: 'PDF_UNAVAILABLE',
-      message: 'PDF tidak dapat diakses',
-      fileName,
-      offline: !(await integrityChecker.isOnline())
-    }), {
-      status: 503,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-}
-
-async function updatePDFCache(request, cache, fileName) {
-  try {
-    const networkResponse = await fetch(request);
-    if (networkResponse && networkResponse.ok) {
-      await cache.put(request, networkResponse);
-      console.log(`✅ PDF cache updated: ${fileName}`);
-    }
-  } catch (error) {
-    console.warn(`⚠️ PDF cache update failed: ${fileName}`, error);
-  }
-}
-
-// Metadata Request Handler (Stale While Revalidate)
-// Ganti seluruh async function handleMetadataRequest(event) dengan ini
-async function handleMetadataRequest(event) {
-  const { request } = event;
-  const cache = await caches.open(STATIC_CACHE);
-  const cachedResponse = await cache.match(request);
-
-  event.waitUntil((async () => {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-      const networkResponse = await fetch(request, { signal: controller.signal });
-      clearTimeout(timeoutId);
-
-      if (networkResponse && networkResponse.ok) {
-        const netEtag = networkResponse.headers.get('etag');
-        const cacheEtag = cachedResponse?.headers.get('etag');
-        let hasChanges = true;
-
-        if (netEtag && cacheEtag === netEtag) {
-          hasChanges = false;  // Prioritaskan ETag jika ada
-        } else if (cachedResponse) {
-          const oldData = await cachedResponse.json();
-          const newData = await networkResponse.json();
-          hasChanges = canonicalJSON(oldData) !== canonicalJSON(newData);  // Normalkan
-        }
-
-        await cache.put(request, networkResponse.clone());
-
-        if (hasChanges) {
-          self.clients.matchAll().then(clients => {
-            clients.forEach(c => c.postMessage({
-              type: 'STARTUP_UPDATES_DETECTED',
-              assets: [request.url],
-              hasChanges: true
-            }));
-          });
-        }
-      }
-    } catch (e) { /* ignore */ }
-  })());
-
-  return cachedResponse ?? (await fetch(request));
-}
-
-function canonicalJSON(obj) {
-  if (obj === null || typeof obj !== 'object') return JSON.stringify(obj);
-  if (Array.isArray(obj)) return '[' + obj.map(canonicalJSON).join(',') + ']';
-  const keys = Object.keys(obj).sort();
-  const parts = keys.map(k => `${JSON.stringify(k)}:${canonicalJSON(obj[k])}`);
-  return '{' + parts.join(',') + '}';
-}
-
-
-// Navigation Request Handler (Network first)
-async function handleNavigationRequest(event) {
-  const { request } = event;
-  
-  try {
-    const networkResponse = await fetch(request);
-    if (networkResponse && networkResponse.ok) {
-      const cache = await caches.open(STATIC_CACHE);
-      cache.put(request, networkResponse.clone()).catch(console.warn);
-      return networkResponse;
-    }
-  } catch (error) {
-    console.log('🌐 Network failed, falling back to cache:', request.url);
-  }
-  
-  try {
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-  } catch (error) {
-    console.warn('❌ Cache match failed:', error);
-  }
-  
-  return getOfflineFallback();
-}
-
-// Static Assets Handler (Cache first)
-async function handleStaticRequest(event) {
-  const { request } = event;
-  
-  try {
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    
-    const networkResponse = await fetch(request);
-    if (networkResponse && networkResponse.ok) {
-      const clone = networkResponse.clone();
-      caches.open(STATIC_CACHE)
-        .then(cache => cache.put(request, clone))
-        .then(() => EnhancedCacheManager.limitCacheSize(STATIC_CACHE, MAX_STATIC_ITEMS, 'auto_manage'))
-        .catch(console.warn);
-    }
-    
-    return networkResponse;
-    
-  } catch (error) {
-    console.warn('❌ Static asset failed:', request.url, error);
-    return handleFallbackResponse(request);
-  }
-}
-
-// ... (Generic Handlers: handleFileHandlerRequest, etc. tetap sama) ...
-async function handleFileHandlerRequest(event) {
-  return handleGenericHandler(event, 'file-handler', 'File Handler');
-}
-async function handleProtocolRequest(event) {
-  return handleGenericHandler(event, 'protocol-handler', 'Protocol Handler');
-}
-async function handleShareTargetRequest(event) {
-  return handleGenericHandler(event, 'share-target', 'Share Target');
-}
-async function handleGenericHandler(event, type, title) {
-  try {
-    const cachedResponse = await caches.match(`./${type}.html`);
-    if (cachedResponse) return cachedResponse;
-    
-    return new Response(`... (HTML fallback untuk ${title}) ...`, {
-      headers: { 'Content-Type': 'text/html; charset=utf-8' }
-    });
-  } catch (error) {
-    console.error(`❌ ${title} error:`, error);
-    return new Response(JSON.stringify({ error: `${type.toUpperCase()}_ERROR` }), { status: 500 });
-  }
-}
-// ... (Fallback Handlers: handleFallbackResponse, getOfflineFallback tetap sama) ...
-async function handleFallbackResponse(request) {
-  const url = request.url.toLowerCase();
-  
-  if (url.endsWith('.css')) {
-    return new Response('/* CSS offline */', { headers: { 'Content-Type': 'text/css' } });
-  }
-  if (url.endsWith('.js')) {
-    return new Response('// JS offline', { headers: { 'Content-Type': 'application/javascript' } });
-  }
-  if (url.match(/\.(png|jpg|jpeg|gif|svg|ico)$/)) {
-    return new Response('<svg></svg>', { headers: { 'Content-Type': 'image/svg+xml' } });
-  }
-  return getOfflineFallback();
-}
-async function getOfflineFallback() {
-  try {
-    const offlinePage = await caches.match('./fallback/offline.html');
-    if (offlinePage) return offlinePage;
-  } catch (error) { console.warn('Offline page not found'); }
-  
-  return new Response(`... (HTML fallback offline utama) ...`, {
-    status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' }
-  });
-}
 
 // Sync Event Handler
 self.addEventListener('sync', event => {
@@ -1074,10 +1120,10 @@ self.addEventListener('sync', event => {
       break;
       
     case 'sync-user-activity':
-      event.waitUntil(BackgroundSyncManager.syncPDFHistory()); // Reuse
+      event.waitUntil(BackgroundSyncManager.syncPDFHistory());
       break;
       
-    case 'content-cleanup': // Tag ini dari periodicSync
+    case 'content-cleanup':
       event.waitUntil(periodicCleanup());
       break;
       
@@ -1091,7 +1137,7 @@ async function periodicCleanup() {
   try {
     const cleanupResults = await Promise.all([
       EnhancedCacheManager.limitCacheSize(STATIC_CACHE, MAX_STATIC_ITEMS, 'auto_manage'),
-      EnhancedCacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS, 'auto_manage') // Ini akan menggunakan getLockedBooksFromState
+      EnhancedCacheManager.limitCacheSize(PDF_CACHE, MAX_PDF_ITEMS, 'auto_manage')
     ]);
     
     console.log('🧹 Periodic cleanup completed:', cleanupResults);
@@ -1100,17 +1146,13 @@ async function periodicCleanup() {
   }
 }
 
-// Tambahkan fungsi ini di luar event handler, misalnya di dekat verifyCacheHealth()
-
+// Migrasi Cache Lama
 async function migrateOldUserCaches(cacheNames) {
   console.log('🔄 Starting user cache migration check...');
 
-  // 1. Definisikan Cache Tujuan Permanen
-  const permanentPdfCacheName = 'pdf-cache-user'; // PDF_CACHE yang baru
-  const permanentStateCacheName = 'elsa-state-user'; // STATE_CACHE yang baru
+  const permanentPdfCacheName = 'pdf-cache-user';
+  const permanentStateCacheName = 'elsa-state-user';
   
-  // Cache yang perlu dimigrasi adalah yang namanya dimulai dengan 'pdf-cache-' atau 'elsa-state-'
-  // DAN TIDAK sama dengan nama cache permanen yang baru.
   const oldPdfCaches = cacheNames.filter(name => 
     name.startsWith('pdf-cache-') && name !== permanentPdfCacheName
   );
@@ -1118,7 +1160,6 @@ async function migrateOldUserCaches(cacheNames) {
     name.startsWith('elsa-state-') && name !== permanentStateCacheName
   );
 
-  // --- Migrasi Data Buku (PDF) ---
   if (oldPdfCaches.length > 0) {
     console.log(`📦 Migrating ${oldPdfCaches.length} old PDF caches...`);
     const newPdfCache = await caches.open(permanentPdfCacheName);
@@ -1131,12 +1172,10 @@ async function migrateOldUserCaches(cacheNames) {
         for (const key of keys) {
           const response = await oldCache.match(key);
           if (response) {
-            // Salin item dari cache lama ke cache baru
             await newPdfCache.put(key, response.clone());
             console.log(`   ✅ Migrated PDF: ${EnhancedCacheManager.getFileNameFromUrl(key.url)}`);
           }
         }
-        // Setelah berhasil disalin, hapus cache lama
         await caches.delete(oldName);
         console.log(`   🗑️ Deleted old PDF cache: ${oldName}`);
       } catch (error) {
@@ -1145,12 +1184,10 @@ async function migrateOldUserCaches(cacheNames) {
     }
   }
 
-  // --- Migrasi Data State (Metadata Kunci) ---
   if (oldStateCaches.length > 0) {
     console.log(`🔑 Migrating ${oldStateCaches.length} old state caches...`);
     const newStateCache = await caches.open(permanentStateCacheName);
     
-    // Kita hanya perlu memigrasi item kunci 'elsa-locked-books' dan 'pendingPDFHistory'
     const keysToMigrate = [STORAGE_KEYS.LOCKED_BOOKS, STORAGE_KEYS.READING_HISTORY];
 
     for (const oldName of oldStateCaches) {
@@ -1159,7 +1196,6 @@ async function migrateOldUserCaches(cacheNames) {
         for (const stateKey of keysToMigrate) {
           const response = await oldCache.match(stateKey);
           if (response) {
-             // Cek apakah data sudah ada di cache baru. Jika belum, salin.
              const isPresent = await newStateCache.match(stateKey);
              if (!isPresent) {
                 await newStateCache.put(stateKey, response.clone());
@@ -1169,7 +1205,6 @@ async function migrateOldUserCaches(cacheNames) {
              }
           }
         }
-        // Setelah mencoba migrasi, hapus cache state lama
         await caches.delete(oldName);
         console.log(`   🗑️ Deleted old State cache: ${oldName}`);
       } catch (error) {
@@ -1186,7 +1221,7 @@ async function verifyCacheHealth() {
   try {
     const cache = await caches.open(STATIC_CACHE);
     const keys = await cache.keys();
-    const criticalUrls = ['./index.html', './fallback/offline.html', './manifest.json'];
+    const criticalUrls = ['./index.html', './fallback/offline.html'];
     
     let missing = [];
     for (const url of criticalUrls) {
@@ -1194,7 +1229,6 @@ async function verifyCacheHealth() {
       if (!response) {
         missing.push(url);
         try {
-          // Ambil dari network jika hilang
           const netResponse = await fetch(url, { cache: 'no-cache' });
           if (netResponse.ok) {
               await cache.put(url, netResponse);
@@ -1214,4 +1248,4 @@ async function verifyCacheHealth() {
   }
 }
 
-console.log(`✅ ELSA Enhanced Service Worker ${APP_VERSION} loaded successfully`);
+console.log(`✅ ELSA Enhanced Service Worker ${APP_VERSION} loaded with MANIFEST FIX`);
