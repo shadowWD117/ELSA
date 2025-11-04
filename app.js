@@ -7,7 +7,7 @@
  * FITUR BARU: Deteksi Pembaruan Buku
  * =================================================== */
 
-(function () {
+(function () { 
     'use strict';
 
     // --- APLIKASI STATE ---
