@@ -338,6 +338,28 @@
         .custom-modal-buttons .secondary:hover {
             background-color: #555;
         }
+
+        /* Protection notice styles */
+        .protection-notice {
+            margin-top: 15px;
+            padding: 12px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        .protection-notice h4 {
+            color: #4CAF50;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .protection-notice p {
+            font-size: 0.85rem;
+            color: #b0b0b0;
+            margin: 0;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -356,8 +378,18 @@
                     <span aria-hidden="true"></span>
                 </summary>
                 <div class="details-content" aria-hidden="true">
-                    <p>Hapus data yang tersimpan untuk membebaskan ruang pada perangkat Anda. Ini termasuk file yang di-cache, riwayat bacaan, dan pengaturan lokal.</p>
-                    <button id="clearCacheBtn" style="margin-top: 10px;">Hapus Cache</button>
+                    <p><strong>Hapus Cache Aplikasi:</strong> Menghapus file sementara aplikasi untuk membebaskan ruang. <strong>Buku yang sudah diunduh tidak akan terhapus.</strong></p>
+                    <p><strong>Kelola Buku:</strong> Untuk menghapus buku tertentu, buka halaman "Buku" dan gunakan tombol ️hapus pada buku yang ingin dihapus.</p>
+                    <button id="clearCacheBtn" style="margin-top: 10px;">Hapus Cache Aplikasi</button>
+                    
+                    <div class="protection-notice">
+                        <h4>Buku tersimpan</h4>
+                        <p>
+                            Buku yang sudah Anda unduh aman dan tidak akan terhapus oleh fitur ini. 
+                            Gunakan halaman "Buku" untuk mengelola buku satu per satu.
+                        </p>
+                    </div>
+                    
                     <h3 style="margin-top:15px;">Daftar Cache:</h3>
                     <ul id="cache-list" style="list-style-type: none; padding-left: 0; margin-top:10px;"></ul>
                 </div>
@@ -414,23 +446,25 @@
         const translations = {
             id: {
                 loading: "Memuat...",
-                clearCache: "Hapus Cache",
+                clearCache: "Hapus Cache Aplikasi",
                 clearing: "Menghapus...",
-                confirmClear: "Yakin ingin menghapus semua cache?",
-                cacheCleared: "Semua cache berhasil dihapus.",
+                confirmClear: "Yakin ingin menghapus cache APLIKASI saja?\n\n BUKU YANG SUDAH DIUNDUH TIDAK AKAN DIHAPUS.\n\nUntuk menghapus buku, gunakan tombol ️hapus pada setiap buku di halaman \"Buku\".",
+                cacheCleared: "Cache aplikasi berhasil dihapus. Buku yang diunduh tetap tersimpan.",
                 cacheError: "Gagal menghapus cache. Silakan coba lagi.",
                 emptyCache: "(Kosong)",
-                andMore: "dan {count} file lainnya"
+                andMore: "dan {count} file lainnya",
+                noAppCache: "Tidak ada cache aplikasi yang perlu dihapus. Buku yang diunduh tetap tersimpan."
             },
             en: {
                 loading: "Loading...",
-                clearCache: "Clear Cache",
+                clearCache: "Clear App Cache",
                 clearing: "Clearing...",
-                confirmClear: "Are you sure you want to clear all cache?",
-                cacheCleared: "All cache cleared successfully.",
+                confirmClear: "Are you sure you want to clear APP cache only?\n\n DOWNLOADED BOOKS WILL NOT BE DELETED.\n\nTo delete books, use the ️delete button on each book in the \"Books\" page.",
+                cacheCleared: "App cache cleared successfully. Downloaded books remain intact.",
                 cacheError: "Failed to clear cache. Please try again.",
                 emptyCache: "(Empty)",
-                andMore: "and {count} more files"
+                andMore: "and {count} more files",
+                noAppCache: "No app cache to clear. Downloaded books remain intact."
             }
         };
 
@@ -464,7 +498,6 @@
         // END WRAPPER FUNGSI
         // ==============================================================
 
-
         // Debounce function untuk menghindari multiple clicks
         function debounce(func, wait) {
             let timeout;
@@ -482,7 +515,6 @@
         function safeQuerySelector(selector) {
             const el = document.querySelector(selector);
             if (!el) {
-                // console.warn(`Element ${selector} not found`); // Hilangkan logging ini untuk mengurangi spam error dari app.js
                 return null;
             }
             return el;
@@ -500,16 +532,17 @@
                 
                 let cacheType = 'Aplikasi';
                 let cacheColor = '#007bff';
+                let isProtected = false;
                 
-                if (cacheName.includes('pdf-cache')) {
-                    cacheType = 'PDF Cache';
+                // Tentukan jenis cache dan status perlindungan
+                if (cacheName.includes('pdf-cache') || cacheName.includes('pdf-reader-pwa')) {
+                    cacheType = 'Buku Terlindungi 📚';
                     cacheColor = '#28a745';
-                } else if (cacheName.includes('pdf-reader-pwa')) {
-                    cacheType = 'App Cache';
-                    cacheColor = '#007bff';
+                    isProtected = true;
                 } else {
-                    cacheType = 'Cache Lama';
+                    cacheType = 'Cache Aplikasi';
                     cacheColor = '#dc3545';
+                    isProtected = false;
                 }
                 
                 li.innerHTML = `
@@ -517,6 +550,7 @@
                         <div>
                             <strong style="color: ${cacheColor}">${cacheName}</strong>
                             <span style="font-size: 0.8rem; color: #666; margin-left: 10px;">${cacheType}</span>
+                            ${isProtected ? '<span style="color: #28a745; margin-left: 5px;">🔒</span>' : ''}
                         </div>
                         <span style="background: ${cacheColor}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">
                             ${requests.length} file
@@ -578,7 +612,7 @@
 
                 if (currentCaches.length > 0) {
                     const appHeader = document.createElement('li');
-                    appHeader.innerHTML = `<h4 style="margin: 15px 0 10px 0; color: #007bff;">Cache Aplikasi</h4>`;
+                    appHeader.innerHTML = `<h4 style="margin: 15px 0 10px 0; color: #28a745;">📚 Buku Terlindungi</h4>`;
                     cacheListEl.appendChild(appHeader);
                     
                     for (const name of currentCaches) {
@@ -588,7 +622,7 @@
 
                 if (otherCaches.length > 0) {
                     const otherHeader = document.createElement('li');
-                    otherHeader.innerHTML = `<h4 style="margin: 15px 0 10px 0; color: #dc3545;">Cache Lama</h4>`;
+                    otherHeader.innerHTML = `<h4 style="margin: 15px 0 10px 0; color: #dc3545;">🗑️ Cache Aplikasi (Aman Dihapus)</h4>`;
                     cacheListEl.appendChild(otherHeader);
                     
                     for (const name of otherCaches.slice(0, 5)) {
@@ -597,7 +631,7 @@
                     
                     if (otherCaches.length > 5) {
                         const moreItem = document.createElement('li');
-                        moreItem.innerHTML = `<span class="cache-more">${t.andMore.replace('{count}', otherCaches.length - 5)} cache lama</span>`;
+                        moreItem.innerHTML = `<span class="cache-more">${t.andMore.replace('{count}', otherCaches.length - 5)} cache aplikasi</span>`;
                         cacheListEl.appendChild(moreItem);
                     }
                 }
@@ -645,6 +679,55 @@
                 btn.onclick = (e) => { e.preventDefault(); handleBackNavigation(); };
             });
         }
+
+        // Fungsi untuk membersihkan hanya cache aplikasi (bukan buku)
+        async function clearAppCacheOnly() {
+            try {
+                const cacheNames = await caches.keys();
+                
+                // Cache yang akan dipertahankan (buku-buku)
+                const protectedCaches = cacheNames.filter(name => 
+                    name.includes('pdf-cache') || 
+                    name.includes('pdf-reader-pwa')
+                );
+                
+                // Hapus hanya cache yang tidak terkait buku
+                const cachesToDelete = cacheNames.filter(name => 
+                    !name.includes('pdf-cache') && 
+                    !name.includes('pdf-reader-pwa')
+                );
+                
+                if (cachesToDelete.length === 0) {
+                    return {
+                        success: true,
+                        deleted: 0,
+                        protected: protectedCaches.length,
+                        message: t.noAppCache
+                    };
+                }
+                
+                const deletePromises = cachesToDelete.map(name => {
+                    console.log(`🗑️ Deleting app cache: ${name}`);
+                    return caches.delete(name);
+                });
+                
+                await Promise.all(deletePromises);
+                
+                return {
+                    success: true,
+                    deleted: cachesToDelete.length,
+                    protected: protectedCaches.length,
+                    message: t.cacheCleared
+                };
+                
+            } catch (error) {
+                console.error('Error clearing app cache:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
         
         // === INITIALIZATION ===
         document.addEventListener('DOMContentLoaded', () => {
@@ -656,7 +739,7 @@
             const clearCacheBtn = safeQuerySelector('#clearCacheBtn');
             if (clearCacheBtn) {
                 const debouncedClearCache = debounce(async () => {
-                    // MENGGUNAKAN customConfirm
+                    // MENGGUNAKAN customConfirm dengan pesan yang diperbarui
                     const isConfirmed = await customConfirm('Konfirmasi Hapus Cache', t.confirmClear);
                     if (!isConfirmed) return;
                     
@@ -666,16 +749,21 @@
                     document.body.classList.add('loading');
                     
                     try {
-                        const cacheNames = await caches.keys();
-                        const deletePromises = cacheNames.map(name => caches.delete(name));
-                        await Promise.all(deletePromises);
+                        const result = await clearAppCacheOnly();
                         
-                        // MENGGUNAKAN customAlert
-                        customAlert('Berhasil', t.cacheCleared);
-                        await loadCacheList();
+                        if (result.success) {
+                            if (result.deleted > 0) {
+                                customAlert('Berhasil', 
+                                    `${result.message}\n\n📊 Statistik:\n• ${result.deleted} cache aplikasi dihapus\n• ${result.protected} cache buku terlindungi`);
+                            } else {
+                                customAlert('Info', result.message);
+                            }
+                            await loadCacheList();
+                        } else {
+                            throw new Error(result.error);
+                        }
                     } catch (error) {
                         console.error('Error clearing cache:', error);
-                        // MENGGUNAKAN customAlert
                         customAlert('Gagal', t.cacheError);
                     } finally {
                         clearCacheBtn.textContent = originalText;
