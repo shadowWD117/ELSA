@@ -2,7 +2,7 @@
   "id": "/index.html",
   "name": "ELSA - Education Learning Smart App",
   "short_name": "ELSA",
-  "description": "Aplikasi pembelajaran pintar untuk pendidikan",
+  "description": "Aplikasi pembelajaran pintar untuk pendidikan. Berisi buku dan alat-alat yang membantu saat belajar.",
   "lang": "id",
   "dir": "ltr",
   "start_url": "./index.html",
